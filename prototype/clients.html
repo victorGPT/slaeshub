@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Sales Hub — 客户列表</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            'dark-bg': '#0B0E11',
+            'dark-card': '#1E2329',
+            'dark-hover': '#2B3139',
+            'dark-border': '#2B3139',
+            'brand-gold': '#F0B90B',
+            'brand-gold-hover': '#D4A50A',
+            'profit-green': '#0ECB81',
+            'loss-red': '#F6465D',
+            'info-blue': '#1E88E5',
+            'text-primary': '#EAECEF',
+            'text-secondary': '#848E9C',
+            'text-tertiary': '#5E6673',
+          },
+          fontFamily: {
+            'sans': ['-apple-system', 'BlinkMacSystemFont', '"Segoe UI"', 'Roboto', 'sans-serif'],
+            'mono': ['"SF Mono"', 'Monaco', '"Fira Mono"', 'monospace'],
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    * { -webkit-tap-highlight-color: transparent; }
+    body { background: #0B0E11; overscroll-behavior: none; }
+    .no-scrollbar::-webkit-scrollbar { display: none; }
+    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    .client-row:active { background: #2B3139; transform: scale(0.98); }
+    .client-row { transition: transform 0.15s ease, background 0.15s ease; }
+    .stat-card:active { transform: scale(0.96); }
+    .stat-card { transition: transform 0.15s ease; }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(12px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .animate-in { animation: fadeUp 0.4s ease forwards; }
+    .delay-1 { animation-delay: 0.05s; }
+    .delay-2 { animation-delay: 0.1s; }
+    .delay-3 { animation-delay: 0.15s; }
+    .delay-4 { animation-delay: 0.2s; }
+    .delay-5 { animation-delay: 0.25s; }
+    .delay-6 { animation-delay: 0.3s; }
+    .delay-7 { animation-delay: 0.35s; }
+    .delay-8 { animation-delay: 0.4s; }
+  </style>
+</head>
+<body class="bg-dark-bg text-text-primary max-w-[393px] mx-auto min-h-screen flex flex-col">
+
+  <!-- Status Bar -->
+  <div class="h-[44px] flex items-end justify-between px-6 pb-1 bg-dark-bg sticky top-0 z-50">
+    <span class="text-[14px] font-semibold">14:23</span>
+    <div class="flex items-center gap-1">
+      <i class="fas fa-signal text-[12px]"></i>
+      <i class="fas fa-wifi text-[12px]"></i>
+      <i class="fas fa-battery-full text-[12px]"></i>
+    </div>
+  </div>
+
+  <!-- Top Navigation -->
+  <div class="h-[56px] flex items-center justify-between px-4 bg-dark-bg sticky top-[44px] z-50 border-b border-dark-border">
+    <h1 class="text-[18px] font-bold tracking-wide">Sales Hub</h1>
+    <div class="relative w-[44px] h-[44px] flex items-center justify-center">
+      <i class="fas fa-bell text-[18px] text-text-secondary"></i>
+      <span class="absolute top-[8px] right-[8px] w-[8px] h-[8px] bg-loss-red rounded-full"></span>
+    </div>
+  </div>
+
+  <!-- Content -->
+  <div class="flex-1 overflow-y-auto pb-[90px] no-scrollbar">
+
+    <!-- Search Bar -->
+    <div class="px-4 pt-4 pb-3">
+      <div class="flex items-center gap-3 bg-dark-hover rounded-lg h-[40px] px-3">
+        <i class="fas fa-search text-text-tertiary text-[14px]"></i>
+        <input type="text" placeholder="搜索客户名称..." class="bg-transparent text-[14px] text-text-primary placeholder-text-tertiary outline-none flex-1">
+      </div>
+    </div>
+
+    <!-- Quick Stats -->
+    <div class="px-4 pb-4">
+      <div class="flex gap-3 overflow-x-auto no-scrollbar">
+        <div class="stat-card min-w-[120px] bg-dark-card rounded-xl p-3 flex-shrink-0">
+          <p class="text-[24px] font-bold font-mono text-brand-gold">47</p>
+          <p class="text-[12px] text-text-secondary mt-1">总客户</p>
+        </div>
+        <div class="stat-card min-w-[120px] bg-dark-card rounded-xl p-3 flex-shrink-0">
+          <p class="text-[24px] font-bold font-mono text-profit-green">38</p>
+          <p class="text-[12px] text-text-secondary mt-1">本月活跃</p>
+        </div>
+        <div class="stat-card min-w-[120px] bg-dark-card rounded-xl p-3 flex-shrink-0">
+          <p class="text-[24px] font-bold font-mono text-loss-red">12</p>
+          <p class="text-[12px] text-text-secondary mt-1">待跟进事件</p>
+        </div>
+        <div class="stat-card min-w-[120px] bg-dark-card rounded-xl p-3 flex-shrink-0">
+          <p class="text-[24px] font-bold font-mono text-info-blue">$45.2K</p>
+          <p class="text-[12px] text-text-secondary mt-1">本月福利已投</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Section Header -->
+    <div class="px-4 pb-2 flex items-center justify-between">
+      <h2 class="text-[15px] font-semibold text-text-secondary">我的客户</h2>
+      <span class="text-[12px] text-text-tertiary">按盈利排序</span>
+    </div>
+
+    <!-- Client List -->
+    <div class="px-4">
+
+      <!-- Client 1: 张伟 -->
+      <a href="client-detail.html" class="client-row flex items-center gap-3 py-3 border-b border-dark-border opacity-0 animate-in delay-1 cursor-pointer block">
+        <img src="https://ui-avatars.com/api/?name=张伟&background=F0B90B&color=0B0E11&size=96&font-size=0.4&bold=true" class="w-[40px] h-[40px] rounded-full flex-shrink-0" alt="张伟">
+        <div class="flex-1 min-w-0">
+          <div class="flex items-center gap-2">
+            <span class="text-[15px] font-semibold truncate">张伟</span>
+            <span class="flex gap-[3px] flex-shrink-0" title="1 待处理 · 1 跟进中"><span class="w-[6px] h-[6px] rounded-full bg-loss-red"></span><span class="w-[6px] h-[6px] rounded-full bg-brand-gold"></span></span>
+            <span class="text-[11px] text-text-tertiary truncate">Whale Capital</span>
+          </div>
+          <div class="flex items-center gap-1 mt-0.5">
+            <span class="text-[10px] font-mono text-text-tertiary">UID: 8834710</span>
+            <span class="text-[11px] px-1.5 py-0.5 rounded bg-[rgba(240,185,11,0.12)] text-brand-gold">🐋 鲸鱼</span>
+            <span class="text-[11px] px-1.5 py-0.5 rounded bg-[rgba(240,185,11,0.12)] text-brand-gold">高频</span>
+          </div>
+        </div>
+        <div class="text-right flex-shrink-0">
+          <p class="text-[14px] font-mono font-semibold text-profit-green">+$182K</p>
+          <p class="text-[11px] text-text-tertiary">本月盈利</p>
+        </div>
+      </a>
+
+      <!-- Client 2: 李明远 -->
+      <a href="client-detail.html" class="client-row flex items-center gap-3 py-3 border-b border-dark-border opacity-0 animate-in delay-2 cursor-pointer block">
+        <img src="https://ui-avatars.com/api/?name=李明远&background=1E88E5&color=fff&size=96&font-size=0.4&bold=true" class="w-[40px] h-[40px] rounded-full flex-shrink-0" alt="李明远">
+        <div class="flex-1 min-w-0">
+          <div class="flex items-center gap-2">
+            <span class="text-[15px] font-semibold truncate">李明远</span>
+            <span class="w-[6px] h-[6px] rounded-full bg-brand-gold flex-shrink-0" title="1 跟进中"></span>
+            <span class="text-[11px] text-text-tertiary truncate">Dragon Fund</span>
+          </div>
+          <div class="flex items-center gap-1 mt-0.5">
+            <span class="text-[10px] font-mono text-text-tertiary">UID: 7721503</span>
+            <span class="text-[11px] px-1.5 py-0.5 rounded bg-[rgba(30,136,229,0.12)] text-info-blue">📊 机构</span>
+            <span class="text-[11px] px-1.5 py-0.5 rounded bg-[rgba(30,136,229,0.12)] text-info-blue">稳健</span>
+          </div>
+        </div>
+        <div class="text-right flex-shrink-0">
+          <p class="text-[14px] font-mono font-semibold text-profit-green">+$94K</p>
+          <p class="text-[11px] text-text-tertiary">本月盈利</p>
+        </div>
+      </a>
+
+      <!-- Client 3: 王芳 -->
+      <a href="client-detail.html" class="client-row flex items-center gap-3 py-3 border-b border-dark-border opacity-0 animate-in delay-3 cursor-pointer block">
+        <img src="https://ui-avatars.com/api/?name=王芳&background=F6465D&color=fff&size=96&font-size=0.4&bold=true" class="w-[40px] h-[40px] rounded-full flex-shrink-0" alt="王芳">
+        <div class="flex-1 min-w-0">
+          <div class="flex items-center gap-2">
+            <span class="text-[15px] font-semibold truncate">王芳</span>
+            <span class="w-[6px] h-[6px] rounded-full bg-loss-red flex-shrink-0" title="1 待处理"></span>
+            <span class="text-[11px] text-text-tertiary truncate">个人大户</span>
+          </div>
+          <div class="flex items-center gap-1 mt-0.5">
+            <span class="text-[10px] font-mono text-text-tertiary">UID: 9102846</span>
+            <span class="text-[11px] px-1.5 py-0.5 rounded bg-[rgba(234,236,239,0.08)] text-text-primary">💎 高净值</span>
+            <span class="text-[11px] px-1.5 py-0.5 rounded bg-[rgba(234,236,239,0.08)] text-text-primary">短线</span>
+          </div>
+        </div>
+        <div class="text-right flex-shrink-0">
+          <p class="text-[14px] font-mono font-semibold text-loss-red">-$23K</p>
+          <p class="text-[11px] text-text-tertiary">本月盈利</p>
+        </div>
+      </a>
+
+      <!-- Client 4: 陈志强 -->
+      <a href="client-detail.html" class="client-row flex items-center gap-3 py-3 border-b border-dark-border opacity-0 animate-in delay-4 cursor-pointer block">
+        <img src="https://ui-avatars.com/api/?name=陈志强&background=0ECB81&color=fff&size=96&font-size=0.4&bold=true" class="w-[40px] h-[40px] rounded-full flex-shrink-0" alt="陈志强">
+        <div class="flex-1 min-w-0">
+          <div class="flex items-center gap-2">
+            <span class="text-[15px] font-semibold truncate">陈志强</span>
+            <span class="w-[6px] h-[6px] rounded-full bg-brand-gold flex-shrink-0" title="1 跟进中"></span>
+            <span class="text-[11px] text-text-tertiary truncate">Alpha Trading</span>
+          </div>
+          <div class="flex items-center gap-1 mt-0.5">
+            <span class="text-[10px] font-mono text-text-tertiary">UID: 6450129</span>
+            <span class="text-[11px] px-1.5 py-0.5 rounded bg-[rgba(30,136,229,0.12)] text-info-blue">🏛 机构</span>
+            <span class="text-[11px] px-1.5 py-0.5 rounded bg-[rgba(30,136,229,0.12)] text-info-blue">套利</span>
+          </div>
+        </div>
+        <div class="text-right flex-shrink-0">
+          <p class="text-[14px] font-mono font-semibold text-profit-green">+$312K</p>
+          <p class="text-[11px] text-text-tertiary">本月盈利</p>
+        </div>
+      </a>
+
+      <!-- Client 5: 赵雪梅 -->
+      <a href="client-detail.html" class="client-row flex items-center gap-3 py-3 border-b border-dark-border opacity-0 animate-in delay-5 cursor-pointer block">
+        <img src="https://ui-avatars.com/api/?name=赵雪梅&background=9C27B0&color=fff&size=96&font-size=0.4&bold=true" class="w-[40px] h-[40px] rounded-full flex-shrink-0" alt="赵雪梅">
+        <div class="flex-1 min-w-0">
+          <div class="flex items-center gap-2">
+            <span class="text-[15px] font-semibold truncate">赵雪梅</span>
+            <span class="text-[11px] text-text-tertiary truncate">个人大户</span>
+          </div>
+          <div class="flex items-center gap-1 mt-0.5">
+            <span class="text-[10px] font-mono text-text-tertiary">UID: 5538294</span>
+            <span class="text-[11px] px-1.5 py-0.5 rounded bg-[rgba(240,185,11,0.12)] text-brand-gold">⚡ 高频</span>
+            <span class="text-[11px] px-1.5 py-0.5 rounded bg-[rgba(240,185,11,0.12)] text-brand-gold">合约</span>
+          </div>
+        </div>
+        <div class="text-right flex-shrink-0">
+          <p class="text-[14px] font-mono font-semibold text-profit-green">+$67K</p>
+          <p class="text-[11px] text-text-tertiary">本月盈利</p>
+        </div>
+      </a>
+
+      <!-- Client 6: 刘洋 -->
+      <a href="client-detail.html" class="client-row flex items-center gap-3 py-3 border-b border-dark-border opacity-0 animate-in delay-6 cursor-pointer block">
+        <img src="https://ui-avatars.com/api/?name=刘洋&background=FF6F00&color=fff&size=96&font-size=0.4&bold=true" class="w-[40px] h-[40px] rounded-full flex-shrink-0" alt="刘洋">
+        <div class="flex-1 min-w-0">
+          <div class="flex items-center gap-2">
+            <span class="text-[15px] font-semibold truncate">刘洋</span>
+            <span class="text-[11px] text-text-tertiary truncate">Momentum Capital</span>
+          </div>
+          <div class="flex items-center gap-1 mt-0.5">
+            <span class="text-[10px] font-mono text-text-tertiary">UID: 3317605</span>
+            <span class="text-[11px] px-1.5 py-0.5 rounded bg-[rgba(30,136,229,0.12)] text-info-blue">📊 机构</span>
+            <span class="text-[11px] px-1.5 py-0.5 rounded bg-[rgba(30,136,229,0.12)] text-info-blue">趋势</span>
+          </div>
+        </div>
+        <div class="text-right flex-shrink-0">
+          <p class="text-[14px] font-mono font-semibold text-profit-green">+$156K</p>
+          <p class="text-[11px] text-text-tertiary">本月盈利</p>
+        </div>
+      </a>
+
+      <!-- Client 7: 黄海涛 -->
+      <a href="client-detail.html" class="client-row flex items-center gap-3 py-3 border-b border-dark-border opacity-0 animate-in delay-7 cursor-pointer block">
+        <img src="https://ui-avatars.com/api/?name=黄海涛&background=00897B&color=fff&size=96&font-size=0.4&bold=true" class="w-[40px] h-[40px] rounded-full flex-shrink-0" alt="黄海涛">
+        <div class="flex-1 min-w-0">
+          <div class="flex items-center gap-2">
+            <span class="text-[15px] font-semibold truncate">黄海涛</span>
+            <span class="text-[11px] text-text-tertiary truncate">个人大户</span>
+          </div>
+          <div class="flex items-center gap-1 mt-0.5">
+            <span class="text-[10px] font-mono text-text-tertiary">UID: 4483921</span>
+            <span class="text-[11px] px-1.5 py-0.5 rounded bg-[rgba(234,236,239,0.08)] text-text-primary">💎 高净值</span>
+            <span class="text-[11px] px-1.5 py-0.5 rounded bg-[rgba(234,236,239,0.08)] text-text-primary">现货</span>
+          </div>
+        </div>
+        <div class="text-right flex-shrink-0">
+          <p class="text-[14px] font-mono font-semibold text-profit-green">+$41K</p>
+          <p class="text-[11px] text-text-tertiary">本月盈利</p>
+        </div>
+      </a>
+
+      <!-- Client 8: 周雅琴 -->
+      <a href="client-detail.html" class="client-row flex items-center gap-3 py-3 opacity-0 animate-in delay-8 cursor-pointer block">
+        <img src="https://ui-avatars.com/api/?name=周雅琴&background=F0B90B&color=0B0E11&size=96&font-size=0.4&bold=true" class="w-[40px] h-[40px] rounded-full flex-shrink-0" alt="周雅琴">
+        <div class="flex-1 min-w-0">
+          <div class="flex items-center gap-2">
+            <span class="text-[15px] font-semibold truncate">周雅琴</span>
+            <span class="w-[6px] h-[6px] rounded-full bg-loss-red flex-shrink-0" title="1 待处理"></span>
+            <span class="text-[11px] text-text-tertiary truncate">Genesis Holdings</span>
+          </div>
+          <div class="flex items-center gap-1 mt-0.5">
+            <span class="text-[10px] font-mono text-text-tertiary">UID: 2209437</span>
+            <span class="text-[11px] px-1.5 py-0.5 rounded bg-[rgba(240,185,11,0.12)] text-brand-gold">🐋 鲸鱼</span>
+            <span class="text-[11px] px-1.5 py-0.5 rounded bg-[rgba(240,185,11,0.12)] text-brand-gold">长线</span>
+          </div>
+        </div>
+        <div class="text-right flex-shrink-0">
+          <p class="text-[14px] font-mono font-semibold text-profit-green">+$528K</p>
+          <p class="text-[11px] text-text-tertiary">本月盈利</p>
+        </div>
+      </a>
+
+    </div>
+  </div>
+
+  <!-- Bottom Tab Bar -->
+  <div class="fixed bottom-0 left-0 right-0 max-w-[393px] mx-auto bg-dark-card border-t border-dark-border z-50">
+    <div class="flex items-center justify-around h-[56px]">
+      <a href="clients.html" class="flex flex-col items-center gap-0.5 min-w-[44px] min-h-[44px] justify-center">
+        <i class="fas fa-users text-[18px] text-brand-gold"></i>
+        <span class="text-[10px] text-brand-gold font-medium">客户</span>
+      </a>
+      <a href="events.html" class="flex flex-col items-center gap-0.5 min-w-[44px] min-h-[44px] justify-center active:opacity-85">
+        <i class="fas fa-bolt text-[18px] text-text-tertiary"></i>
+        <span class="text-[10px] text-text-tertiary">事件</span>
+      </a>
+      <a href="javascript:void(0)" onclick="showToast('数据模块即将上线')" class="flex flex-col items-center gap-0.5 min-w-[44px] min-h-[44px] justify-center active:opacity-85">
+        <i class="fas fa-chart-line text-[18px] text-text-tertiary"></i>
+        <span class="text-[10px] text-text-tertiary">数据</span>
+      </a>
+      <a href="profile.html" class="flex flex-col items-center gap-0.5 min-w-[44px] min-h-[44px] justify-center active:opacity-85">
+        <i class="fas fa-user text-[18px] text-text-tertiary"></i>
+        <span class="text-[10px] text-text-tertiary">我的</span>
+      </a>
+    </div>
+    <div class="h-[34px] bg-dark-card"></div>
+  </div>
+
+  <div id="toast" class="fixed top-[120px] left-1/2 -translate-x-1/2 bg-dark-card text-text-primary text-[13px] px-4 py-2 rounded-lg border border-dark-border shadow-lg z-[200] opacity-0 pointer-events-none transition-opacity duration-200"></div>
+  <script>
+    function showToast(msg) {
+      const t = document.getElementById('toast');
+      t.textContent = msg;
+      t.style.opacity = '1';
+      setTimeout(() => { t.style.opacity = '0'; }, 1800);
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Sales Hub — 我的</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            'dark-bg': '#0B0E11',
+            'dark-card': '#1E2329',
+            'dark-hover': '#2B3139',
+            'dark-border': '#2B3139',
+            'brand-gold': '#F0B90B',
+            'brand-gold-hover': '#D4A50A',
+            'profit-green': '#0ECB81',
+            'loss-red': '#F6465D',
+            'info-blue': '#1E88E5',
+            'text-primary': '#EAECEF',
+            'text-secondary': '#848E9C',
+            'text-tertiary': '#5E6673',
+          },
+          fontFamily: {
+            'sans': ['-apple-system', 'BlinkMacSystemFont', '"Segoe UI"', 'Roboto', 'sans-serif'],
+            'mono': ['"SF Mono"', 'Monaco', '"Fira Mono"', 'monospace'],
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    * { -webkit-tap-highlight-color: transparent; }
+    body { background: #0B0E11; overscroll-behavior: none; }
+    .menu-item:active { background: #2B3139; }
+    .menu-item { transition: background 0.15s ease; }
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .animate-in { animation: fadeUp 0.35s ease forwards; opacity: 0; }
+  </style>
+</head>
+<body class="bg-dark-bg text-text-primary max-w-[393px] mx-auto min-h-screen flex flex-col">
+
+  <!-- Status Bar -->
+  <div class="h-[44px] flex items-end justify-between px-6 pb-1 bg-dark-bg sticky top-0 z-50">
+    <span class="text-[14px] font-semibold">14:23</span>
+    <div class="flex items-center gap-1">
+      <i class="fas fa-signal text-[12px]"></i>
+      <i class="fas fa-wifi text-[12px]"></i>
+      <i class="fas fa-battery-full text-[12px]"></i>
+    </div>
+  </div>
+
+  <!-- Top Navigation -->
+  <div class="h-[56px] flex items-center justify-between px-4 bg-dark-bg sticky top-[44px] z-50 border-b border-dark-border">
+    <h1 class="text-[18px] font-bold">我的</h1>
+    <div class="w-[44px] h-[44px]"></div>
+  </div>
+
+  <!-- Content -->
+  <div class="flex-1 overflow-y-auto pb-[90px]">
+
+    <!-- Profile Card -->
+    <div class="mx-4 mt-5 bg-dark-card rounded-xl p-5 flex flex-col items-center animate-in" style="animation-delay: 0.05s">
+      <div class="relative">
+        <img src="https://ui-avatars.com/api/?name=张三&background=F0B90B&color=0B0E11&size=96&font-size=0.4&bold=true" class="w-[72px] h-[72px] rounded-full" alt="张三">
+        <div class="absolute -bottom-1 -right-1 w-[22px] h-[22px] bg-profit-green rounded-full border-2 border-dark-card flex items-center justify-center">
+          <i class="fas fa-check text-[9px] text-white"></i>
+        </div>
+      </div>
+      <h2 class="text-[18px] font-bold mt-3">张三</h2>
+      <p class="text-[13px] text-text-secondary mt-0.5">高级客户经理</p>
+      <div class="flex items-center gap-1 mt-1">
+        <span class="text-[11px] px-2 py-0.5 rounded bg-[rgba(240,185,11,0.12)] text-brand-gold">BD Team A</span>
+      </div>
+    </div>
+
+    <!-- Stats -->
+    <div class="grid grid-cols-3 gap-3 px-4 mt-4 animate-in" style="animation-delay: 0.12s">
+      <div class="bg-dark-card rounded-xl p-3 text-center">
+        <p class="text-[22px] font-bold font-mono text-brand-gold">47</p>
+        <p class="text-[11px] text-text-secondary mt-0.5">管理客户</p>
+      </div>
+      <div class="bg-dark-card rounded-xl p-3 text-center">
+        <p class="text-[22px] font-bold font-mono text-text-primary">34</p>
+        <p class="text-[11px] text-text-secondary mt-0.5">本月事件</p>
+      </div>
+      <div class="bg-dark-card rounded-xl p-3 text-center">
+        <p class="text-[22px] font-bold font-mono text-profit-green">85%</p>
+        <p class="text-[11px] text-text-secondary mt-0.5">完成率</p>
+      </div>
+    </div>
+
+    <!-- Performance Mini Chart -->
+    <div class="mx-4 mt-4 bg-dark-card rounded-xl p-4 animate-in" style="animation-delay: 0.2s">
+      <h3 class="text-[14px] font-semibold text-text-secondary mb-3">本月业绩</h3>
+      <div class="flex items-end gap-1.5 h-[60px]">
+        <div class="flex-1 bg-dark-hover rounded-t" style="height: 40%"><div class="w-full bg-brand-gold rounded-t h-full opacity-40"></div></div>
+        <div class="flex-1 bg-dark-hover rounded-t" style="height: 55%"><div class="w-full bg-brand-gold rounded-t h-full opacity-50"></div></div>
+        <div class="flex-1 bg-dark-hover rounded-t" style="height: 45%"><div class="w-full bg-brand-gold rounded-t h-full opacity-50"></div></div>
+        <div class="flex-1 bg-dark-hover rounded-t" style="height: 70%"><div class="w-full bg-brand-gold rounded-t h-full opacity-60"></div></div>
+        <div class="flex-1 bg-dark-hover rounded-t" style="height: 60%"><div class="w-full bg-brand-gold rounded-t h-full opacity-60"></div></div>
+        <div class="flex-1 bg-dark-hover rounded-t" style="height: 80%"><div class="w-full bg-brand-gold rounded-t h-full opacity-70"></div></div>
+        <div class="flex-1 bg-dark-hover rounded-t" style="height: 85%"><div class="w-full bg-brand-gold rounded-t h-full"></div></div>
+      </div>
+      <div class="flex justify-between mt-2">
+        <span class="text-[10px] text-text-tertiary">W1</span>
+        <span class="text-[10px] text-text-tertiary">W2</span>
+        <span class="text-[10px] text-text-tertiary">W3</span>
+        <span class="text-[10px] text-text-tertiary font-semibold text-brand-gold">本周</span>
+      </div>
+    </div>
+
+    <!-- Menu List -->
+    <div class="mx-4 mt-4 bg-dark-card rounded-xl overflow-hidden animate-in" style="animation-delay: 0.28s">
+      <a href="#" class="menu-item flex items-center justify-between px-4 py-3.5 border-b border-dark-border active:opacity-85">
+        <div class="flex items-center gap-3">
+          <div class="w-[32px] h-[32px] rounded-lg bg-[rgba(30,136,229,0.12)] flex items-center justify-center">
+            <i class="fas fa-bell text-[14px] text-info-blue"></i>
+          </div>
+          <span class="text-[14px]">通知设置</span>
+        </div>
+        <i class="fas fa-chevron-right text-[12px] text-text-tertiary"></i>
+      </a>
+      <a href="#" class="menu-item flex items-center justify-between px-4 py-3.5 border-b border-dark-border active:opacity-85">
+        <div class="flex items-center gap-3">
+          <div class="w-[32px] h-[32px] rounded-lg bg-[rgba(240,185,11,0.12)] flex items-center justify-center">
+            <i class="fas fa-language text-[14px] text-brand-gold"></i>
+          </div>
+          <span class="text-[14px]">语言设置</span>
+        </div>
+        <div class="flex items-center gap-2">
+          <span class="text-[13px] text-text-tertiary">简体中文</span>
+          <i class="fas fa-chevron-right text-[12px] text-text-tertiary"></i>
+        </div>
+      </a>
+      <a href="#" class="menu-item flex items-center justify-between px-4 py-3.5 border-b border-dark-border active:opacity-85">
+        <div class="flex items-center gap-3">
+          <div class="w-[32px] h-[32px] rounded-lg bg-[rgba(94,102,115,0.15)] flex items-center justify-center">
+            <i class="fas fa-info-circle text-[14px] text-text-tertiary"></i>
+          </div>
+          <span class="text-[14px]">关于 Sales Hub</span>
+        </div>
+        <div class="flex items-center gap-2">
+          <span class="text-[13px] text-text-tertiary">v1.0.0</span>
+          <i class="fas fa-chevron-right text-[12px] text-text-tertiary"></i>
+        </div>
+      </a>
+      <a href="#" class="menu-item flex items-center justify-between px-4 py-3.5 active:opacity-85">
+        <div class="flex items-center gap-3">
+          <div class="w-[32px] h-[32px] rounded-lg bg-[rgba(246,70,93,0.12)] flex items-center justify-center">
+            <i class="fas fa-right-from-bracket text-[14px] text-loss-red"></i>
+          </div>
+          <span class="text-[14px] text-loss-red">退出登录</span>
+        </div>
+        <i class="fas fa-chevron-right text-[12px] text-text-tertiary"></i>
+      </a>
+    </div>
+
+  </div>
+
+  <!-- Bottom Tab Bar -->
+  <div class="fixed bottom-0 left-0 right-0 max-w-[393px] mx-auto bg-dark-card border-t border-dark-border z-50">
+    <div class="flex items-center justify-around h-[56px]">
+      <a href="clients.html" class="flex flex-col items-center gap-0.5 min-w-[44px] min-h-[44px] justify-center active:opacity-85">
+        <i class="fas fa-users text-[18px] text-text-tertiary"></i>
+        <span class="text-[10px] text-text-tertiary">客户</span>
+      </a>
+      <a href="events.html" class="flex flex-col items-center gap-0.5 min-w-[44px] min-h-[44px] justify-center active:opacity-85">
+        <i class="fas fa-bolt text-[18px] text-text-tertiary"></i>
+        <span class="text-[10px] text-text-tertiary">事件</span>
+      </a>
+      <a href="javascript:void(0)" onclick="showToast('数据模块即将上线')" class="flex flex-col items-center gap-0.5 min-w-[44px] min-h-[44px] justify-center active:opacity-85">
+        <i class="fas fa-chart-line text-[18px] text-text-tertiary"></i>
+        <span class="text-[10px] text-text-tertiary">数据</span>
+      </a>
+      <a href="profile.html" class="flex flex-col items-center gap-0.5 min-w-[44px] min-h-[44px] justify-center">
+        <i class="fas fa-user text-[18px] text-brand-gold"></i>
+        <span class="text-[10px] text-brand-gold font-medium">我的</span>
+      </a>
+    </div>
+    <div class="h-[34px] bg-dark-card"></div>
+  </div>
+
+  <div id="toast" class="fixed top-[120px] left-1/2 -translate-x-1/2 bg-dark-card text-text-primary text-[13px] px-4 py-2 rounded-lg border border-dark-border shadow-lg z-[200] opacity-0 pointer-events-none transition-opacity duration-200"></div>
+  <script>
+    function showToast(msg) {
+      const t = document.getElementById('toast');
+      t.textContent = msg;
+      t.style.opacity = '1';
+      setTimeout(() => { t.style.opacity = '0'; }, 1800);
+    }
+  </script>
+</body>
+</html>

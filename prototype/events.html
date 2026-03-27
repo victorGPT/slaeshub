@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Sales Hub — 事件中心</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            'dark-bg': '#0B0E11',
+            'dark-card': '#1E2329',
+            'dark-hover': '#2B3139',
+            'dark-border': '#2B3139',
+            'brand-gold': '#F0B90B',
+            'brand-gold-hover': '#D4A50A',
+            'profit-green': '#0ECB81',
+            'loss-red': '#F6465D',
+            'info-blue': '#1E88E5',
+            'text-primary': '#EAECEF',
+            'text-secondary': '#848E9C',
+            'text-tertiary': '#5E6673',
+          },
+          fontFamily: {
+            'sans': ['-apple-system', 'BlinkMacSystemFont', '"Segoe UI"', 'Roboto', 'sans-serif'],
+            'mono': ['"SF Mono"', 'Monaco', '"Fira Mono"', 'monospace'],
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    * { -webkit-tap-highlight-color: transparent; }
+    body { background: #0B0E11; overscroll-behavior: none; }
+    .no-scrollbar::-webkit-scrollbar { display: none; }
+    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    .event-card:active { transform: scale(0.98); opacity: 0.85; }
+    .event-card { transition: transform 0.15s ease, opacity 0.15s ease; }
+    .tab-item:active { opacity: 0.7; }
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .animate-in { animation: fadeUp 0.35s ease forwards; opacity: 0; }
+  </style>
+</head>
+<body class="bg-dark-bg text-text-primary max-w-[393px] mx-auto min-h-screen flex flex-col">
+
+  <!-- Status Bar -->
+  <div class="h-[44px] flex items-end justify-between px-6 pb-1 bg-dark-bg sticky top-0 z-50">
+    <span class="text-[14px] font-semibold">14:23</span>
+    <div class="flex items-center gap-1">
+      <i class="fas fa-signal text-[12px]"></i>
+      <i class="fas fa-wifi text-[12px]"></i>
+      <i class="fas fa-battery-full text-[12px]"></i>
+    </div>
+  </div>
+
+  <!-- Top Navigation -->
+  <div class="h-[56px] flex items-center justify-between px-4 bg-dark-bg sticky top-[44px] z-50 border-b border-dark-border">
+    <h1 class="text-[18px] font-bold">事件中心</h1>
+    <div class="w-[44px] h-[44px] flex items-center justify-center active:opacity-85">
+      <i class="fas fa-filter text-[16px] text-text-secondary"></i>
+    </div>
+  </div>
+
+  <!-- Filter Tabs -->
+  <div class="sticky top-[100px] z-40 bg-dark-bg px-4 pt-3 pb-2">
+    <div class="flex gap-1 overflow-x-auto no-scrollbar">
+      <button class="tab-item text-[13px] px-3 py-1.5 rounded-full bg-brand-gold text-dark-bg font-medium flex-shrink-0">全部</button>
+      <button class="tab-item text-[13px] px-3 py-1.5 rounded-full bg-dark-card text-text-secondary flex-shrink-0">待处理 <span class="font-mono text-loss-red">3</span></button>
+      <button class="tab-item text-[13px] px-3 py-1.5 rounded-full bg-dark-card text-text-secondary flex-shrink-0">跟进中 <span class="font-mono text-brand-gold">2</span></button>
+      <button class="tab-item text-[13px] px-3 py-1.5 rounded-full bg-dark-card text-text-secondary flex-shrink-0">已完成</button>
+      <button class="tab-item text-[13px] px-3 py-1.5 rounded-full bg-dark-card text-text-secondary flex-shrink-0">已忽略</button>
+    </div>
+  </div>
+
+  <!-- Content -->
+  <div class="flex-1 overflow-y-auto pb-[90px] no-scrollbar px-4 pt-2 space-y-3">
+
+    <!-- Event 1: 大额爆仓 (Urgent - Red) -->
+    <a href="event-thread.html" class="event-card block bg-dark-card rounded-xl p-4 border-l-[3px] border-loss-red animate-in" style="animation-delay: 0.05s">
+      <div class="flex items-center justify-between mb-2">
+        <span class="text-[11px] px-2 py-0.5 rounded bg-[rgba(246,70,93,0.15)] text-loss-red font-medium">⚠️ 大额爆仓</span>
+        <span class="text-[11px] px-2 py-0.5 rounded-full bg-[rgba(246,70,93,0.15)] text-loss-red">🔴 待处理</span>
+      </div>
+      <h3 class="text-[15px] font-semibold text-text-primary mb-1">张伟 — 合约爆仓 $320,000</h3>
+      <p class="text-[13px] text-text-secondary leading-relaxed mb-2">BTC/USDT 永续合约多单，预计损失 $320K。客户情绪可能波动较大。</p>
+      <div class="flex items-center justify-between">
+        <span class="text-[11px] text-text-tertiary"><i class="far fa-clock mr-1"></i>10 分钟前</span>
+        <i class="fas fa-chevron-right text-[12px] text-text-tertiary"></i>
+      </div>
+    </a>
+
+    <!-- Event 2: 盈利奖励 (Action - Gold) -->
+    <a href="event-thread.html" class="event-card block bg-dark-card rounded-xl p-4 border-l-[3px] border-brand-gold animate-in" style="animation-delay: 0.1s">
+      <div class="flex items-center justify-between mb-2">
+        <span class="text-[11px] px-2 py-0.5 rounded bg-[rgba(240,185,11,0.15)] text-brand-gold font-medium">🎁 盈利奖励</span>
+        <span class="text-[11px] px-2 py-0.5 rounded-full bg-[rgba(246,70,93,0.15)] text-loss-red">🔴 待处理</span>
+      </div>
+      <h3 class="text-[15px] font-semibold text-text-primary mb-1">周雅琴 — 本月盈利达标 $528K</h3>
+      <p class="text-[13px] text-text-secondary leading-relaxed mb-2">建议投入福利 $105,600（盈利的 20%），可考虑高端礼品或 VIP 活动邀请。</p>
+      <div class="flex items-center justify-between">
+        <span class="text-[11px] text-text-tertiary"><i class="far fa-clock mr-1"></i>2 小时前</span>
+        <i class="fas fa-chevron-right text-[12px] text-text-tertiary"></i>
+      </div>
+    </a>
+
+    <!-- Event 3: 大额充值 (Info - Blue) -->
+    <a href="event-thread.html" class="event-card block bg-dark-card rounded-xl p-4 border-l-[3px] border-info-blue animate-in" style="animation-delay: 0.15s">
+      <div class="flex items-center justify-between mb-2">
+        <span class="text-[11px] px-2 py-0.5 rounded bg-[rgba(30,136,229,0.15)] text-info-blue font-medium">💰 大额充值</span>
+        <span class="text-[11px] px-2 py-0.5 rounded-full bg-[rgba(240,185,11,0.15)] text-brand-gold">🟡 跟进中</span>
+      </div>
+      <h3 class="text-[15px] font-semibold text-text-primary mb-1">陈志强 — USDT 充值 $500,000</h3>
+      <p class="text-[13px] text-text-secondary leading-relaxed mb-2">非常规时间充值，可能在布局新仓位。建议了解交易意向。</p>
+      <!-- Latest follow-up -->
+      <div class="mt-2 pt-2 border-t border-dark-border flex items-start gap-2">
+        <div class="w-[4px] h-[4px] rounded-full bg-brand-gold mt-1.5 flex-shrink-0"></div>
+        <p class="text-[11px] text-text-tertiary leading-relaxed flex-1"><span class="text-text-secondary">张三</span> · 1小时前 — 已联系客户，确认为新策略建仓，计划分批买入 BTC</p>
+      </div>
+      <div class="flex items-center justify-between mt-2">
+        <span class="text-[11px] text-text-tertiary"><i class="far fa-clock mr-1"></i>3 小时前</span>
+        <i class="fas fa-chevron-right text-[12px] text-text-tertiary"></i>
+      </div>
+    </a>
+
+    <!-- Event 4: 系统反馈 (Urgent - Red) -->
+    <a href="event-thread.html" class="event-card block bg-dark-card rounded-xl p-4 border-l-[3px] border-loss-red animate-in" style="animation-delay: 0.2s">
+      <div class="flex items-center justify-between mb-2">
+        <span class="text-[11px] px-2 py-0.5 rounded bg-[rgba(246,70,93,0.15)] text-loss-red font-medium">🔧 系统反馈</span>
+        <span class="text-[11px] px-2 py-0.5 rounded-full bg-[rgba(240,185,11,0.15)] text-brand-gold">🟡 跟进中</span>
+      </div>
+      <h3 class="text-[15px] font-semibold text-text-primary mb-1">李明远 — 反馈合约下单延迟</h3>
+      <p class="text-[13px] text-text-secondary leading-relaxed mb-2">客户通过 Telegram 反馈合约下单有 2-3 秒延迟，影响其高频策略。</p>
+      <!-- Latest follow-up -->
+      <div class="mt-2 pt-2 border-t border-dark-border flex items-start gap-2">
+        <div class="w-[4px] h-[4px] rounded-full bg-brand-gold mt-1.5 flex-shrink-0"></div>
+        <p class="text-[11px] text-text-tertiary leading-relaxed flex-1"><span class="text-text-secondary">张三</span> · 3小时前 — 已提交工单至技术团队，工单号 #TK-2847，预计24h内反馈</p>
+      </div>
+      <div class="flex items-center justify-between mt-2">
+        <span class="text-[11px] text-text-tertiary"><i class="far fa-clock mr-1"></i>5 小时前</span>
+        <i class="fas fa-chevron-right text-[12px] text-text-tertiary"></i>
+      </div>
+    </a>
+
+    <!-- Event 5: 异常行为 (Action - Gold) -->
+    <a href="event-thread.html" class="event-card block bg-dark-card rounded-xl p-4 border-l-[3px] border-brand-gold animate-in" style="animation-delay: 0.25s">
+      <div class="flex items-center justify-between mb-2">
+        <span class="text-[11px] px-2 py-0.5 rounded bg-[rgba(240,185,11,0.15)] text-brand-gold font-medium">📊 异常行为</span>
+        <span class="text-[11px] px-2 py-0.5 rounded-full bg-[rgba(246,70,93,0.15)] text-loss-red">🔴 待处理</span>
+      </div>
+      <h3 class="text-[15px] font-semibold text-text-primary mb-1">王芳 — 连续 3 天大额提现</h3>
+      <p class="text-[13px] text-text-secondary leading-relaxed mb-2">累计提现 $180K，可能存在流失风险。建议主动沟通了解原因。</p>
+      <div class="flex items-center justify-between">
+        <span class="text-[11px] text-text-tertiary"><i class="far fa-clock mr-1"></i>昨天 18:30</span>
+        <i class="fas fa-chevron-right text-[12px] text-text-tertiary"></i>
+      </div>
+    </a>
+
+    <!-- Event 6: 跟进完成 (Positive - Green) -->
+    <a href="event-thread.html" class="event-card block bg-dark-card rounded-xl p-4 border-l-[3px] border-profit-green animate-in" style="animation-delay: 0.3s">
+      <div class="flex items-center justify-between mb-2">
+        <span class="text-[11px] px-2 py-0.5 rounded bg-[rgba(14,203,129,0.15)] text-profit-green font-medium">✅ 跟进完成</span>
+        <span class="text-[11px] px-2 py-0.5 rounded-full bg-[rgba(14,203,129,0.15)] text-profit-green">🟢 已完成</span>
+      </div>
+      <h3 class="text-[15px] font-semibold text-text-primary mb-1">赵雪梅 — U 卡消费异常已确认</h3>
+      <p class="text-[13px] text-text-secondary leading-relaxed mb-2">已确认为客户本人操作，连续两笔相同金额为正常购物行为。</p>
+      <!-- Latest follow-up -->
+      <div class="mt-2 pt-2 border-t border-dark-border flex items-start gap-2">
+        <div class="w-[4px] h-[4px] rounded-full bg-profit-green mt-1.5 flex-shrink-0"></div>
+        <p class="text-[11px] text-text-tertiary leading-relaxed flex-1"><span class="text-text-secondary">李四</span> · 昨天 15:40 — 客户确认本人操作，已关闭风控预警，事件完结</p>
+      </div>
+      <div class="flex items-center justify-between mt-2">
+        <span class="text-[11px] text-text-tertiary"><i class="far fa-clock mr-1"></i>昨天 11:20</span>
+        <i class="fas fa-chevron-right text-[12px] text-text-tertiary"></i>
+      </div>
+    </a>
+
+  </div>
+
+  <!-- Bottom Tab Bar -->
+  <div class="fixed bottom-0 left-0 right-0 max-w-[393px] mx-auto bg-dark-card border-t border-dark-border z-50">
+    <div class="flex items-center justify-around h-[56px]">
+      <a href="clients.html" class="flex flex-col items-center gap-0.5 min-w-[44px] min-h-[44px] justify-center active:opacity-85">
+        <i class="fas fa-users text-[18px] text-text-tertiary"></i>
+        <span class="text-[10px] text-text-tertiary">客户</span>
+      </a>
+      <a href="events.html" class="flex flex-col items-center gap-0.5 min-w-[44px] min-h-[44px] justify-center">
+        <i class="fas fa-bolt text-[18px] text-brand-gold"></i>
+        <span class="text-[10px] text-brand-gold font-medium">事件</span>
+      </a>
+      <a href="javascript:void(0)" onclick="showToast('数据模块即将上线')" class="flex flex-col items-center gap-0.5 min-w-[44px] min-h-[44px] justify-center active:opacity-85">
+        <i class="fas fa-chart-line text-[18px] text-text-tertiary"></i>
+        <span class="text-[10px] text-text-tertiary">数据</span>
+      </a>
+      <a href="profile.html" class="flex flex-col items-center gap-0.5 min-w-[44px] min-h-[44px] justify-center active:opacity-85">
+        <i class="fas fa-user text-[18px] text-text-tertiary"></i>
+        <span class="text-[10px] text-text-tertiary">我的</span>
+      </a>
+    </div>
+    <div class="h-[34px] bg-dark-card"></div>
+  </div>
+
+  <div id="toast" class="fixed top-[120px] left-1/2 -translate-x-1/2 bg-dark-card text-text-primary text-[13px] px-4 py-2 rounded-lg border border-dark-border shadow-lg z-[200] opacity-0 pointer-events-none transition-opacity duration-200"></div>
+  <script>
+    function showToast(msg) {
+      const t = document.getElementById('toast');
+      t.textContent = msg;
+      t.style.opacity = '1';
+      setTimeout(() => { t.style.opacity = '0'; }, 1800);
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Sales Hub — 事件详情</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            'dark-bg': '#0B0E11',
+            'dark-card': '#1E2329',
+            'dark-hover': '#2B3139',
+            'dark-border': '#2B3139',
+            'brand-gold': '#F0B90B',
+            'brand-gold-hover': '#D4A50A',
+            'profit-green': '#0ECB81',
+            'loss-red': '#F6465D',
+            'info-blue': '#1E88E5',
+            'text-primary': '#EAECEF',
+            'text-secondary': '#848E9C',
+            'text-tertiary': '#5E6673',
+          },
+          fontFamily: {
+            'sans': ['-apple-system', 'BlinkMacSystemFont', '"Segoe UI"', 'Roboto', 'sans-serif'],
+            'mono': ['"SF Mono"', 'Monaco', '"Fira Mono"', 'monospace'],
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    * { -webkit-tap-highlight-color: transparent; }
+    body { background: #0B0E11; overscroll-behavior: none; }
+    .no-scrollbar::-webkit-scrollbar { display: none; }
+    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .animate-in { animation: fadeUp 0.35s ease forwards; opacity: 0; }
+    @keyframes pulse-gold {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(240, 185, 11, 0.2); }
+      50% { box-shadow: 0 0 0 6px rgba(240, 185, 11, 0); }
+    }
+    .ai-card { animation: pulse-gold 3s ease-in-out infinite; }
+    .copy-btn:active { transform: scale(0.95); }
+  </style>
+</head>
+<body class="bg-dark-bg text-text-primary max-w-[393px] mx-auto min-h-screen flex flex-col">
+
+  <!-- Status Bar -->
+  <div class="h-[44px] flex items-end justify-between px-6 pb-1 bg-dark-bg sticky top-0 z-50">
+    <span class="text-[14px] font-semibold">14:23</span>
+    <div class="flex items-center gap-1">
+      <i class="fas fa-signal text-[12px]"></i>
+      <i class="fas fa-wifi text-[12px]"></i>
+      <i class="fas fa-battery-full text-[12px]"></i>
+    </div>
+  </div>
+
+  <!-- Top Navigation -->
+  <div class="h-[56px] flex items-center justify-between px-4 bg-dark-bg sticky top-[44px] z-50 border-b border-dark-border">
+    <a href="events.html" class="w-[44px] h-[44px] flex items-center justify-center active:opacity-85">
+      <i class="fas fa-chevron-left text-[16px] text-text-primary"></i>
+    </a>
+    <h1 class="text-[18px] font-bold">事件详情</h1>
+    <div class="w-[44px] h-[44px] flex items-center justify-center active:opacity-85">
+      <i class="fas fa-ellipsis-vertical text-[16px] text-text-secondary"></i>
+    </div>
+  </div>
+
+  <!-- Content -->
+  <div class="flex-1 overflow-y-auto pb-[40px] no-scrollbar">
+
+    <!-- Event Header -->
+    <div class="px-4 pt-4 animate-in" style="animation-delay: 0.05s">
+      <div class="flex items-center gap-2 mb-3">
+        <span class="text-[12px] px-2.5 py-1 rounded bg-[rgba(246,70,93,0.15)] text-loss-red font-semibold">⚠️ 大额爆仓</span>
+        <span class="text-[12px] px-2.5 py-1 rounded-full bg-loss-red text-white font-medium">待处理</span>
+      </div>
+      <h2 class="text-[18px] font-bold leading-snug">张伟 — 合约爆仓 $320,000</h2>
+      <p class="text-[13px] text-text-tertiary mt-1"><i class="far fa-clock mr-1"></i>2026-03-27 14:23</p>
+    </div>
+
+    <!-- Associated Data Card -->
+    <div class="mx-4 mt-4 bg-dark-card rounded-xl p-4 animate-in" style="animation-delay: 0.1s">
+      <h3 class="text-[14px] font-semibold text-text-secondary mb-3">
+        <i class="fas fa-link mr-1.5 text-[12px]"></i>关联数据
+      </h3>
+      <div class="space-y-2.5">
+        <div class="flex justify-between">
+          <span class="text-[13px] text-text-tertiary">爆仓合约</span>
+          <span class="text-[13px] text-text-primary">BTC/USDT 永续 · 多单</span>
+        </div>
+        <div class="flex justify-between">
+          <span class="text-[13px] text-text-tertiary">爆仓金额</span>
+          <span class="text-[13px] font-mono font-semibold text-loss-red">$320,000</span>
+        </div>
+        <div class="flex justify-between">
+          <span class="text-[13px] text-text-tertiary">当前 BTC 价格</span>
+          <span class="text-[13px] font-mono text-text-primary">$67,420</span>
+        </div>
+        <div class="flex justify-between">
+          <span class="text-[13px] text-text-tertiary">客户总持仓</span>
+          <span class="text-[13px] font-mono text-text-primary">$4.8M</span>
+        </div>
+        <div class="h-px bg-dark-border my-1"></div>
+        <div class="flex justify-between items-center">
+          <span class="text-[13px] text-text-tertiary">本月盈利变动</span>
+          <div class="flex items-center gap-1.5">
+            <span class="text-[13px] font-mono text-profit-green">+$182,400</span>
+            <i class="fas fa-arrow-right text-[10px] text-text-tertiary"></i>
+            <span class="text-[13px] font-mono font-semibold text-loss-red">-$137,600</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- AI Action Suggestion -->
+    <div class="mx-4 mt-4 bg-dark-card rounded-xl p-4 border border-dashed border-brand-gold ai-card animate-in" style="animation-delay: 0.18s">
+      <div class="flex items-center gap-2 mb-3">
+        <span class="text-[16px]">🤖</span>
+        <h3 class="text-[14px] font-semibold text-brand-gold">AI 行动建议</h3>
+        <i class="fas fa-sparkles text-[12px] text-brand-gold"></i>
+      </div>
+      <p class="text-[13px] text-text-secondary leading-relaxed mb-3">
+        建议立即联系客户张伟。该客户偏好短线合约，性格较急，爆仓后情绪波动可能较大。
+      </p>
+      <div class="space-y-2 ml-1">
+        <div class="flex items-start gap-2">
+          <span class="text-[12px] font-mono text-brand-gold mt-0.5 flex-shrink-0">1.</span>
+          <p class="text-[13px] text-text-primary">15 分钟内通过 Telegram 主动联系</p>
+        </div>
+        <div class="flex items-start gap-2">
+          <span class="text-[12px] font-mono text-brand-gold mt-0.5 flex-shrink-0">2.</span>
+          <p class="text-[13px] text-text-primary">表达关心，避免直接提及具体亏损数字</p>
+        </div>
+        <div class="flex items-start gap-2">
+          <span class="text-[12px] font-mono text-brand-gold mt-0.5 flex-shrink-0">3.</span>
+          <p class="text-[13px] text-text-primary">可提供 VIP 手续费折扣作为安抚措施</p>
+        </div>
+        <div class="flex items-start gap-2">
+          <span class="text-[12px] font-mono text-brand-gold mt-0.5 flex-shrink-0">4.</span>
+          <p class="text-[13px] text-text-primary">如客户情绪激动，建议安排视频通话</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Talk Script -->
+    <div class="mx-4 mt-4 bg-dark-hover rounded-xl p-4 animate-in" style="animation-delay: 0.26s">
+      <div class="flex items-center justify-between mb-3">
+        <div class="flex items-center gap-2">
+          <span class="text-[16px]">💬</span>
+          <h3 class="text-[14px] font-semibold text-text-primary">参考话术</h3>
+        </div>
+        <button onclick="copyScript()" class="copy-btn text-[12px] text-brand-gold flex items-center gap-1 active:opacity-85 transition">
+          <i class="far fa-copy"></i>
+          <span id="copy-text">复制</span>
+        </button>
+      </div>
+      <div id="script-content" class="bg-dark-bg rounded-lg p-3 text-[13px] text-text-secondary leading-[1.8] border border-dark-border">
+        张总您好，我是您的专属客户经理。注意到市场刚才波动比较大，想跟您确认一下目前的情况，看看有没有什么我们可以协助的地方。<br><br>
+        我们非常重视您作为 VIP 客户的体验，针对近期的市场行情，我们可以为您提供专属的手续费优惠方案，帮助您在后续交易中降低成本。<br><br>
+        您看方便的话，我们可以简单聊几分钟？
+      </div>
+      <div class="flex gap-2 mt-3">
+        <button onclick="copyScript()" class="flex-1 h-[40px] rounded-lg border border-dark-border text-[13px] text-text-primary flex items-center justify-center gap-1.5 active:opacity-85 transition">
+          <i class="far fa-copy text-[12px]"></i> 复制话术
+        </button>
+        <button class="flex-1 h-[40px] rounded-lg text-[13px] text-brand-gold flex items-center justify-center gap-1.5 active:opacity-85 transition">
+          <i class="fas fa-pen text-[12px]"></i> 编辑
+        </button>
+      </div>
+    </div>
+
+    <!-- Action Buttons -->
+    <div id="action-area" class="px-4 mt-5 space-y-2 animate-in" style="animation-delay: 0.34s">
+      <!-- State: 待处理 (initial) -->
+      <div id="state-pending">
+        <button onclick="startTracking()" class="w-full h-[48px] bg-brand-gold text-dark-bg font-bold text-[15px] rounded-xl active:opacity-85 transition flex items-center justify-center gap-2">
+          <i class="fas fa-play text-[12px]"></i> 开始跟进
+        </button>
+        <button onclick="showIgnoreConfirm()" id="ignore-btn" class="w-full h-[44px] text-text-tertiary text-[14px] active:opacity-85 transition">
+          忽略此事件
+        </button>
+        <!-- Ignore confirm (hidden) -->
+        <div id="ignore-confirm" class="hidden mt-2 bg-dark-card rounded-xl p-3 border border-dark-border">
+          <p class="text-[13px] text-text-secondary mb-2">确定忽略此事件？忽略后仍可在事件列表中找回。</p>
+          <div class="flex gap-2">
+            <button onclick="doIgnore()" class="flex-1 h-[40px] bg-dark-hover text-loss-red text-[13px] font-medium rounded-lg active:opacity-85 transition">确定忽略</button>
+            <button onclick="document.getElementById('ignore-confirm').classList.add('hidden')" class="flex-1 h-[40px] bg-dark-hover text-text-secondary text-[13px] rounded-lg active:opacity-85 transition">取消</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- State: 跟进中 (after start) -->
+      <div id="state-tracking" class="hidden">
+        <div class="flex items-center gap-2 mb-3 px-1">
+          <span class="w-[8px] h-[8px] rounded-full bg-brand-gold animate-pulse"></span>
+          <span class="text-[13px] text-brand-gold font-medium">跟进中</span>
+          <span class="text-[11px] text-text-tertiary">· 张三 认领</span>
+        </div>
+        <button onclick="finishTracking()" class="w-full h-[48px] bg-profit-green text-white font-bold text-[15px] rounded-xl active:opacity-85 transition flex items-center justify-center gap-2">
+          <i class="fas fa-check text-[12px]"></i> 结束跟进
+        </button>
+      </div>
+
+      <!-- State: 已结束 (after finish) -->
+      <div id="state-finished" class="hidden">
+        <div class="flex items-center gap-2 px-1 py-2">
+          <span class="w-[8px] h-[8px] rounded-full bg-profit-green"></span>
+          <span class="text-[13px] text-profit-green font-medium">已结束</span>
+          <span class="text-[11px] text-text-tertiary">· 张三 于 刚刚 关闭</span>
+        </div>
+      </div>
+
+      <!-- State: 已忽略 (after ignore) -->
+      <div id="state-ignored" class="hidden">
+        <div class="flex items-center justify-between px-1 py-2">
+          <div class="flex items-center gap-2">
+            <span class="w-[8px] h-[8px] rounded-full bg-text-tertiary"></span>
+            <span class="text-[13px] text-text-tertiary font-medium">已忽略</span>
+          </div>
+          <button onclick="reopen()" class="text-[12px] text-brand-gold active:opacity-85">重新打开</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Follow-up Records -->
+    <div class="mx-4 mt-6 mb-6 animate-in" style="animation-delay: 0.4s">
+      <h3 class="text-[15px] font-semibold mb-3">跟进记录</h3>
+
+      <div id="empty-state" class="flex flex-col items-center py-8 text-text-tertiary">
+        <i class="far fa-comment-dots text-[32px] mb-2 opacity-40"></i>
+        <p class="text-[13px]">暂无跟进记录</p>
+      </div>
+
+      <!-- Follow-up input (hidden initially, shown after "开始跟进") -->
+      <div id="follow-input" class="hidden mt-4">
+        <!-- Text input -->
+        <div class="flex gap-2">
+          <input id="record-text-input" type="text" placeholder="随便说，AI 自动归类..." class="flex-1 h-[44px] bg-dark-card border border-dark-border rounded-xl px-3 text-[14px] text-text-primary placeholder-text-tertiary outline-none focus:border-brand-gold transition">
+          <button onclick="aiClassifyRecord()" class="w-[44px] h-[44px] bg-brand-gold rounded-xl flex items-center justify-center active:opacity-85 transition flex-shrink-0">
+            <i class="fas fa-paper-plane text-dark-bg text-[14px]"></i>
+          </button>
+        </div>
+        <!-- AI classified preview (hidden, shows after input) -->
+        <div id="record-preview" class="hidden mt-2 bg-dark-card rounded-xl p-3 border border-dashed border-brand-gold">
+          <div class="flex items-center gap-1.5 mb-2">
+            <i class="fas fa-wand-magic-sparkles text-[10px] text-brand-gold"></i>
+            <span class="text-[11px] text-brand-gold">AI 已归类</span>
+          </div>
+          <div class="flex items-center gap-2 mb-2">
+            <span class="text-[11px] text-text-tertiary">行动类型</span>
+            <span id="preview-action-tag" class="text-[11px] px-2 py-0.5 rounded font-medium"></span>
+          </div>
+          <p id="preview-content" class="text-[13px] text-text-secondary leading-relaxed"></p>
+          <!-- Manual override -->
+          <div class="mt-2 pt-2 border-t border-dark-border">
+            <p class="text-[11px] text-text-tertiary mb-1.5">手动修改类型：</p>
+            <div class="flex flex-wrap gap-1.5">
+              <button onclick="overrideType(this,'💰','送礼金','rgba(240,185,11,0.15)','#F0B90B')" class="action-type-opt text-[11px] px-2 py-1 rounded bg-dark-hover text-text-secondary active:opacity-85">💰 送礼金</button>
+              <button onclick="overrideType(this,'🎁','送礼物','rgba(30,136,229,0.15)','#1E88E5')" class="action-type-opt text-[11px] px-2 py-1 rounded bg-dark-hover text-text-secondary active:opacity-85">🎁 送礼物</button>
+              <button onclick="overrideType(this,'🤝','口头安抚','rgba(14,203,129,0.15)','#0ECB81')" class="action-type-opt text-[11px] px-2 py-1 rounded bg-dark-hover text-text-secondary active:opacity-85">🤝 口头安抚</button>
+              <button onclick="overrideType(this,'📨','已传达消息','rgba(94,102,115,0.2)','#EAECEF')" class="action-type-opt text-[11px] px-2 py-1 rounded bg-dark-hover text-text-secondary active:opacity-85">📨 已传达消息</button>
+              <button onclick="overrideType(this,'📝','其他','rgba(94,102,115,0.15)','#848E9C')" class="action-type-opt text-[11px] px-2 py-1 rounded bg-dark-hover text-text-secondary active:opacity-85">📝 其他</button>
+            </div>
+          </div>
+          <div class="flex gap-2 mt-3">
+            <button onclick="cancelPreview()" class="flex-1 h-[36px] bg-dark-hover text-text-secondary text-[12px] rounded-lg active:opacity-85">取消</button>
+            <button onclick="confirmRecord()" class="flex-1 h-[36px] bg-brand-gold text-dark-bg text-[12px] font-semibold rounded-lg active:opacity-85">确认提交</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    function copyScript() {
+      const el = document.getElementById('script-content');
+      const text = el.innerText;
+      navigator.clipboard.writeText(text).then(() => {
+        const copyText = document.getElementById('copy-text');
+        copyText.textContent = '已复制 ✓';
+        setTimeout(() => { copyText.textContent = '复制'; }, 2000);
+      });
+    }
+
+    function startTracking() {
+      // Switch state: pending → tracking
+      document.getElementById('state-pending').classList.add('hidden');
+      document.getElementById('state-tracking').classList.remove('hidden');
+
+      // Update status badge at top
+      const badge = document.querySelector('#action-area').closest('body').querySelector('.bg-loss-red.text-white');
+      if (badge) { badge.textContent = '跟进中'; badge.classList.remove('bg-loss-red'); badge.classList.add('bg-brand-gold', 'text-dark-bg'); }
+
+      // Show follow-up input & first record
+      document.getElementById('empty-state').classList.add('hidden');
+      document.getElementById('follow-input').classList.remove('hidden');
+
+      const records = document.createElement('div');
+      records.className = 'relative pl-4 border-l-2 border-dark-border space-y-4 mb-4';
+      records.id = 'records-timeline';
+      records.innerHTML = `
+        <div class="relative">
+          <div class="absolute -left-[21px] top-1 w-[8px] h-[8px] bg-brand-gold rounded-full"></div>
+          <p class="text-[12px] text-text-tertiary">刚刚 — 张三</p>
+          <p class="text-[13px] text-text-secondary mt-0.5">开始跟进此事件</p>
+        </div>
+      `;
+      document.getElementById('follow-input').before(records);
+    }
+
+    function finishTracking() {
+      // Switch state: tracking → finished
+      document.getElementById('state-tracking').classList.add('hidden');
+      document.getElementById('state-finished').classList.remove('hidden');
+
+      // Add finish record
+      const timeline = document.getElementById('records-timeline');
+      if (timeline) {
+        const entry = document.createElement('div');
+        entry.className = 'relative';
+        entry.innerHTML = `
+          <div class="absolute -left-[21px] top-1 w-[8px] h-[8px] bg-profit-green rounded-full"></div>
+          <p class="text-[12px] text-text-tertiary">刚刚 — 张三</p>
+          <p class="text-[13px] text-profit-green mt-0.5 font-medium">已结束跟进</p>
+        `;
+        timeline.prepend(entry);
+      }
+
+      // Hide input
+      document.getElementById('follow-input').classList.add('hidden');
+    }
+
+    function showIgnoreConfirm() {
+      document.getElementById('ignore-confirm').classList.remove('hidden');
+    }
+
+    function doIgnore() {
+      // Switch state: pending → ignored
+      document.getElementById('state-pending').classList.add('hidden');
+      document.getElementById('state-ignored').classList.remove('hidden');
+    }
+
+    function reopen() {
+      // Switch state: ignored → pending
+      document.getElementById('state-ignored').classList.add('hidden');
+      document.getElementById('state-pending').classList.remove('hidden');
+      document.getElementById('ignore-confirm').classList.add('hidden');
+    }
+
+    // Current classified result
+    let currentAction = { icon: '', label: '', bg: '', color: '', content: '' };
+
+    const ACTION_RULES = [
+      { keywords: ['礼金', '返佣', '补贴', '折扣', '手续费', '优惠', '减免', '返还'], icon: '💰', label: '送礼金', bg: 'rgba(240,185,11,0.15)', color: '#F0B90B' },
+      { keywords: ['礼物', '礼品', '送了', '赠送', '寄出', '快递', '红酒', '茶叶'], icon: '🎁', label: '送礼物', bg: 'rgba(30,136,229,0.15)', color: '#1E88E5' },
+      { keywords: ['安抚', '安慰', '情绪', '关心', '表示理解', '道歉', '抱歉', '聊了', '沟通'], icon: '🤝', label: '口头安抚', bg: 'rgba(14,203,129,0.15)', color: '#0ECB81' },
+      { keywords: ['通知', '告知', '传达', '转告', '同步', '已说', '已回', '消息', '反馈给', '工单'], icon: '📨', label: '已传达消息', bg: 'rgba(94,102,115,0.2)', color: '#EAECEF' },
+    ];
+
+    function aiClassifyRecord() {
+      const input = document.getElementById('record-text-input');
+      const text = input.value.trim();
+      if (!text) return;
+
+      // AI classify
+      let matched = ACTION_RULES.find(r => r.keywords.some(k => text.includes(k)));
+      if (!matched) matched = { icon: '📝', label: '其他', bg: 'rgba(94,102,115,0.15)', color: '#848E9C' };
+
+      currentAction = { ...matched, content: text };
+
+      // Show preview
+      const tag = document.getElementById('preview-action-tag');
+      tag.textContent = matched.icon + ' ' + matched.label;
+      tag.style.background = matched.bg;
+      tag.style.color = matched.color;
+      document.getElementById('preview-content').textContent = text;
+      document.getElementById('record-preview').classList.remove('hidden');
+    }
+
+    function overrideType(btn, icon, label, bg, color) {
+      currentAction.icon = icon;
+      currentAction.label = label;
+      currentAction.bg = bg;
+      currentAction.color = color;
+      const tag = document.getElementById('preview-action-tag');
+      tag.textContent = icon + ' ' + label;
+      tag.style.background = bg;
+      tag.style.color = color;
+      // Highlight selected
+      document.querySelectorAll('.action-type-opt').forEach(b => {
+        b.classList.remove('border', 'border-brand-gold');
+        b.classList.add('bg-dark-hover');
+      });
+      btn.classList.add('border', 'border-brand-gold');
+    }
+
+    function cancelPreview() {
+      document.getElementById('record-preview').classList.add('hidden');
+    }
+
+    function confirmRecord() {
+      const timeline = document.getElementById('records-timeline');
+      if (timeline) {
+        const entry = document.createElement('div');
+        entry.className = 'relative';
+        entry.innerHTML = `
+          <div class="absolute -left-[21px] top-1 w-[8px] h-[8px] bg-brand-gold rounded-full"></div>
+          <p class="text-[12px] text-text-tertiary">刚刚 — 张三</p>
+          <div class="flex items-center gap-1.5 mt-0.5">
+            <span class="text-[10px] px-1.5 py-0.5 rounded font-medium" style="background:${currentAction.bg};color:${currentAction.color}">${currentAction.icon} ${currentAction.label}</span>
+          </div>
+          <p class="text-[13px] text-text-secondary mt-0.5">${currentAction.content}</p>
+        `;
+        timeline.prepend(entry);
+      }
+      document.getElementById('record-text-input').value = '';
+      cancelPreview();
+    }
+
+    // Enter key
+    document.addEventListener('DOMContentLoaded', function() {
+      const ri = document.getElementById('record-text-input');
+      if (ri) ri.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter') { e.preventDefault(); aiClassifyRecord(); }
+      });
+    });
+  </script>
+
+</body>
+</html>
