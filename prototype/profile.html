@@ -6,6 +6,7 @@
   <title>Sales Hub — 我的</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <script src="mock-data.js"></script>
   <script>
     tailwind.config = {
       theme: {
@@ -48,8 +49,6 @@
   </style>
 </head>
 <body class="bg-dark-bg text-text-primary w-full min-h-screen flex flex-col">
-
-  <!-- Status Bar -->
   <div class="h-[44px] flex items-end justify-between px-6 pb-1 bg-dark-bg sticky top-0 z-50">
     <span class="text-[14px] font-semibold">14:23</span>
     <div class="flex items-center gap-1">
@@ -59,67 +58,18 @@
     </div>
   </div>
 
-  <!-- Top Navigation -->
   <div class="h-[56px] flex items-center justify-between px-4 bg-dark-bg sticky top-[44px] z-50 border-b border-dark-border">
     <h1 class="text-[18px] font-bold">我的</h1>
     <div class="w-[44px] h-[44px]"></div>
   </div>
 
-  <!-- Content -->
   <div class="flex-1 overflow-y-auto pb-[90px]">
+    <div id="profile-card" class="mx-4 mt-5 animate-in" style="animation-delay: 0.05s"></div>
+    <div id="owner-switcher" class="px-4 mt-3 animate-in" style="animation-delay: 0.1s"></div>
+    <div id="stats-grid" class="grid grid-cols-3 gap-3 px-4 mt-4 animate-in" style="animation-delay: 0.12s"></div>
+    <div id="chart-card" class="mx-4 mt-4 animate-in" style="animation-delay: 0.2s"></div>
+    <div id="focus-card" class="mx-4 mt-4 animate-in" style="animation-delay: 0.24s"></div>
 
-    <!-- Profile Card -->
-    <div class="mx-4 mt-5 bg-dark-card rounded-xl p-5 flex flex-col items-center animate-in" style="animation-delay: 0.05s">
-      <div class="relative">
-        <img src="https://ui-avatars.com/api/?name=张三&background=F0B90B&color=0B0E11&size=96&font-size=0.4&bold=true" class="w-[72px] h-[72px] rounded-full" alt="张三">
-        <div class="absolute -bottom-1 -right-1 w-[22px] h-[22px] bg-profit-green rounded-full border-2 border-dark-card flex items-center justify-center">
-          <i class="fas fa-check text-[9px] text-white"></i>
-        </div>
-      </div>
-      <h2 class="text-[18px] font-bold mt-3">张三</h2>
-      <p class="text-[13px] text-text-secondary mt-0.5">高级客户经理</p>
-      <div class="flex items-center gap-1 mt-1">
-        <span class="text-[11px] px-2 py-0.5 rounded bg-[rgba(240,185,11,0.12)] text-brand-gold">BD Team A</span>
-      </div>
-    </div>
-
-    <!-- Stats -->
-    <div class="grid grid-cols-3 gap-3 px-4 mt-4 animate-in" style="animation-delay: 0.12s">
-      <div class="bg-dark-card rounded-xl p-3 text-center">
-        <p class="text-[22px] font-bold font-mono text-brand-gold">47</p>
-        <p class="text-[11px] text-text-secondary mt-0.5">管理客户</p>
-      </div>
-      <div class="bg-dark-card rounded-xl p-3 text-center">
-        <p class="text-[22px] font-bold font-mono text-text-primary">34</p>
-        <p class="text-[11px] text-text-secondary mt-0.5">本月事件</p>
-      </div>
-      <div class="bg-dark-card rounded-xl p-3 text-center">
-        <p class="text-[22px] font-bold font-mono text-profit-green">85%</p>
-        <p class="text-[11px] text-text-secondary mt-0.5">完成率</p>
-      </div>
-    </div>
-
-    <!-- Performance Mini Chart -->
-    <div class="mx-4 mt-4 bg-dark-card rounded-xl p-4 animate-in" style="animation-delay: 0.2s">
-      <h3 class="text-[14px] font-semibold text-text-secondary mb-3">本月业绩</h3>
-      <div class="flex items-end gap-1.5 h-[60px]">
-        <div class="flex-1 bg-dark-hover rounded-t" style="height: 40%"><div class="w-full bg-brand-gold rounded-t h-full opacity-40"></div></div>
-        <div class="flex-1 bg-dark-hover rounded-t" style="height: 55%"><div class="w-full bg-brand-gold rounded-t h-full opacity-50"></div></div>
-        <div class="flex-1 bg-dark-hover rounded-t" style="height: 45%"><div class="w-full bg-brand-gold rounded-t h-full opacity-50"></div></div>
-        <div class="flex-1 bg-dark-hover rounded-t" style="height: 70%"><div class="w-full bg-brand-gold rounded-t h-full opacity-60"></div></div>
-        <div class="flex-1 bg-dark-hover rounded-t" style="height: 60%"><div class="w-full bg-brand-gold rounded-t h-full opacity-60"></div></div>
-        <div class="flex-1 bg-dark-hover rounded-t" style="height: 80%"><div class="w-full bg-brand-gold rounded-t h-full opacity-70"></div></div>
-        <div class="flex-1 bg-dark-hover rounded-t" style="height: 85%"><div class="w-full bg-brand-gold rounded-t h-full"></div></div>
-      </div>
-      <div class="flex justify-between mt-2">
-        <span class="text-[10px] text-text-tertiary">W1</span>
-        <span class="text-[10px] text-text-tertiary">W2</span>
-        <span class="text-[10px] text-text-tertiary">W3</span>
-        <span class="text-[10px] text-text-tertiary font-semibold text-brand-gold">本周</span>
-      </div>
-    </div>
-
-    <!-- Menu List -->
     <div class="mx-4 mt-4 bg-dark-card rounded-xl overflow-hidden animate-in" style="animation-delay: 0.28s">
       <a href="#" class="menu-item flex items-center justify-between px-4 py-3.5 border-b border-dark-border active:opacity-85">
         <div class="flex items-center gap-3">
@@ -150,7 +100,7 @@
           <span class="text-[14px]">关于 Sales Hub</span>
         </div>
         <div class="flex items-center gap-2">
-          <span class="text-[13px] text-text-tertiary">v1.0.0</span>
+          <span class="text-[13px] text-text-tertiary">v1.1.0</span>
           <i class="fas fa-chevron-right text-[12px] text-text-tertiary"></i>
         </div>
       </a>
@@ -164,10 +114,8 @@
         <i class="fas fa-chevron-right text-[12px] text-text-tertiary"></i>
       </a>
     </div>
-
   </div>
 
-  <!-- Bottom Tab Bar -->
   <div class="fixed-bar bg-dark-card border-t border-dark-border z-50">
     <div class="flex items-center justify-around h-[56px]">
       <a href="clients.html" class="flex flex-col items-center gap-0.5 min-w-[44px] min-h-[44px] justify-center active:opacity-85">
@@ -191,13 +139,234 @@
   </div>
 
   <div id="toast" class="fixed top-[120px] left-1/2 -translate-x-1/2 bg-dark-card text-text-primary text-[13px] px-4 py-2 rounded-lg border border-dark-border shadow-lg z-[200] opacity-0 pointer-events-none transition-opacity duration-200"></div>
+
   <script>
+    const DATA = window.PROTOTYPE_DATA || {};
+    const CLIENTS = Array.isArray(DATA.clients) ? DATA.clients : [];
+    const EVENTS = Array.isArray(DATA.events) ? DATA.events : [];
+    const params = new URLSearchParams(window.location.search);
+    const ownerPalette = ['A', 'B', 'C', 'D', 'E'];
+
+    function escapeHtml(text) {
+      return String(text)
+        .replaceAll('&', '&amp;')
+        .replaceAll('<', '&lt;')
+        .replaceAll('>', '&gt;')
+        .replaceAll('"', '&quot;')
+        .replaceAll("'", '&#39;');
+    }
+
+    function formatMoney(value) {
+      if (Math.abs(value) >= 1_000_000) return `$${(value / 1_000_000).toFixed(1)}M`;
+      if (Math.abs(value) >= 1_000) return `$${Math.round(value / 1_000)}K`;
+      return `$${Math.round(value)}`;
+    }
+
+    function buildOwnerSummaries() {
+      const grouped = new Map();
+
+      CLIENTS.forEach(client => {
+        if (!grouped.has(client.bdOwner)) {
+          grouped.set(client.bdOwner, { name: client.bdOwner, clients: [], events: [] });
+        }
+        grouped.get(client.bdOwner).clients.push(client);
+      });
+
+      EVENTS.forEach(event => {
+        const client = DATA.clientsById?.[event.clientUid];
+        if (!client) return;
+        const owner = grouped.get(client.bdOwner);
+        if (owner) owner.events.push(event);
+      });
+
+      return Array.from(grouped.values())
+        .map((owner, index) => {
+          const sortedClients = [...owner.clients].sort((a, b) => Number(b.n90) - Number(a.n90));
+          const completedEvents = owner.events.filter(event => ['已结束', '已忽略'].includes(event.state)).length;
+          const activeEvents = owner.events.filter(event => ['未开始', '跟进中'].includes(event.state)).length;
+          const totalAssets = owner.clients.reduce((sum, client) => sum + Number(client.f90 || 0) * 0.79, 0);
+          const totalN90 = owner.clients.reduce((sum, client) => sum + Number(client.n90 || 0), 0);
+          const chartValues = sortedClients.slice(0, 7).map(client => Number(client.n90 || 0));
+          const maxChart = Math.max(...chartValues, 1);
+
+          return {
+            index,
+            name: owner.name,
+            role: owner.clients.length >= 20 ? '高级客户经理' : '客户经理',
+            team: `BD Team ${ownerPalette[index % ownerPalette.length]}`,
+            clientCount: owner.clients.length,
+            eventCount: owner.events.length,
+            activeEvents,
+            completionRate: owner.events.length ? Math.round((completedEvents / owner.events.length) * 100) : 100,
+            totalAssets,
+            totalN90,
+            topClients: sortedClients.slice(0, 3),
+            chartBars: chartValues.map((value, chartIndex) => ({
+              label: `Top${chartIndex + 1}`,
+              height: `${Math.max(28, Math.round((value / maxChart) * 100))}%`,
+              opacity: (0.45 + chartIndex * 0.07).toFixed(2),
+            })),
+          };
+        })
+        .sort((a, b) => b.clientCount - a.clientCount || b.eventCount - a.eventCount || b.totalN90 - a.totalN90);
+    }
+
+    const ownerSummaries = buildOwnerSummaries();
+    let activeOwnerIndex = Math.max(
+      0,
+      ownerSummaries.findIndex(owner => owner.name === params.get('owner'))
+    );
+
+    function activeOwner() {
+      return ownerSummaries[activeOwnerIndex];
+    }
+
+    function renderEmpty() {
+      document.getElementById('profile-card').innerHTML = `
+        <div class="bg-dark-card rounded-xl p-5 text-center text-text-secondary">
+          当前没有可用的 BD 数据
+        </div>`;
+      document.getElementById('owner-switcher').innerHTML = '';
+      document.getElementById('stats-grid').innerHTML = '';
+      document.getElementById('chart-card').innerHTML = '';
+      document.getElementById('focus-card').innerHTML = '';
+    }
+
+    function renderProfileCard() {
+      const owner = activeOwner();
+      if (!owner) return renderEmpty();
+      document.title = `Sales Hub — 我的 · ${owner.name}`;
+      document.getElementById('profile-card').innerHTML = `
+        <div class="bg-dark-card rounded-xl p-5 flex flex-col items-center">
+          <div class="relative">
+            <img src="https://ui-avatars.com/api/?name=${encodeURIComponent(owner.name)}&background=F0B90B&color=0B0E11&size=96&font-size=0.4&bold=true" class="w-[72px] h-[72px] rounded-full" alt="${escapeHtml(owner.name)}">
+            <div class="absolute -bottom-1 -right-1 w-[22px] h-[22px] bg-profit-green rounded-full border-2 border-dark-card flex items-center justify-center">
+              <i class="fas fa-check text-[9px] text-white"></i>
+            </div>
+          </div>
+          <h2 class="text-[18px] font-bold mt-3">${escapeHtml(owner.name)}</h2>
+          <p class="text-[13px] text-text-secondary mt-0.5">${escapeHtml(owner.role)}</p>
+          <div class="flex items-center gap-1 mt-1">
+            <span class="text-[11px] px-2 py-0.5 rounded bg-[rgba(240,185,11,0.12)] text-brand-gold">${escapeHtml(owner.team)}</span>
+            <span class="text-[11px] px-2 py-0.5 rounded bg-[rgba(14,203,129,0.12)] text-profit-green">${owner.activeEvents} 个活跃事件</span>
+          </div>
+          <p class="text-[12px] text-text-secondary mt-3 text-center leading-relaxed">
+            当前负责 ${owner.clientCount} 位客户，重点覆盖高价值和高潜客群，页面数据全部来自共享 mock data contract。
+          </p>
+        </div>`;
+    }
+
+    function renderOwnerSwitcher() {
+      const owner = activeOwner();
+      if (!owner) return;
+      document.getElementById('owner-switcher').innerHTML = `
+        <div class="flex gap-2 overflow-x-auto no-scrollbar">
+          ${ownerSummaries.map((item, index) => `
+            <button onclick="switchOwner(${index})"
+              class="shrink-0 rounded-full px-3 py-1.5 text-[11px] ${index === activeOwnerIndex ? 'bg-brand-gold text-dark-bg font-semibold' : 'bg-dark-card text-text-secondary border border-dark-border'}">
+              ${escapeHtml(item.name)} · ${item.clientCount}
+            </button>`).join('')}
+        </div>`;
+    }
+
+    function renderStats() {
+      const owner = activeOwner();
+      if (!owner) return;
+      document.getElementById('stats-grid').innerHTML = `
+        <div class="bg-dark-card rounded-xl p-3 text-center">
+          <p class="text-[22px] font-bold font-mono text-brand-gold">${owner.clientCount}</p>
+          <p class="text-[11px] text-text-secondary mt-0.5">管理客户</p>
+        </div>
+        <div class="bg-dark-card rounded-xl p-3 text-center">
+          <p class="text-[22px] font-bold font-mono text-text-primary">${owner.eventCount}</p>
+          <p class="text-[11px] text-text-secondary mt-0.5">关联事件</p>
+        </div>
+        <div class="bg-dark-card rounded-xl p-3 text-center">
+          <p class="text-[22px] font-bold font-mono text-profit-green">${owner.completionRate}%</p>
+          <p class="text-[11px] text-text-secondary mt-0.5">闭环率</p>
+        </div>`;
+    }
+
+    function renderChart() {
+      const owner = activeOwner();
+      if (!owner) return;
+      document.getElementById('chart-card').innerHTML = `
+        <div class="bg-dark-card rounded-xl p-4">
+          <div class="flex items-center justify-between mb-3">
+            <h3 class="text-[14px] font-semibold text-text-secondary">客户贡献结构</h3>
+            <span class="text-[11px] text-brand-gold">${formatMoney(owner.totalN90)} 净贡献</span>
+          </div>
+          <div class="flex items-end gap-1.5 h-[60px]">
+            ${owner.chartBars.map(bar => `
+              <div class="flex-1 bg-dark-hover rounded-t" style="height:${bar.height}">
+                <div class="w-full bg-brand-gold rounded-t h-full" style="opacity:${bar.opacity}"></div>
+              </div>`).join('')}
+          </div>
+          <div class="flex justify-between mt-2">
+            ${owner.chartBars.map((bar, index) => `
+              <span class="text-[10px] ${index === owner.chartBars.length - 1 ? 'text-brand-gold font-semibold' : 'text-text-tertiary'}">${bar.label}</span>`).join('')}
+          </div>
+          <p class="text-[11px] text-text-secondary mt-3">当前资沉规模 ${formatMoney(owner.totalAssets)}，由该 BD 负责客户的共享数据即时汇总。</p>
+        </div>`;
+    }
+
+    function renderFocusCard() {
+      const owner = activeOwner();
+      if (!owner) return;
+      document.getElementById('focus-card').innerHTML = `
+        <div class="bg-dark-card rounded-xl p-4">
+          <div class="flex items-center justify-between mb-3">
+            <h3 class="text-[14px] font-semibold">当前重点客户</h3>
+            <span class="text-[11px] text-text-secondary">Top 3</span>
+          </div>
+          ${owner.topClients.map(client => {
+            const relatedEvents = EVENTS.filter(event => event.clientUid === client.uid && ['未开始', '跟进中'].includes(event.state)).length;
+            return `
+              <a href="${escapeHtml(client.detailHref)}" class="block rounded-xl border border-dark-border px-3 py-3 mb-2 last:mb-0 active:bg-dark-hover">
+                <div class="flex items-center justify-between gap-3">
+                  <div class="min-w-0">
+                    <div class="flex items-center gap-2 mb-1 flex-wrap">
+                      <span class="text-[14px] font-semibold">${escapeHtml(client.name)}</span>
+                      <span class="text-[10px] px-2 py-0.5 rounded bg-[rgba(240,185,11,0.12)] text-brand-gold">${escapeHtml(client.label)}</span>
+                    </div>
+                    <p class="text-[12px] text-text-secondary truncate">${escapeHtml(client.currentAssetsDisplay)} 资沉 · ${relatedEvents} 个活跃事件</p>
+                  </div>
+                  <div class="text-right shrink-0">
+                    <div class="text-[14px] font-bold text-brand-gold">${escapeHtml(client.n90Display)}</div>
+                    <div class="text-[11px] text-text-tertiary">UID ${escapeHtml(client.uid)}</div>
+                  </div>
+                </div>
+              </a>`;
+          }).join('')}
+        </div>`;
+    }
+
+    function switchOwner(index) {
+      activeOwnerIndex = index;
+      const nextOwner = activeOwner();
+      const url = new URL(window.location.href);
+      url.searchParams.set('owner', nextOwner.name);
+      window.history.replaceState({}, '', url);
+      renderPage();
+    }
+
+    function renderPage() {
+      if (!ownerSummaries.length) return renderEmpty();
+      renderProfileCard();
+      renderOwnerSwitcher();
+      renderStats();
+      renderChart();
+      renderFocusCard();
+    }
+
     function showToast(msg) {
       const t = document.getElementById('toast');
       t.textContent = msg;
       t.style.opacity = '1';
       setTimeout(() => { t.style.opacity = '0'; }, 1800);
     }
+
+    renderPage();
   </script>
 </body>
 </html>
