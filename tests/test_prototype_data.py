@@ -39,6 +39,15 @@ class PrototypeDataContractTest(unittest.TestCase):
         client_ids = set(self.data["clientsById"])
         for event in self.data["events"]:
             self.assertIn(event["clientUid"], client_ids)
+            self.assertEqual(event["href"], event_thread_href(event["id"]))
+            self.assertEqual(event["thread"]["id"], event["id"])
+            self.assertEqual(event["thread"]["clientUid"], event["clientUid"])
+
+    def test_related_event_ids_resolve_to_same_client(self):
+        for client in self.data["clients"]:
+            for event_id in client["relatedEventIds"]:
+                event = self.data["eventsById"][event_id]
+                self.assertEqual(event["clientUid"], client["uid"])
 
     def test_js_payload_exports_window_contract(self):
         payload = serialize_mock_data_js(self.data)

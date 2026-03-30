@@ -6,6 +6,7 @@
   <title>Sales Hub — 事件中心</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <script src="mock-data.js"></script>
   <script>
     tailwind.config = {
       theme: {
@@ -16,7 +17,6 @@
             'hub-card-hover': '#2B3139',
             'hub-border': '#2E3440',
             'hub-gold': '#F0B90B',
-            'hub-gold-dim': '#B8860B',
             'hub-gold-text': '#F8D33A',
             'hub-red': '#F6465D',
             'hub-green': '#0ECB81',
@@ -40,8 +40,6 @@
   </style>
 </head>
 <body class="bg-hub-bg text-hub-text w-full min-h-screen flex flex-col">
-
-  <!-- iOS Status Bar -->
   <div class="h-[44px] flex items-end justify-between px-6 pb-1 bg-hub-bg sticky top-0 z-50">
     <span class="text-[14px] font-semibold">14:23</span>
     <div class="flex items-center gap-1.5">
@@ -51,7 +49,6 @@
     </div>
   </div>
 
-  <!-- Top Nav -->
   <div class="h-[52px] flex items-center justify-between px-4 bg-hub-bg sticky top-[44px] z-40 border-b border-hub-border">
     <div class="w-8"></div>
     <span class="text-[17px] font-semibold text-hub-text">事件中心</span>
@@ -59,293 +56,21 @@
       <button class="w-8 h-8 flex items-center justify-center">
         <i class="fa-solid fa-sliders text-hub-muted text-[16px]"></i>
       </button>
-      <span class="absolute -top-0.5 -right-0.5 w-[16px] h-[16px] rounded-full bg-hub-red text-white text-[8px] font-bold flex items-center justify-center leading-none">3</span>
+      <span id="open-count" class="absolute -top-0.5 -right-0.5 w-[16px] h-[16px] rounded-full bg-hub-red text-white text-[8px] font-bold flex items-center justify-center leading-none">0</span>
     </div>
   </div>
 
-  <!-- State Filter Tabs -->
-  <div class="flex bg-hub-bg border-b border-hub-border sticky top-[96px] z-30">
-    <button class="state-tab flex-1 text-center py-3 text-[12px] border-b-2 border-[#F0B90B] text-[#F0B90B] font-semibold" data-tab="全部" onclick="filterByState('全部')">全部 12</button>
-    <button class="state-tab flex-1 text-center py-3 text-[12px] text-hub-muted" data-tab="未开始" onclick="filterByState('未开始')">未开始 3</button>
-    <button class="state-tab flex-1 text-center py-3 text-[12px] text-hub-muted" data-tab="跟进中" onclick="filterByState('跟进中')">跟进中 2</button>
-    <button class="state-tab flex-1 text-center py-3 text-[12px] text-hub-muted" data-tab="已结束" onclick="filterByState('已结束')">已结束 5</button>
-    <button class="state-tab flex-1 text-center py-3 text-[12px] text-hub-muted" data-tab="已忽略" onclick="filterByState('已忽略')">已忽略 2</button>
-  </div>
+  <div id="state-tabs" class="flex bg-hub-bg border-b border-hub-border sticky top-[96px] z-30"></div>
+  <div id="type-pills" class="px-4 py-2 flex gap-2 overflow-x-auto no-scrollbar bg-hub-bg sticky top-[148px] z-20"></div>
 
-  <!-- Event Type Pills -->
-  <div class="px-4 py-2 flex gap-2 overflow-x-auto no-scrollbar bg-hub-bg sticky top-[148px] z-20">
-    <button class="type-pill rounded-full px-3 py-1 text-[11px] whitespace-nowrap bg-[#F0B90B] text-[#0B0E11] font-semibold" data-type="全部" onclick="filterByType('全部')">全部</button>
-    <button class="type-pill rounded-full px-3 py-1 text-[11px] whitespace-nowrap bg-hub-card text-hub-muted border border-hub-border" data-type="出金预警" onclick="filterByType('出金预警')">出金预警</button>
-    <button class="type-pill rounded-full px-3 py-1 text-[11px] whitespace-nowrap bg-hub-card text-hub-muted border border-hub-border" data-type="爆仓" onclick="filterByType('爆仓')">爆仓</button>
-    <button class="type-pill rounded-full px-3 py-1 text-[11px] whitespace-nowrap bg-hub-card text-hub-muted border border-hub-border" data-type="盈利" onclick="filterByType('盈利')">盈利</button>
-    <button class="type-pill rounded-full px-3 py-1 text-[11px] whitespace-nowrap bg-hub-card text-hub-muted border border-hub-border" data-type="充值" onclick="filterByType('充值')">充值</button>
-    <button class="type-pill rounded-full px-3 py-1 text-[11px] whitespace-nowrap bg-hub-card text-hub-muted border border-hub-border" data-type="人工" onclick="filterByType('人工')">人工</button>
-  </div>
-
-  <!-- Event List -->
-  <div class="px-4 pb-[90px] flex-1 overflow-y-auto no-scrollbar" id="event-list">
-
-    <!-- 1 王伟明 大额出金预警 未开始 -->
-    <div class="event-card bg-hub-card rounded-xl border border-hub-border p-4 mb-2 flex items-start gap-3 cursor-pointer active:bg-hub-card-hover"
-         data-state="未开始" data-type="出金预警"
-         onclick="window.location.href='event-thread.html'">
-      <div class="w-10 h-10 rounded-xl bg-[#2D1B1E] flex items-center justify-center flex-shrink-0">
-        <i class="fa-solid fa-triangle-exclamation text-[#F6465D] text-[16px]"></i>
-      </div>
-      <div class="flex-1 min-w-0">
-        <div class="flex items-center justify-between mb-1">
-          <span class="text-[14px] font-semibold text-hub-text">大额出金预警</span>
-          <div class="flex items-center gap-1.5 flex-shrink-0 ml-2">
-            <span class="bg-[#2D1B00] text-[#F0B90B] text-[10px] px-2 py-0.5 rounded-full">未开始</span>
-            <span class="text-[11px] text-hub-disabled">10分钟前</span>
-          </div>
-        </div>
-        <p class="text-[12px] text-hub-muted mb-1 truncate">王伟明 · $2.1M出金</p>
-        <p class="text-[12px] text-[#F0B90B] truncate">建议: 致电确认留存意向</p>
-      </div>
-      <i class="fa-solid fa-chevron-right text-hub-muted text-[12px] flex-shrink-0 mt-1"></i>
-    </div>
-
-    <!-- 2 吴建国 首次合约充值 未开始 -->
-    <div class="event-card bg-hub-card rounded-xl border border-hub-border p-4 mb-2 flex items-start gap-3 cursor-pointer active:bg-hub-card-hover"
-         data-state="未开始" data-type="充值"
-         onclick="window.location.href='event-thread.html'">
-      <div class="w-10 h-10 rounded-xl bg-[#2D2010] flex items-center justify-center flex-shrink-0">
-        <i class="fa-solid fa-bolt text-[#F0B90B] text-[16px]"></i>
-      </div>
-      <div class="flex-1 min-w-0">
-        <div class="flex items-center justify-between mb-1">
-          <span class="text-[14px] font-semibold text-hub-text">首次合约充值</span>
-          <div class="flex items-center gap-1.5 flex-shrink-0 ml-2">
-            <span class="bg-[#2D1B00] text-[#F0B90B] text-[10px] px-2 py-0.5 rounded-full">未开始</span>
-            <span class="text-[11px] text-hub-disabled">1小时前</span>
-          </div>
-        </div>
-        <p class="text-[12px] text-hub-muted mb-1 truncate">吴建国 · $500K充入合约</p>
-        <p class="text-[12px] text-[#F0B90B] truncate">建议: 致电欢迎引导合约</p>
-      </div>
-      <i class="fa-solid fa-chevron-right text-hub-muted text-[12px] flex-shrink-0 mt-1"></i>
-    </div>
-
-    <!-- 3 郑梦琪 本月盈利超阈值 未开始 -->
-    <div class="event-card bg-hub-card rounded-xl border border-hub-border p-4 mb-2 flex items-start gap-3 cursor-pointer active:bg-hub-card-hover"
-         data-state="未开始" data-type="盈利"
-         onclick="window.location.href='event-thread.html'">
-      <div class="w-10 h-10 rounded-xl bg-[#2D2010] flex items-center justify-center flex-shrink-0">
-        <i class="fa-solid fa-bolt text-[#F0B90B] text-[16px]"></i>
-      </div>
-      <div class="flex-1 min-w-0">
-        <div class="flex items-center justify-between mb-1">
-          <span class="text-[14px] font-semibold text-hub-text">本月盈利超阈值</span>
-          <div class="flex items-center gap-1.5 flex-shrink-0 ml-2">
-            <span class="bg-[#2D1B00] text-[#F0B90B] text-[10px] px-2 py-0.5 rounded-full">未开始</span>
-            <span class="text-[11px] text-hub-disabled">3小时前</span>
-          </div>
-        </div>
-        <p class="text-[12px] text-hub-muted mb-1 truncate">郑梦琪 · 盈利$82K</p>
-        <p class="text-[12px] text-[#F0B90B] truncate">建议: 发送祝贺推介VIP</p>
-      </div>
-      <i class="fa-solid fa-chevron-right text-hub-muted text-[12px] flex-shrink-0 mt-1"></i>
-    </div>
-
-    <!-- 4 陈浩然 大额爆仓警告 跟进中 -->
-    <div class="event-card bg-hub-card rounded-xl border border-hub-border p-4 mb-2 flex items-start gap-3 cursor-pointer active:bg-hub-card-hover"
-         data-state="跟进中" data-type="爆仓"
-         onclick="window.location.href='event-thread.html'">
-      <div class="w-10 h-10 rounded-xl bg-[#2D1B1E] flex items-center justify-center flex-shrink-0">
-        <i class="fa-solid fa-triangle-exclamation text-[#F6465D] text-[16px]"></i>
-      </div>
-      <div class="flex-1 min-w-0">
-        <div class="flex items-center justify-between mb-1">
-          <span class="text-[14px] font-semibold text-hub-text">大额爆仓警告</span>
-          <div class="flex items-center gap-1.5 flex-shrink-0 ml-2">
-            <span class="bg-[#0D1F2D] text-[#4DA6FF] text-[10px] px-2 py-0.5 rounded-full">跟进中</span>
-            <span class="text-[11px] text-hub-disabled">昨天</span>
-          </div>
-        </div>
-        <p class="text-[12px] text-hub-muted mb-1 truncate">陈浩然 · 爆仓$340K</p>
-        <p class="text-[12px] text-[#F0B90B] truncate">建议: 情绪安抚了解后续</p>
-      </div>
-      <i class="fa-solid fa-chevron-right text-hub-muted text-[12px] flex-shrink-0 mt-1"></i>
-    </div>
-
-    <!-- 5 张晓峰 持续提现提醒 跟进中 -->
-    <div class="event-card bg-hub-card rounded-xl border border-hub-border p-4 mb-2 flex items-start gap-3 cursor-pointer active:bg-hub-card-hover"
-         data-state="跟进中" data-type="出金预警"
-         onclick="window.location.href='event-thread.html'">
-      <div class="w-10 h-10 rounded-xl bg-[#2D2010] flex items-center justify-center flex-shrink-0">
-        <i class="fa-solid fa-bolt text-[#F0B90B] text-[16px]"></i>
-      </div>
-      <div class="flex-1 min-w-0">
-        <div class="flex items-center justify-between mb-1">
-          <span class="text-[14px] font-semibold text-hub-text">持续提现提醒</span>
-          <div class="flex items-center gap-1.5 flex-shrink-0 ml-2">
-            <span class="bg-[#0D1F2D] text-[#4DA6FF] text-[10px] px-2 py-0.5 rounded-full">跟进中</span>
-            <span class="text-[11px] text-hub-disabled">昨天</span>
-          </div>
-        </div>
-        <p class="text-[12px] text-hub-muted mb-1 truncate">张晓峰 · 累计$4.3M</p>
-        <p class="text-[12px] text-[#F0B90B] truncate">建议: 询问挽留资产</p>
-      </div>
-      <i class="fa-solid fa-chevron-right text-hub-muted text-[12px] flex-shrink-0 mt-1"></i>
-    </div>
-
-    <!-- 6 孙嘉琪 客户大额亏损 已结束 -->
-    <div class="event-card bg-hub-card rounded-xl border border-hub-border p-4 mb-2 flex items-start gap-3 cursor-pointer active:bg-hub-card-hover"
-         data-state="已结束" data-type="爆仓"
-         onclick="window.location.href='event-thread.html'">
-      <div class="w-10 h-10 rounded-xl bg-[#2D1B1E] flex items-center justify-center flex-shrink-0">
-        <i class="fa-solid fa-triangle-exclamation text-[#F6465D] text-[16px]"></i>
-      </div>
-      <div class="flex-1 min-w-0">
-        <div class="flex items-center justify-between mb-1">
-          <span class="text-[14px] font-semibold text-hub-text">客户大额亏损</span>
-          <div class="flex items-center gap-1.5 flex-shrink-0 ml-2">
-            <span class="bg-[#0D2620] text-[#0ECB81] text-[10px] px-2 py-0.5 rounded-full">已结束</span>
-            <span class="text-[11px] text-hub-disabled">3天前</span>
-          </div>
-        </div>
-        <p class="text-[12px] text-hub-muted mb-1 truncate">孙嘉琪 · 亏损$180K</p>
-        <p class="text-[12px] text-[#F0B90B] truncate">建议: 关怀致电</p>
-      </div>
-      <i class="fa-solid fa-chevron-right text-hub-muted text-[12px] flex-shrink-0 mt-1"></i>
-    </div>
-
-    <!-- 7 刘思远 账户长期未登录 已结束 -->
-    <div class="event-card bg-hub-card rounded-xl border border-hub-border p-4 mb-2 flex items-start gap-3 cursor-pointer active:bg-hub-card-hover"
-         data-state="已结束" data-type="人工"
-         onclick="window.location.href='event-thread.html'">
-      <div class="w-10 h-10 rounded-xl bg-hub-card border border-hub-border flex items-center justify-center flex-shrink-0">
-        <i class="fa-solid fa-circle-info text-hub-muted text-[16px]"></i>
-      </div>
-      <div class="flex-1 min-w-0">
-        <div class="flex items-center justify-between mb-1">
-          <span class="text-[14px] font-semibold text-hub-text">账户长期未登录</span>
-          <div class="flex items-center gap-1.5 flex-shrink-0 ml-2">
-            <span class="bg-[#0D2620] text-[#0ECB81] text-[10px] px-2 py-0.5 rounded-full">已结束</span>
-            <span class="text-[11px] text-hub-disabled">4天前</span>
-          </div>
-        </div>
-        <p class="text-[12px] text-hub-muted mb-1 truncate">刘思远 · 45天未登录</p>
-        <p class="text-[12px] text-[#F0B90B] truncate">建议: 激活召回</p>
-      </div>
-      <i class="fa-solid fa-chevron-right text-hub-muted text-[12px] flex-shrink-0 mt-1"></i>
-    </div>
-
-    <!-- 8 周大鹏 理财到期未续 已结束 -->
-    <div class="event-card bg-hub-card rounded-xl border border-hub-border p-4 mb-2 flex items-start gap-3 cursor-pointer active:bg-hub-card-hover"
-         data-state="已结束" data-type="盈利"
-         onclick="window.location.href='event-thread.html'">
-      <div class="w-10 h-10 rounded-xl bg-[#2D2010] flex items-center justify-center flex-shrink-0">
-        <i class="fa-solid fa-bolt text-[#F0B90B] text-[16px]"></i>
-      </div>
-      <div class="flex-1 min-w-0">
-        <div class="flex items-center justify-between mb-1">
-          <span class="text-[14px] font-semibold text-hub-text">理财到期未续</span>
-          <div class="flex items-center gap-1.5 flex-shrink-0 ml-2">
-            <span class="bg-[#0D2620] text-[#0ECB81] text-[10px] px-2 py-0.5 rounded-full">已结束</span>
-            <span class="text-[11px] text-hub-disabled">5天前</span>
-          </div>
-        </div>
-        <p class="text-[12px] text-hub-muted mb-1 truncate">周大鹏 · $3M到期</p>
-        <p class="text-[12px] text-[#F0B90B] truncate">建议: 推介续期产品</p>
-      </div>
-      <i class="fa-solid fa-chevron-right text-hub-muted text-[12px] flex-shrink-0 mt-1"></i>
-    </div>
-
-    <!-- 9 赵宇航 邀约活动参与 已忽略 -->
-    <div class="event-card bg-hub-card rounded-xl border border-hub-border p-4 mb-2 flex items-start gap-3 cursor-pointer active:bg-hub-card-hover opacity-60"
-         data-state="已忽略" data-type="人工"
-         onclick="window.location.href='event-thread.html'">
-      <div class="w-10 h-10 rounded-xl bg-hub-card border border-hub-border flex items-center justify-center flex-shrink-0">
-        <i class="fa-solid fa-circle-info text-hub-muted text-[16px]"></i>
-      </div>
-      <div class="flex-1 min-w-0">
-        <div class="flex items-center justify-between mb-1">
-          <span class="text-[14px] font-semibold text-hub-text">邀约活动参与</span>
-          <div class="flex items-center gap-1.5 flex-shrink-0 ml-2">
-            <span class="bg-[#1A1A1A] text-[#848E9C] text-[10px] px-2 py-0.5 rounded-full">已忽略</span>
-            <span class="text-[11px] text-hub-disabled">6天前</span>
-          </div>
-        </div>
-        <p class="text-[12px] text-hub-muted mb-1 truncate">赵宇航 · VIP活动邀约</p>
-        <p class="text-[12px] text-hub-disabled truncate">(已忽略)</p>
-      </div>
-      <i class="fa-solid fa-chevron-right text-hub-muted text-[12px] flex-shrink-0 mt-1"></i>
-    </div>
-
-    <!-- 10 林小雅 手续费优惠到期 已结束 -->
-    <div class="event-card bg-hub-card rounded-xl border border-hub-border p-4 mb-2 flex items-start gap-3 cursor-pointer active:bg-hub-card-hover"
-         data-state="已结束" data-type="人工"
-         onclick="window.location.href='event-thread.html'">
-      <div class="w-10 h-10 rounded-xl bg-hub-card border border-hub-border flex items-center justify-center flex-shrink-0">
-        <i class="fa-solid fa-circle-info text-hub-muted text-[16px]"></i>
-      </div>
-      <div class="flex-1 min-w-0">
-        <div class="flex items-center justify-between mb-1">
-          <span class="text-[14px] font-semibold text-hub-text">手续费优惠到期</span>
-          <div class="flex items-center gap-1.5 flex-shrink-0 ml-2">
-            <span class="bg-[#0D2620] text-[#0ECB81] text-[10px] px-2 py-0.5 rounded-full">已结束</span>
-            <span class="text-[11px] text-hub-disabled">1周前</span>
-          </div>
-        </div>
-        <p class="text-[12px] text-hub-muted mb-1 truncate">林小雅 · 下周到期</p>
-        <p class="text-[12px] text-[#F0B90B] truncate">建议: 提前续期</p>
-      </div>
-      <i class="fa-solid fa-chevron-right text-hub-muted text-[12px] flex-shrink-0 mt-1"></i>
-    </div>
-
-    <!-- 11 吴建国 资产配置建议 已结束 -->
-    <div class="event-card bg-hub-card rounded-xl border border-hub-border p-4 mb-2 flex items-start gap-3 cursor-pointer active:bg-hub-card-hover"
-         data-state="已结束" data-type="盈利"
-         onclick="window.location.href='event-thread.html'">
-      <div class="w-10 h-10 rounded-xl bg-[#2D2010] flex items-center justify-center flex-shrink-0">
-        <i class="fa-solid fa-bolt text-[#F0B90B] text-[16px]"></i>
-      </div>
-      <div class="flex-1 min-w-0">
-        <div class="flex items-center justify-between mb-1">
-          <span class="text-[14px] font-semibold text-hub-text">资产配置建议</span>
-          <div class="flex items-center gap-1.5 flex-shrink-0 ml-2">
-            <span class="bg-[#0D2620] text-[#0ECB81] text-[10px] px-2 py-0.5 rounded-full">已结束</span>
-            <span class="text-[11px] text-hub-disabled">1周前</span>
-          </div>
-        </div>
-        <p class="text-[12px] text-hub-muted mb-1 truncate">吴建国 · 理财转合约</p>
-        <p class="text-[12px] text-[#F0B90B] truncate">建议: 合约体验方案</p>
-      </div>
-      <i class="fa-solid fa-chevron-right text-hub-muted text-[12px] flex-shrink-0 mt-1"></i>
-    </div>
-
-    <!-- 12 王伟明 节日问候提醒 已忽略 -->
-    <div class="event-card bg-hub-card rounded-xl border border-hub-border p-4 mb-2 flex items-start gap-3 cursor-pointer active:bg-hub-card-hover opacity-60"
-         data-state="已忽略" data-type="人工"
-         onclick="window.location.href='event-thread.html'">
-      <div class="w-10 h-10 rounded-xl bg-hub-card border border-hub-border flex items-center justify-center flex-shrink-0">
-        <i class="fa-solid fa-circle-info text-hub-muted text-[16px]"></i>
-      </div>
-      <div class="flex-1 min-w-0">
-        <div class="flex items-center justify-between mb-1">
-          <span class="text-[14px] font-semibold text-hub-text">节日问候提醒</span>
-          <div class="flex items-center gap-1.5 flex-shrink-0 ml-2">
-            <span class="bg-[#1A1A1A] text-[#848E9C] text-[10px] px-2 py-0.5 rounded-full">已忽略</span>
-            <span class="text-[11px] text-hub-disabled">2周前</span>
-          </div>
-        </div>
-        <p class="text-[12px] text-hub-muted mb-1 truncate">王伟明 · 清明节前</p>
-        <p class="text-[12px] text-hub-disabled truncate">(已忽略)</p>
-      </div>
-      <i class="fa-solid fa-chevron-right text-hub-muted text-[12px] flex-shrink-0 mt-1"></i>
-    </div>
-
-    <!-- Empty State -->
+  <div class="px-4 pb-[90px] flex-1 overflow-y-auto no-scrollbar">
+    <div id="event-list"></div>
     <div id="empty-state" class="hidden flex-col items-center justify-center py-16 text-center">
       <i class="fa-regular fa-bell-slash text-hub-disabled text-5xl mb-4"></i>
       <p class="text-hub-muted text-[14px]">暂无相关事件</p>
     </div>
-
   </div>
 
-  <!-- Bottom Tab Bar -->
   <div class="fixed-bar bg-hub-card border-t border-hub-border z-50">
     <div class="flex items-center justify-around h-[56px] px-2">
       <a href="#" onclick="goHome()" class="flex flex-col items-center gap-0.5 flex-1 py-2">
@@ -371,51 +96,112 @@
   </div>
 
   <script>
+    const DATA = window.PROTOTYPE_DATA || {};
+    const EVENTS = Array.isArray(DATA.events) ? DATA.events : [];
+    const STATE_ORDER = ['全部', '未开始', '跟进中', '已结束', '已忽略'];
+    const TYPE_ORDER = ['全部', '出金预警', '爆仓', '盈利', '充值', '人工'];
     let currentState = '全部';
     let currentType = '全部';
+
+    function escapeHtml(text) {
+      return String(text)
+        .replaceAll('&', '&amp;')
+        .replaceAll('<', '&lt;')
+        .replaceAll('>', '&gt;')
+        .replaceAll('"', '&quot;')
+        .replaceAll("'", '&#39;');
+    }
 
     function goHome() {
       const v = sessionStorage.getItem('homeVersion') || 'a';
       location.href = 'home-' + v + '.html';
     }
+
+    function stateCount(state) {
+      if (state === '全部') return EVENTS.length;
+      return EVENTS.filter(event => event.state === state).length;
+    }
+
+    function typeCount(type) {
+      if (type === '全部') return EVENTS.length;
+      return EVENTS.filter(event => event.type === type).length;
+    }
+
+    function renderStateTabs() {
+      const container = document.getElementById('state-tabs');
+      container.innerHTML = STATE_ORDER.map(state => {
+        const active = state === currentState;
+        return `
+          <button class="state-tab flex-1 text-center py-3 text-[12px] ${active ? 'border-b-2 border-[#F0B90B] text-[#F0B90B] font-semibold' : 'text-hub-muted'}"
+            data-tab="${state}" onclick="filterByState('${state}')">${state} ${stateCount(state)}</button>`;
+      }).join('');
+      document.getElementById('open-count').textContent = String(stateCount('未开始') + stateCount('跟进中'));
+    }
+
+    function renderTypePills() {
+      const container = document.getElementById('type-pills');
+      container.innerHTML = TYPE_ORDER.filter(type => type === '全部' || typeCount(type) > 0).map(type => {
+        const active = type === currentType;
+        return `
+          <button class="type-pill rounded-full px-3 py-1 text-[11px] whitespace-nowrap ${active ? 'bg-[#F0B90B] text-[#0B0E11] font-semibold' : 'bg-hub-card text-hub-muted border border-hub-border'}"
+            data-type="${type}" onclick="filterByType('${type}')">${type === '全部' ? '全部' : `${type} ${typeCount(type)}`}</button>`;
+      }).join('');
+    }
+
+    function renderEventList() {
+      const list = document.getElementById('event-list');
+      const filtered = EVENTS.filter(event => {
+        const stateMatch = currentState === '全部' || event.state === currentState;
+        const typeMatch = currentType === '全部' || event.type === currentType;
+        return stateMatch && typeMatch;
+      });
+
+      if (!filtered.length) {
+        list.innerHTML = '';
+        document.getElementById('empty-state').style.display = 'flex';
+        return;
+      }
+
+      document.getElementById('empty-state').style.display = 'none';
+      list.innerHTML = filtered.map(event => `
+        <a href="${escapeHtml(event.href)}"
+          class="event-card block bg-hub-card rounded-xl border border-hub-border p-4 mb-2 active:bg-hub-card-hover ${event.state === '已忽略' ? 'opacity-60' : ''}"
+          data-state="${escapeHtml(event.state)}" data-type="${escapeHtml(event.type)}">
+          <div class="flex items-start gap-3">
+            <div class="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0" style="background:${event.iconBg}">
+              <i class="fa-solid fa-${event.icon} text-[16px]" style="color:${event.iconColor}"></i>
+            </div>
+            <div class="flex-1 min-w-0">
+              <div class="flex items-center justify-between mb-1">
+                <span class="text-[14px] font-semibold text-hub-text">${escapeHtml(event.title)}</span>
+                <div class="flex items-center gap-1.5 flex-shrink-0 ml-2">
+                  <span class="text-[10px] px-2 py-0.5 rounded-full" style="background:${event.badgeBg};color:${event.badgeText}">${escapeHtml(event.state)}</span>
+                  <span class="text-[11px] text-hub-disabled">${escapeHtml(event.relativeTime)}</span>
+                </div>
+              </div>
+              <p class="text-[12px] text-hub-muted mb-1 truncate">${escapeHtml(event.summary)}</p>
+              <p class="text-[12px] ${event.state === '已忽略' ? 'text-hub-disabled' : 'text-[#F0B90B]'} truncate">${escapeHtml(event.state === '已忽略' ? '(已忽略)' : event.suggestion)}</p>
+            </div>
+            <i class="fa-solid fa-chevron-right text-hub-muted text-[12px] flex-shrink-0 mt-1"></i>
+          </div>
+        </a>`).join('');
+    }
+
     function filterByState(state) {
       currentState = state;
-      applyFilters();
-      document.querySelectorAll('.state-tab').forEach(tab => {
-        const isActive = tab.dataset.tab === state;
-        tab.className = 'state-tab flex-1 text-center py-3 text-[12px] ' +
-          (isActive ? 'border-b-2 border-[#F0B90B] text-[#F0B90B] font-semibold' : 'text-[#848E9C]');
-      });
+      renderStateTabs();
+      renderEventList();
     }
 
     function filterByType(type) {
       currentType = type;
-      applyFilters();
-      document.querySelectorAll('.type-pill').forEach(pill => {
-        const isActive = pill.dataset.type === type;
-        pill.className = 'type-pill rounded-full px-3 py-1 text-[11px] whitespace-nowrap ' +
-          (isActive ? 'bg-[#F0B90B] text-[#0B0E11] font-semibold' : 'bg-[#1E2329] text-[#848E9C] border border-[#2E3440]');
-      });
+      renderTypePills();
+      renderEventList();
     }
 
-    function applyFilters() {
-      const cards = document.querySelectorAll('.event-card');
-      let visibleCount = 0;
-      cards.forEach(card => {
-        const stateMatch = currentState === '全部' || card.dataset.state === currentState;
-        const typeMatch = currentType === '全部' || card.dataset.type === currentType;
-        const show = stateMatch && typeMatch;
-        card.style.display = show ? '' : 'none';
-        if (show) visibleCount++;
-      });
-      const emptyState = document.getElementById('empty-state');
-      if (visibleCount === 0) {
-        emptyState.style.display = 'flex';
-      } else {
-        emptyState.style.display = 'none';
-      }
-    }
+    renderStateTabs();
+    renderTypePills();
+    renderEventList();
   </script>
-
 </body>
 </html>
