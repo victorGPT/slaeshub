@@ -43,3 +43,11 @@ tasks:
       - docs/prototype-prompt-v2.md
       - docs/prototype-prompt.md
       - prototype/home.html
+  - id: PROTO-005
+    title: Connect profile page to shared mock data
+    status: done
+    owner: codex-main
+    path: docs/coordination/tasks/prototype/done/PROTO-005.yaml
+    touches:
+      - prototype/profile.html
+      - README.md

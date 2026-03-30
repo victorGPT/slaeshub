@@ -37,8 +37,8 @@ scripts/simulate_clients.py
 说明：
 
 - `prototype/mock-data.js` 是当前原型运行时共享数据的直接事实源。
-- 首页三版本、客群页、详情页、事件页和事件线程页现在都消费同一份 mock data contract。
-- `profile.html` 仍是手写静态原型。
+- 首页三版本、客群页、详情页、事件页、事件线程页和个人页现在都消费同一份 mock data contract。
+- `profile.html` 的设置项仍是静态原型，但 BD 身份、统计和重点客户已经改为从共享数据派生。
 
 ## 当前文件状态
 
@@ -70,7 +70,7 @@ scripts/simulate_clients.py
 
 ## 已知缺口
 
-1. 页面数据源已基本统一：目前仅 `profile.html` 还没有接入共享 mock data。
+1. 页面数据源已经统一到共享 mock data；剩余缺口主要在设置项、鉴权和真实用户上下文仍是静态原型。
 2. 业务口径尚未最终冻结：综合净贡献、理财净贡献、U 卡净贡献、云矿机净贡献等仍有待业务/数据确认。
 3. 模拟数据仍偏演示用途：`data/clients_simulation.csv` 里的 `value_source` 当前全部为 `双仓合约`，不够真实。
 4. prompt 资产与原型实现曾发生版本切换：阅读仓库时优先信任本 README 和 `prototype/` 当前页面。
@@ -97,6 +97,6 @@ open prototype/index.html
 
 ## 接手建议顺序
 
-1. 先把 `profile.html` 也接入共享 mock data，完成页面层统一。
+1. 先决定未来真实用户上下文怎么进入页面，避免当前“由共享 mock data 派生 BD 身份”的方式和正式鉴权模型脱节。
 2. 再继续收紧业务字段口径，避免 mock data 与产品定义继续漂移。
 3. 等原型与口径稳定后，再决定是否迁移为正式前端工程。

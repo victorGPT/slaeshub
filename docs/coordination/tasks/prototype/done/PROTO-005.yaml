@@ -1,0 +1,34 @@
+id: PROTO-005
+title: Connect profile page to shared mock data
+domain: prototype
+status: done
+owner: codex-main
+touches:
+  - prototype/profile.html
+  - README.md
+goal: Make profile.html derive BD profile content from the shared prototype mock data instead of hardcoded values.
+in_scope:
+  - Render the active BD owner from shared client and event data.
+  - Derive profile stats and chart values from the same shared dataset.
+  - Keep the page as a standalone local HTML prototype.
+out_of_scope:
+  - Introducing a separate profile data source.
+  - Real authentication or persistence.
+constraints:
+  - Preserve the current mobile shell and settings-style interaction pattern.
+verify:
+  - open prototype/profile.html
+  - open prototype/profile.html?owner=<bd-name>
+  - python3 -m unittest tests/test_prototype_data.py
+  - npx playwright screenshot --wait-for-timeout 1200 --full-page 'file:///Users/victor/Developer/slaeshub/prototype/profile.html' /tmp/slaeshub-profile-full-wait.png
+definition_of_done:
+  - The profile card, stats, and supporting sections render from shared mock data.
+  - No hardcoded fake owner profile remains as the active source of truth.
+notes:
+  - "DECISION: profile.html now derives BD identity, statistics, and focus clients from shared client/event data instead of a separate profile payload."
+  - "DECISION: The default profile view picks the BD with the broadest client coverage, while allowing in-page owner switching and owner query params."
+  - "DECISION: Settings rows remain static prototype scaffolding, but README now reflects that profile summary data is no longer a standalone fake source."
+  - "VERIFIED: Default profile renders 周宁 from the shared dataset, and owner query params switch the profile to another BD such as 李明远."
+  - "VERIFIED: Existing shared-contract unit tests still pass after the profile integration."
+commit_refs:
+  - a8ea754
