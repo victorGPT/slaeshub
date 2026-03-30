@@ -21,9 +21,9 @@ F = 客户在平台的总资金沉淀（折 USDT，每日 UTC 00:00 快照）
 
 | Tab | 默认排序 | 入池条件 |
 |-----|---------|---------|
-| 资沉总量（默认） | F_base 降序 | 全量客户 |
-| 资沉流失 | ChurnPriority 降序 | F_base >= T_F 且 AdjustedTrend_F <= -δ 且 AbsDrop >= T_drop |
-| 资沉增长 | GrowthPriority 降序 | F_base >= T_F 且 AdjustedTrend_F >= δ 且 AbsGrowth >= T_growth |
+| 资沉总量（默认） | mean(w1...w8) 降序 | 全量客户 |
+| 资沉流失 | ChurnScore 降序 | ChurnScore > 0（公式自动过滤） |
+| 资沉增长 | GrowthScore 降序 | GrowthScore > 0（公式自动过滤） |
 
 ## 4. 核心数据口径
 
@@ -32,30 +32,83 @@ F = 客户在平台的总资金沉淀（折 USDT，每日 UTC 00:00 快照）
 - V_t(u) = Σ(q_i,t × p_i,t)，按持仓金额加权求和
 
 ### 4.2 时间窗
-- F_base：近 30 天日均资沉
-- F_recent：近 7 天日均资沉
+- 8 周周均值：w1, w2, ..., w8（每周日均资沉）
+- w8 = 最近一周，w1 = 8 周前
 
-### 4.3 趋势（含市场修正）
+### 4.3 趋势算法：线性回归 + R²
+
+对 8 周数据拟合直线 F(t) = a + b × t：
 ```text
-Trend_F = (F_recent - F_base) / max(F_base, ε)
-PlatformTrend = 平台整体资沉变化
-AdjustedTrend_F = Trend_F - PlatformTrend
+b = 斜率 = 每周资沉变化量
+TrendRate = b / mean(w1...w8)    # 归一化为百分比/周
+R² = 趋势可信度（0~1）
 ```
 
-只有跑输/跑赢平台整体的客户才算真实流失/增长。
+- TrendRate > 0：资沉在持续增长
+- TrendRate < 0：资沉在持续流失
+- TrendRate ≈ 0：基本稳定
+- R² >= 0.7：趋势明确
+- R² < 0.7：波动较大，趋势不确定
 
-### 4.4 双门槛入池
-流失和增长视图同时要求：
-- 相对变化 >= δ（建议 10%）
-- 绝对金额 >= T_drop / T_growth（建议 50,000 USDT）
+市场修正：
+```text
+PlatformTrendRate = 平台整体资沉的 TrendRate（同样用 8 周回归）
+AdjustedTrendRate = TrendRate - PlatformTrendRate
+```
+
+### 4.4 趋势可信度
+
+```text
+Conf = 0.5 + 0.5 × R²
+```
+
+- R² = 1 → Conf = 1（趋势完全稳定）
+- R² = 0 → Conf = 0.5（趋势不确定，但不会打没）
+
+下限 0.5 是故意的：对销售来说，漏掉一个真在流失的客户，比多看一个其实没事的客户更糟。
 
 ## 5. 排序公式
 
+### 阈值
+
 ```text
-DepositRank = F_base
-ChurnPriority = F_base × |AdjustedTrend_F|
-GrowthPriority = F_base × AdjustedTrend_F
+T_F = P80(mean(w1...w8))    # 前 20% 资沉客户
+δ = 0.02                     # 每周偏离 2% 以上算显著
 ```
+
+### 资沉总量榜
+
+```text
+TotalRank = mean(w1...w8)
+```
+
+只按盘子大小排，不掺别的因子。
+
+### 资沉流失榜
+
+```text
+ChurnScore = log(1 + F_mean / T_F) × max(0, -AdjustedTrendRate - δ) × Conf
+```
+
+- log 压缩盘子大小：防止超大户微跌永远霸榜
+- max(0, ...) 自动过滤：趋势不够负的客户 score = 0，不进入列表
+- Conf 加权：趋势越稳定优先级越高
+
+### 资沉增长榜
+
+```text
+GrowthScore = log(1 + F_mean / T_F) × max(0, AdjustedTrendRate - δ) × Conf
+```
+
+对称结构，只是方向相反。
+
+### 入池条件
+
+不需要单独的入池规则。公式中 `max(0, ...)` 已经自动过滤：
+- AdjustedTrendRate 没超过 δ → score = 0 → 不出现在列表中
+- 盘子小的客户 → log 项小 → 自然排在后面
+
+F_mean < T_F 的客户虽然不会被硬过滤，但 log(1 + F_mean/T_F) 很小，实际排不上去。
 
 ## 6. 客户卡片（四项信息）
 

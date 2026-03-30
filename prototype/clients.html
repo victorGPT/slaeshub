@@ -111,16 +111,16 @@
   var searchInput = document.getElementById('search-input');
   var currentStatusFilter = '全部';
 
-  function getTrendColor(adjustedTrendF) {
-    if (adjustedTrendF > 0) return '#0ECB81';
-    if (adjustedTrendF < 0) return '#F6465D';
+  function getTrendColor(adjustedTrendRate) {
+    if (adjustedTrendRate > 0) return '#0ECB81';
+    if (adjustedTrendRate < 0) return '#F6465D';
     return '#848E9C';
   }
 
   function cardHTML(c, rank) {
-    var color = getTrendColor(c.adjustedTrendF);
-    var absChangePart = c.status !== '稳定'
-      ? '<span class="text-[10px] text-[#848E9C]">(' + c.absChangeDisplay + ')</span>'
+    var color = getTrendColor(c.adjustedTrendRate);
+    var confidencePart = c.trendConfidence
+      ? '<span class="text-[10px] text-[#848E9C]">\u00b7 ' + c.trendConfidence + '</span>'
       : '';
 
     return '<a href="' + c.detailHref + '" class="block bg-[#1E2329] rounded-xl border border-[#2E3440] p-4 mx-4 mb-2 active:bg-[#2B3139]">'
@@ -134,7 +134,7 @@
       + '<div class="flex items-center gap-2 mb-2">'
       +   '<span class="text-[10px] px-2 py-0.5 rounded-full" style="background:' + c.statusBadge.bg + ';color:' + c.statusBadge.text + '">' + c.status + '</span>'
       +   '<span class="text-[11px]" style="color:' + color + '">' + c.trendDisplay + '</span>'
-      +   absChangePart
+      +   confidencePart
       + '</div>'
       + '<div class="text-[11px] text-[#848E9C] mb-1">' + c.reasonTag + '</div>'
       + '<div class="text-[11px] text-[#F0B90B]">\u2192 ' + c.suggestedAction + '</div>'
@@ -150,7 +150,7 @@
       return matchesSearch && matchesStatus;
     });
 
-    filtered.sort(function(a, b) { return b.fBase - a.fBase; });
+    filtered.sort(function(a, b) { return b.fMean - a.fMean; });
 
     document.getElementById('client-count').textContent =
       '共 ' + filtered.length + ' 位客户' + (currentStatusFilter !== '全部' ? ' (' + currentStatusFilter + ')' : '');

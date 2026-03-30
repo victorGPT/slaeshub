@@ -110,11 +110,8 @@
   function esc(s) { return String(s).replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
 
   var badge = c.statusBadge;
-  var fRecentDisplay = formatWan(c.fRecent);
-  var trendColor = c.adjustedTrendF > 0 ? '#0ECB81' : (c.adjustedTrendF < 0 ? '#F6465D' : '#848E9C');
-  var trendSign = c.adjustedTrendF > 0 ? '+' : '';
-  var trendPct = trendSign + (c.adjustedTrendF * 100).toFixed(1) + '%';
-  var absArrow = c.absChange > 0 ? '\u2191' : (c.absChange < 0 ? '\u2193' : '');
+  var thisWeekDisplay = c.thisWeekDisplay || '';
+  var trendColor = c.adjustedTrendRate > 0 ? '#0ECB81' : (c.adjustedTrendRate < 0 ? '#F6465D' : '#848E9C');
   var platformTrendDisplay = D.platformTrendDisplay || ((D.platformTrend > 0 ? '+' : '') + (D.platformTrend * 100).toFixed(1) + '%');
 
   // All 6 business lines
@@ -206,23 +203,23 @@
     +   '<div class="grid grid-cols-2 gap-4">'
     // Hero: 当前资沉 spans both cols
     +     '<div class="col-span-2">'
-    +       '<div class="text-[11px] text-[#848E9C] mb-0.5">当前资沉 (30日均)</div>'
+    +       '<div class="text-[11px] text-[#848E9C] mb-0.5">当前资沉 (8周均)</div>'
     +       '<div class="text-[28px] font-bold text-[#EAECEF]">' + c.depositDisplay + '</div>'
     +     '</div>'
-    // 7日均值
+    // 本周均值
     +     '<div>'
-    +       '<div class="text-[11px] text-[#848E9C] mb-0.5">7日均值</div>'
-    +       '<div class="text-[16px] font-semibold text-[#EAECEF]">' + fRecentDisplay + '</div>'
+    +       '<div class="text-[11px] text-[#848E9C] mb-0.5">本周均值</div>'
+    +       '<div class="text-[16px] font-semibold text-[#EAECEF]">' + thisWeekDisplay + '</div>'
     +     '</div>'
-    // 趋势
+    // 近期趋势
     +     '<div>'
     +       '<div class="text-[11px] text-[#848E9C] mb-0.5">近期趋势</div>'
-    +       '<div class="text-[16px] font-bold" style="color:' + trendColor + '">' + trendPct + '</div>'
+    +       '<div class="text-[16px] font-bold" style="color:' + trendColor + '">' + c.trendDisplay + '</div>'
     +     '</div>'
-    // 绝对变化
+    // 趋势稳定度
     +     '<div>'
-    +       '<div class="text-[11px] text-[#848E9C] mb-0.5">绝对变化</div>'
-    +       '<div class="text-[16px] font-bold" style="color:' + trendColor + '">' + c.absChangeDisplay + ' ' + absArrow + '</div>'
+    +       '<div class="text-[11px] text-[#848E9C] mb-0.5">趋势稳定度</div>'
+    +       '<div class="text-[16px] font-semibold text-[#EAECEF]">' + (c.trendConfidence || '') + '</div>'
     +     '</div>'
     +   '</div>'
     + '</div>';
