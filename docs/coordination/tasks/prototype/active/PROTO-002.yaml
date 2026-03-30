@@ -1,0 +1,25 @@
+id: PROTO-002
+title: Connect client detail to shared mock data
+domain: prototype
+status: open
+owner: null
+touches:
+  - prototype/client-detail.html
+  - prototype/mock-data.js
+  - scripts/generate_prototype.py
+goal: Make client-detail.html render by uid from the shared mock data contract instead of a hardcoded client.
+in_scope:
+  - Read uid from the query string.
+  - Render client header, metrics, business lines, records, and related events from shared data.
+out_of_scope:
+  - Real backend integration.
+  - Visual redesign.
+constraints:
+  - Keep the page usable as a standalone local HTML file.
+verify:
+  - open prototype/client-detail.html?uid=<known-uid>
+definition_of_done:
+  - Different uid query params render different clients.
+  - Values match homepage/client list for the same client.
+notes: []
+commit_refs: []

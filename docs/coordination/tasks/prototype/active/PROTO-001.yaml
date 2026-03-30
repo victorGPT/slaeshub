@@ -1,0 +1,32 @@
+id: PROTO-001
+title: Unify mock data contract
+domain: prototype
+status: open
+owner: null
+touches:
+  - scripts/generate_prototype.py
+  - scripts/simulate_clients.py
+  - prototype/mock-data.js
+  - prototype/home-a.html
+  - prototype/home-b.html
+  - prototype/home-c.html
+  - prototype/clients.html
+goal: Create one shared mock data contract covering clients, rankings, and events, then make generated pages derive from it.
+in_scope:
+  - Define a shared runtime data payload for prototype pages.
+  - Generate prototype/mock-data.js from simulation inputs.
+  - Update generated homepage and client list links to carry stable entity ids.
+out_of_scope:
+  - Rewriting product formulas.
+  - Migrating the prototype into a framework app.
+constraints:
+  - Keep the prototype file-based and browser-openable via file://.
+  - Do not introduce build tooling.
+verify:
+  - python3 scripts/simulate_clients.py
+  - python3 scripts/generate_prototype.py
+definition_of_done:
+  - Shared mock data file exists and is generated from the Python pipeline.
+  - Homepage and client list pages derive entity links from shared ids.
+notes: []
+commit_refs: []

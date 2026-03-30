@@ -1,0 +1,25 @@
+id: PROTO-004
+title: Consolidate v1 legacy entry points
+domain: prototype
+status: open
+owner: null
+touches:
+  - README.md
+  - docs/prototype-prompt-v2.md
+  - docs/prototype-prompt.md
+  - prototype/home.html
+goal: Remove misleading current-state references to the v1 homepage flow while keeping legacy material clearly labeled.
+in_scope:
+  - Update docs to mark v1 assets as legacy.
+  - Ensure current instructions point only to home-a/b/c.
+out_of_scope:
+  - Deleting historical files.
+constraints:
+  - Preserve old assets for reference unless they actively mislead execution.
+verify:
+  - rg -n "home\\.html" README.md docs/prototype-prompt*.md prototype/index.html
+definition_of_done:
+  - No current-state doc points to prototype/home.html as the active homepage.
+  - Legacy references are explicitly labeled as historical.
+notes: []
+commit_refs: []

@@ -1,0 +1,27 @@
+id: PROTO-003
+title: Connect events and event thread to shared mock data
+domain: prototype
+status: open
+owner: null
+touches:
+  - prototype/events.html
+  - prototype/event-thread.html
+  - prototype/mock-data.js
+  - scripts/generate_prototype.py
+goal: Make events.html and event-thread.html render from one shared event dataset linked to the client dataset.
+in_scope:
+  - Render event list from shared data.
+  - Read event id from query params in event-thread.html.
+  - Keep event state machine and follow-up actions working on the selected event view.
+out_of_scope:
+  - Persisting event state across reloads.
+constraints:
+  - Maintain current static-prototype interaction style.
+verify:
+  - open prototype/events.html
+  - open prototype/event-thread.html?event=<known-event-id>
+definition_of_done:
+  - Event preview and thread detail stay consistent for the same event.
+  - Thread links resolve to the correct client context.
+notes: []
+commit_refs: []
