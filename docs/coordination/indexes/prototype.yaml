@@ -35,9 +35,9 @@ tasks:
       - scripts/generate_prototype.py
   - id: PROTO-004
     title: Consolidate v1 legacy entry points
-    status: open
-    owner: null
-    path: docs/coordination/tasks/prototype/active/PROTO-004.yaml
+    status: done
+    owner: codex-main
+    path: docs/coordination/tasks/prototype/done/PROTO-004.yaml
     touches:
       - README.md
       - docs/prototype-prompt-v2.md
