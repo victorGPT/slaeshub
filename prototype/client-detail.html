@@ -39,7 +39,7 @@
 <body class="bg-[#0B0E11] text-[#EAECEF]">
 <div class="w-full">
 
-  <!-- iOS Status Bar -->
+  <!-- 1. iOS Status Bar (44px) -->
   <div class="h-[44px] bg-[#0B0E11] flex items-center justify-between px-6 flex-shrink-0">
     <span class="text-[12px] font-semibold text-[#EAECEF]">9:41</span>
     <div class="flex items-center gap-1.5 text-[#EAECEF]">
@@ -49,7 +49,7 @@
     </div>
   </div>
 
-  <!-- Top Nav -->
+  <!-- 2. Top Nav (52px sticky) -->
   <div class="h-[52px] sticky top-0 z-20 bg-[#0B0E11] border-b border-[#2E3440] flex items-center justify-between px-4">
     <button onclick="history.back()" class="w-8 h-8 flex items-center justify-center">
       <i class="fa-solid fa-chevron-left text-[16px] text-[#EAECEF]"></i>
@@ -99,128 +99,287 @@
     return;
   }
 
-  // Format fRecent as display string
+  // --- Helpers ---
   function formatWan(val) {
     var wan = val / 10000;
+    if (wan >= 10000) return '$ ' + (wan / 10000).toFixed(2) + ' 亿';
     if (wan >= 1) return '$ ' + Math.round(wan).toLocaleString() + ' 万';
     return '$ ' + wan.toFixed(1) + ' 万';
   }
 
+  function esc(s) { return String(s).replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
+
+  var badge = c.statusBadge;
   var fRecentDisplay = formatWan(c.fRecent);
   var trendColor = c.adjustedTrendF > 0 ? '#0ECB81' : (c.adjustedTrendF < 0 ? '#F6465D' : '#848E9C');
   var trendSign = c.adjustedTrendF > 0 ? '+' : '';
   var trendPct = trendSign + (c.adjustedTrendF * 100).toFixed(1) + '%';
-  var absArrow = c.absChange > 0 ? ' \\u2191' : (c.absChange < 0 ? ' \\u2193' : '');
+  var absArrow = c.absChange > 0 ? '\u2191' : (c.absChange < 0 ? '\u2193' : '');
+  var platformTrendDisplay = D.platformTrendDisplay || ((D.platformTrend > 0 ? '+' : '') + (D.platformTrend * 100).toFixed(1) + '%');
 
   // All 6 business lines
   var allBizLines = ['合约', '杠杆', '理财', '金融卡', '云算力', 'Mini合约'];
   var bizSet = {};
   c.bizLines.forEach(function(b) { bizSet[b] = true; });
 
-  var bizHTML = allBizLines.map(function(line) {
-    var active = bizSet[line];
-    if (active) {
-      return '<div class="flex items-center gap-1.5">'
-        + '<i class="fa-solid fa-check text-[12px] text-[#0ECB81]"></i>'
-        + '<span class="text-[13px] text-[#EAECEF]">' + line + '</span>'
-        + '</div>';
-    } else {
-      return '<div class="flex items-center gap-1.5">'
-        + '<i class="fa-solid fa-xmark text-[12px] text-[#848E9C]"></i>'
-        + '<span class="text-[13px] text-[#848E9C]">' + line + '</span>'
-        + '</div>';
+  // Status-dependent events
+  function getEvents() {
+    if (c.status === '流失') {
+      return [
+        { color: '#F6465D', text: '资沉流失预警 \u00b7 近7天持续出金', time: '2天前' },
+        { color: '#F0B90B', text: '理财到期提醒 \u00b7 500万即将到期', time: '5天前' }
+      ];
+    } else if (c.status === '增长') {
+      return [
+        { color: '#0ECB81', text: '资沉增长 \u00b7 近7天持续入金', time: '1天前' },
+        { color: '#4DA6FF', text: '新业务线开通 \u00b7 开通云算力服务', time: '4天前' }
+      ];
     }
+    return [
+      { color: '#848E9C', text: '定期回访提醒 \u00b7 距上次联系已14天', time: '3天前' },
+      { color: '#F0B90B', text: '合约到期提醒 \u00b7 杠杆仓位需确认', time: '7天前' }
+    ];
+  }
+
+  // Status-dependent follow-up records
+  function getFollowups() {
+    if (c.status === '流失') {
+      return [
+        { date: '03-28 14:30', bd: 'BD 李明远', text: '电话回访，客户表示近期有大额出金计划' },
+        { date: '03-25 10:00', bd: 'BD 李明远', text: '发送续存权益说明，客户已读' },
+        { date: '03-20 16:45', bd: '系统', text: '触发资沉流失预警' }
+      ];
+    } else if (c.status === '增长') {
+      return [
+        { date: '03-28 11:00', bd: 'BD 李明远', text: '推荐理财产品组合，客户表示感兴趣' },
+        { date: '03-24 15:30', bd: 'BD 李明远', text: '祝贺客户资沉增长，沟通后续理财配置' },
+        { date: '03-19 09:00', bd: '系统', text: '触发资沉增长提示' }
+      ];
+    }
+    return [
+      { date: '03-27 16:00', bd: 'BD 李明远', text: '例行回访，客户状态正常，无特殊需求' },
+      { date: '03-20 10:30', bd: 'BD 李明远', text: '发送月度资产报告，客户已读' },
+      { date: '03-15 14:00', bd: '系统', text: '定期回访提醒' }
+    ];
+  }
+
+  // Load BD notes & tags from localStorage
+  var noteKey = 'bd_note_' + c.uid;
+  var tagKey = 'bd_tags_' + c.uid;
+  var savedNote = localStorage.getItem(noteKey) || '';
+  var savedTags = JSON.parse(localStorage.getItem(tagKey) || '["偏好短线","英文沟通"]');
+
+  var events = getEvents();
+  var followups = getFollowups();
+
+  // --- Build HTML ---
+  var html = '';
+
+  // 3. Client Header Card
+  html += '<div class="mx-4 mt-3 bg-[#1E2329] rounded-xl border border-[#2E3440] p-4">'
+    +   '<div class="flex items-center gap-3 mb-3">'
+    +     '<img src="https://ui-avatars.com/api/?name=' + encodeURIComponent(c.name) + '&background=2B3139&color=EAECEF&size=48&font-size=0.4&bold=true" '
+    +       'class="w-12 h-12 rounded-full border-2 border-[#F0B90B]" alt="avatar" />'
+    +     '<div class="flex-1">'
+    +       '<div class="text-[18px] font-bold text-[#EAECEF]">' + esc(c.name) + '</div>'
+    +       '<div class="text-[12px] text-[#848E9C]">UID: ' + c.uid + '</div>'
+    +     '</div>'
+    +     '<span class="text-[11px] px-2.5 py-1 rounded-full" style="background:' + badge.bg + ';color:' + badge.text + '">' + c.status + '</span>'
+    +   '</div>'
+    +   '<div class="flex flex-wrap gap-1.5">'
+    +     '<span class="text-[10px] px-2 py-0.5 rounded-full bg-[#2B3139] text-[#848E9C]">\uD83D\uDD12 重点客户</span>';
+
+  if (c.status === '流失') {
+    html += '<span class="text-[10px] px-2 py-0.5 rounded-full bg-[rgba(246,70,93,0.15)] text-[#F6465D]">流失风险</span>';
+  }
+  if (c.status === '增长') {
+    html += '<span class="text-[10px] px-2 py-0.5 rounded-full bg-[rgba(14,203,129,0.15)] text-[#0ECB81]">资沉增长中</span>';
+  }
+
+  html += '<span class="text-[10px] px-2 py-0.5 rounded-full bg-[#0D1F2D] text-[#4DA6FF]">BD 标签</span>'
+    +     '<span class="text-[10px] px-2 py-0.5 rounded-full border border-dashed border-[#474D57] text-[#474D57]">+ 添加标签</span>'
+    +   '</div>'
+    + '</div>';
+
+  // 4. Core Metrics Grid (2x2+)
+  html += '<div class="mx-4 mt-3 bg-[#1E2329] rounded-xl border border-[#2E3440] p-4">'
+    +   '<div class="grid grid-cols-2 gap-4">'
+    // Hero: 当前资沉 spans both cols
+    +     '<div class="col-span-2">'
+    +       '<div class="text-[11px] text-[#848E9C] mb-0.5">当前资沉 (30日均)</div>'
+    +       '<div class="text-[28px] font-bold text-[#EAECEF]">' + c.depositDisplay + '</div>'
+    +     '</div>'
+    // 7日均值
+    +     '<div>'
+    +       '<div class="text-[11px] text-[#848E9C] mb-0.5">7日均值</div>'
+    +       '<div class="text-[16px] font-semibold text-[#EAECEF]">' + fRecentDisplay + '</div>'
+    +     '</div>'
+    // 趋势 (去市场)
+    +     '<div>'
+    +       '<div class="text-[11px] text-[#848E9C] mb-0.5">趋势 (去市场)</div>'
+    +       '<div class="text-[16px] font-bold" style="color:' + trendColor + '">' + trendPct + '</div>'
+    +     '</div>'
+    // 绝对变化
+    +     '<div>'
+    +       '<div class="text-[11px] text-[#848E9C] mb-0.5">绝对变化</div>'
+    +       '<div class="text-[16px] font-bold" style="color:' + trendColor + '">' + c.absChangeDisplay + ' ' + absArrow + '</div>'
+    +     '</div>'
+    // 市场整体
+    +     '<div>'
+    +       '<div class="text-[11px] text-[#848E9C] mb-0.5">市场整体</div>'
+    +       '<div class="text-[16px] font-semibold text-[#848E9C]">' + platformTrendDisplay + '</div>'
+    +     '</div>'
+    +   '</div>'
+    + '</div>';
+
+  // 5. 原因分析 + 建议动作
+  html += '<div class="mx-4 mt-3 bg-[#1E2329] rounded-xl border border-[#2E3440] p-4">'
+    +   '<div class="mb-3">'
+    +     '<div class="text-[11px] text-[#848E9C] mb-1">原因分析</div>'
+    +     '<div class="text-[14px] text-[#EAECEF]">' + c.reasonTag + '</div>'
+    +   '</div>'
+    +   '<div class="border-t border-[#2E3440] pt-3">'
+    +     '<div class="text-[11px] text-[#848E9C] mb-1">建议动作</div>'
+    +     '<div class="text-[14px] text-[#F0B90B]">\u2192 ' + c.suggestedAction + '</div>'
+    +   '</div>'
+    + '</div>';
+
+  // 6. 业务参与情况
+  var bizRowsHTML = allBizLines.map(function(line) {
+    var active = !!bizSet[line];
+    return '<div class="flex items-center gap-2">'
+      + '<span class="w-[60px] text-[12px] ' + (active ? 'text-[#EAECEF]' : 'text-[#474D57]') + '">' + line + '</span>'
+      + '<div class="flex-1 h-[6px] rounded-full ' + (active ? 'bg-[#F0B90B]' : 'bg-[#2B3139]') + '"></div>'
+      + '<span class="text-[11px] ' + (active ? 'text-[#0ECB81]' : 'text-[#474D57]') + '">' + (active ? '已参与' : '未参与') + '</span>'
+      + '</div>';
   }).join('');
 
-  // Load BD notes from localStorage
-  var noteKey = 'bd_note_' + c.uid;
-  var savedNote = localStorage.getItem(noteKey) || '';
-
-  var html = ''
-    // Client header
-    + '<div class="px-4 pt-4 pb-3">'
-    +   '<div class="text-[20px] font-bold text-[#EAECEF] mb-1">' + c.name + '</div>'
-    +   '<div class="flex items-center gap-2">'
-    +     '<span class="text-[13px] text-[#848E9C]">UID: ' + c.uid + '</span>'
-    +     '<span class="text-[11px] px-2 py-0.5 rounded-full" style="background:' + c.statusBadge.bg + ';color:' + c.statusBadge.text + '">' + c.status + '</span>'
+  html += '<div class="mx-4 mt-3">'
+    +   '<div class="flex items-center justify-between mb-2">'
+    +     '<div class="text-[14px] font-semibold text-[#EAECEF]">业务参与情况</div>'
+    +     '<span class="text-[11px] text-[#848E9C]">' + c.bizCount + '/6 条业务</span>'
     +   '</div>'
-    + '</div>'
-
-    // Deposit card
-    + '<div class="mx-4 mb-3 bg-[#1E2329] rounded-xl border border-[#2E3440] p-4">'
-    +   '<div class="text-[13px] text-[#848E9C] mb-1">当前资沉</div>'
-    +   '<div class="text-[28px] font-bold text-[#EAECEF] mb-3">' + c.depositDisplay + '</div>'
-    +   '<div class="flex items-center gap-4 pb-3 border-b border-[#2E3440]">'
-    +     '<div class="flex-1">'
-    +       '<div class="text-[11px] text-[#848E9C] mb-0.5">30日均值</div>'
-    +       '<div class="text-[15px] font-semibold text-[#EAECEF]">' + c.depositDisplay + '</div>'
-    +     '</div>'
-    +     '<div class="flex-1">'
-    +       '<div class="text-[11px] text-[#848E9C] mb-0.5">7日均值</div>'
-    +       '<div class="text-[15px] font-semibold text-[#EAECEF]">' + fRecentDisplay + '</div>'
-    +     '</div>'
+    +   '<div class="bg-[#1E2329] rounded-xl border border-[#2E3440] p-4 space-y-3">'
+    +     bizRowsHTML
     +   '</div>'
-    +   '<div class="pt-3 flex items-center justify-between">'
-    +     '<div>'
-    +       '<span class="text-[12px] text-[#848E9C]">趋势(去市场): </span>'
-    +       '<span class="text-[14px] font-bold" style="color:' + trendColor + '">' + trendPct + '</span>'
-    +     '</div>'
-    +     '<div>'
-    +       '<span class="text-[12px] text-[#848E9C]">绝对变化: </span>'
-    +       '<span class="text-[14px] font-bold" style="color:' + trendColor + '">' + c.absChangeDisplay + absArrow + '</span>'
-    +     '</div>'
-    +   '</div>'
-    + '</div>'
+    + '</div>';
 
-    // Reason analysis
-    + '<div class="mx-4 mb-3">'
-    +   '<div class="text-[14px] font-semibold text-[#EAECEF] mb-2">原因分析</div>'
+  // 7. 最近事件
+  var eventsHTML = events.map(function(ev) {
+    return '<div class="flex items-center gap-2">'
+      + '<span class="w-2 h-2 rounded-full flex-shrink-0" style="background:' + ev.color + '"></span>'
+      + '<span class="text-[12px] text-[#EAECEF] flex-1">' + ev.text + '</span>'
+      + '<span class="text-[10px] text-[#848E9C] flex-shrink-0">' + ev.time + '</span>'
+      + '</div>';
+  }).join('');
+
+  html += '<div class="mx-4 mt-3">'
+    +   '<div class="text-[14px] font-semibold text-[#EAECEF] mb-2">最近事件</div>'
+    +   '<div class="bg-[#1E2329] rounded-xl border border-[#2E3440] p-4 space-y-3">'
+    +     eventsHTML
+    +   '</div>'
+    + '</div>';
+
+  // 8. BD 标签管理
+  var tagsHTML = savedTags.map(function(tag) {
+    return '<span class="bd-tag text-[11px] px-2.5 py-1 rounded-full bg-[#0D1F2D] text-[#4DA6FF] cursor-pointer" data-tag="' + esc(tag) + '">' + esc(tag) + '</span>';
+  }).join('');
+
+  html += '<div class="mx-4 mt-3">'
+    +   '<div class="text-[14px] font-semibold text-[#EAECEF] mb-2">BD 标签</div>'
     +   '<div class="bg-[#1E2329] rounded-xl border border-[#2E3440] p-4">'
-    +     '<div class="text-[13px] text-[#EAECEF]">' + c.reasonTag + '</div>'
+    +     '<div id="bd-tags-container" class="flex flex-wrap gap-1.5">'
+    +       tagsHTML
+    +       '<span id="add-tag-btn" class="text-[11px] px-2.5 py-1 rounded-full border border-dashed border-[#474D57] text-[#474D57] cursor-pointer">+ 添加</span>'
+    +     '</div>'
     +   '</div>'
-    + '</div>'
+    + '</div>';
 
-    // Suggested action
-    + '<div class="mx-4 mb-3">'
-    +   '<div class="text-[14px] font-semibold text-[#EAECEF] mb-2">建议动作</div>'
-    +   '<div class="bg-[#1E2329] rounded-xl border border-[#2E3440] p-4">'
-    +     '<div class="text-[13px] text-[#F0B90B]"><i class="fa-solid fa-arrow-right text-[11px] mr-1"></i>' + c.suggestedAction + '</div>'
-    +   '</div>'
-    + '</div>'
-
-    // Business participation
-    + '<div class="mx-4 mb-3">'
-    +   '<div class="text-[14px] font-semibold text-[#EAECEF] mb-2">业务参与情况</div>'
-    +   '<div class="bg-[#1E2329] rounded-xl border border-[#2E3440] p-4">'
-    +     '<div class="grid grid-cols-3 gap-3">' + bizHTML + '</div>'
-    +   '</div>'
-    + '</div>'
-
-    // BD notes
-    + '<div class="mx-4 mb-3">'
+  // 9. BD 备注
+  html += '<div class="mx-4 mt-3">'
     +   '<div class="text-[14px] font-semibold text-[#EAECEF] mb-2">BD 备注</div>'
     +   '<div class="bg-[#1E2329] rounded-xl border border-[#2E3440] p-4">'
-    +     '<textarea id="bd-note" class="w-full bg-[#2B3139] text-[#EAECEF] text-[13px] rounded-lg p-3 border border-[#2E3440] outline-none resize-none min-h-[100px]" placeholder="添加备注...">' + savedNote.replace(/</g, '&lt;') + '</textarea>'
+    +     '<textarea id="bd-note" class="w-full bg-[#2B3139] text-[#EAECEF] text-[13px] rounded-lg p-3 border border-[#2E3440] outline-none resize-none min-h-[100px] placeholder-[#474D57]" placeholder="添加备注...">' + esc(savedNote) + '</textarea>'
     +   '</div>'
-    + '</div>'
+    + '</div>';
 
-    // Follow-up records placeholder
-    + '<div class="mx-4 mb-6">'
-    +   '<div class="text-[14px] font-semibold text-[#EAECEF] mb-2">跟进记录</div>'
+  // 10. 跟进记录
+  var followupHTML = followups.map(function(f) {
+    return '<div>'
+      + '<div class="text-[11px] text-[#848E9C]">' + f.date + ' \u00b7 ' + f.bd + '</div>'
+      + '<div class="text-[13px] text-[#EAECEF]">' + f.text + '</div>'
+      + '</div>';
+  }).join('');
+
+  html += '<div class="mx-4 mt-3 mb-6">'
+    +   '<div class="flex items-center justify-between mb-2">'
+    +     '<div class="text-[14px] font-semibold text-[#EAECEF]">跟进记录</div>'
+    +     '<span class="text-[11px] text-[#F0B90B] cursor-pointer">+ 添加记录</span>'
+    +   '</div>'
     +   '<div class="bg-[#1E2329] rounded-xl border border-[#2E3440] p-4">'
-    +     '<div class="text-[13px] text-[#848E9C]">暂无跟进记录，后续版本将支持添加跟进。</div>'
+    +     '<div class="border-l-2 border-[#2E3440] pl-3 space-y-4">'
+    +       followupHTML
+    +     '</div>'
     +   '</div>'
     + '</div>';
 
   document.getElementById('page-content').innerHTML = html;
 
-  // Auto-save BD notes on input
+  // --- Interactive: BD notes auto-save ---
   var noteEl = document.getElementById('bd-note');
   if (noteEl) {
     noteEl.addEventListener('input', function() {
       localStorage.setItem(noteKey, noteEl.value);
     });
   }
+
+  // --- Interactive: BD tag add (simple prompt) ---
+  document.getElementById('add-tag-btn').addEventListener('click', function() {
+    var newTag = prompt('输入新标签:');
+    if (!newTag || !newTag.trim()) return;
+    newTag = newTag.trim();
+    savedTags.push(newTag);
+    localStorage.setItem(tagKey, JSON.stringify(savedTags));
+    renderTags();
+  });
+
+  function renderTags() {
+    var container = document.getElementById('bd-tags-container');
+    var inner = savedTags.map(function(tag) {
+      return '<span class="bd-tag text-[11px] px-2.5 py-1 rounded-full bg-[#0D1F2D] text-[#4DA6FF] cursor-pointer" data-tag="' + esc(tag) + '">' + esc(tag) + '</span>';
+    }).join('');
+    inner += '<span id="add-tag-btn" class="text-[11px] px-2.5 py-1 rounded-full border border-dashed border-[#474D57] text-[#474D57] cursor-pointer">+ 添加</span>';
+    container.innerHTML = inner;
+    // Re-bind add button
+    document.getElementById('add-tag-btn').addEventListener('click', function() {
+      var newTag = prompt('输入新标签:');
+      if (!newTag || !newTag.trim()) return;
+      newTag = newTag.trim();
+      savedTags.push(newTag);
+      localStorage.setItem(tagKey, JSON.stringify(savedTags));
+      renderTags();
+    });
+    // Bind tag click to remove
+    container.querySelectorAll('.bd-tag').forEach(function(el) {
+      el.addEventListener('click', function() {
+        var tag = el.getAttribute('data-tag');
+        savedTags = savedTags.filter(function(t) { return t !== tag; });
+        localStorage.setItem(tagKey, JSON.stringify(savedTags));
+        renderTags();
+      });
+    });
+  }
+
+  // Initial bind for tag removal on existing tags
+  document.querySelectorAll('.bd-tag').forEach(function(el) {
+    el.addEventListener('click', function() {
+      var tag = el.getAttribute('data-tag');
+      savedTags = savedTags.filter(function(t) { return t !== tag; });
+      localStorage.setItem(tagKey, JSON.stringify(savedTags));
+      renderTags();
+    });
+  });
+
 })();
 </script>
 
