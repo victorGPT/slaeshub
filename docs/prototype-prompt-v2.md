@@ -1,3 +1,5 @@
+> ⚠️ 本文档为旧版原型生成 prompt（基于高价值/高潜力分类）。新产品概念见 `product-concept-v2.md`。
+
 > 将此 prompt 完整提供给 AI 工具生成原型代码
 
 > Repository note: this file is the upstream generation prompt for the v2 prototype flow. The actual page inventory in this repo is defined by `prototype/` and summarized in `README.md`.

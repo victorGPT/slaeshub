@@ -1,14 +1,13 @@
 # Sales Hub
 
-当前仓库是一个处于概念验证阶段的 `Sales Hub` 项目，内容由产品文档、模拟数据脚本和静态高保真原型组成；它还不是正式的前端应用工程。
+以资金沉淀为北极星的销售工作台。当前仓库处于概念验证阶段，内容由产品文档、模拟数据脚本和静态高保真原型组成；它还不是正式的前端应用工程。
 
 ## 当前事实源
 
 ### 产品与业务
 
-- 产品定位与首页框架：`docs/product-concept.md`
+- 产品定位与核心数据口径：`docs/product-concept-v2.md`
 - 净利润贡献与业务口径：`docs/业务逻辑梳理.md`
-- 待确认字段与口径清单：`docs/主动观察核心字段计算公式及确认清单.md`
 
 ### 原型实现
 
@@ -44,9 +43,8 @@ scripts/simulate_clients.py
 
 ### 正在使用
 
-- `docs/product-concept.md`
+- `docs/product-concept-v2.md`
 - `docs/业务逻辑梳理.md`
-- `docs/主动观察核心字段计算公式及确认清单.md`
 - `docs/prototype-prompt-v2.md`
 - `prototype/index.html`
 - `prototype/home-a.html`
@@ -65,8 +63,11 @@ scripts/simulate_clients.py
 
 - `docs/prototype-prompt.md`
 - `prototype/home.html`
+- `docs/archive/product-concept-v1.md`（旧版产品概念）
+- `docs/archive/主动观察核心字段计算公式及确认清单.md`
+- `docs/archive/主动观察榜单定义.md`
 
-这两个文件对应原型 v1 叙事，不再作为当前首页结构的事实源。
+以上文件对应旧版叙事，不再作为当前事实源。
 
 ## 已知缺口
 
