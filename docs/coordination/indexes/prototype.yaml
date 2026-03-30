@@ -16,9 +16,9 @@ tasks:
       - prototype/clients.html
   - id: PROTO-002
     title: Connect client detail to shared mock data
-    status: open
-    owner: null
-    path: docs/coordination/tasks/prototype/active/PROTO-002.yaml
+    status: done
+    owner: codex-main
+    path: docs/coordination/tasks/prototype/done/PROTO-002.yaml
     touches:
       - prototype/client-detail.html
       - prototype/mock-data.js

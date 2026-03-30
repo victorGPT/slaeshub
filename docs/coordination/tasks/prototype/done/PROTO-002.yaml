@@ -1,0 +1,34 @@
+id: PROTO-002
+title: Connect client detail to shared mock data
+domain: prototype
+status: done
+owner: codex-main
+touches:
+  - prototype/client-detail.html
+  - prototype/mock-data.js
+  - scripts/generate_prototype.py
+goal: Make client-detail.html render by uid from the shared mock data contract instead of a hardcoded client.
+in_scope:
+  - Read uid from the query string.
+  - Render client header, metrics, business lines, records, and related events from shared data.
+out_of_scope:
+  - Real backend integration.
+  - Visual redesign.
+constraints:
+  - Keep the page usable as a standalone local HTML file.
+verify:
+  - open prototype/client-detail.html?uid=<known-uid>
+  - python3 -m unittest tests/test_prototype_data.py
+  - npx playwright screenshot 'file:///Users/victor/Developer/slaeshub/prototype/client-detail.html?uid=42868828' /tmp/slaeshub-client-detail-42868828.png
+  - npx playwright screenshot 'file:///Users/victor/Developer/slaeshub/prototype/client-detail.html?uid=47338124' /tmp/slaeshub-client-detail-47338124.png
+definition_of_done:
+  - Different uid query params render different clients.
+  - Values match homepage/client list for the same client.
+notes:
+  - "DECISION: client-detail.html now reads uid from the query string and falls back to PROTOTYPE_DATA.defaultClientUid."
+  - "DECISION: The existing dark mobile shell was preserved while replacing all hardcoded client content with shared-data rendering."
+  - "DECISION: Related event links now use shared event href values so event-thread can consume the same ids in PROTO-003."
+  - "VERIFIED: Screenshots for uid 42868828 and uid 47338124 rendered different clients and metrics from the same payload."
+  - "VERIFIED: Voucher quick actions no longer rely on global event state, and sent records preserve the selected amount."
+commit_refs:
+  - a91d389
