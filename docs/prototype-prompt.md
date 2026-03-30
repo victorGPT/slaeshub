@@ -1,6 +1,8 @@
 # Sales Hub — 原型生成 Prompt
 
 > 将此 prompt 完整提供给 AI 工具（如 Claude / Cursor）来生成原型代码。
+>
+> Legacy note: this file describes the v1 prototype flow centered on `home.html`. In the current repository, `prototype/home.html` is retained only as historical reference. The active homepage entry flow is `prototype/index.html` -> `home-a.html` / `home-b.html` / `home-c.html`.
 
 ---
 

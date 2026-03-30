@@ -1,5 +1,7 @@
 > 将此 prompt 完整提供给 AI 工具生成原型代码
 
+> Repository note: this file is the upstream generation prompt for the v2 prototype flow. The actual page inventory in this repo is defined by `prototype/` and summarized in `README.md`.
+
 ---
 
 # Role
@@ -36,7 +38,7 @@ Build 7 independent HTML pages + 1 index entry:
 - **Icons**: FontAwesome 6 Free via CDN `<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">`
 - **Device Simulation**: 393px width (iPhone 15 Pro), centered on desktop with `max-w-[393px] mx-auto`. Include simulated iOS status bar (44px, shows 9:41, signal, battery) and bottom safe area (34px).
 - **Images**: Use `https://i.pravatar.cc/40?u={name}` for client avatars (40px circles).
-- **JavaScript**: Vanilla JS only, inline `<script>` per page. Used for: AB version toggle, task state transitions, tab switching.
+- **JavaScript**: Vanilla JS only, inline `<script>` per page. Used for: home version state, task state transitions, tab switching.
 - **No build tools**, no external frameworks, no React. Pure HTML + Tailwind + vanilla JS.
 
 ---
@@ -181,7 +183,7 @@ Task State Colors:
 
 ## Page 1: home-a.html / home-b.html / home-c.html — 首页
 
-> 三个版本共用相同的数据和结构，差异仅在**榜单形态**和**今日行动分组**，见第4节说明。
+> 三个版本共用相同的数据和结构，差异仅在**榜单形态**以及版本 B 的**高价值客户子 Tab**。
 
 ### 核心设计原则
 
@@ -639,21 +641,35 @@ tailwind.config = {
 # Content Structure & Hierarchy
 
 ```
-home.html
+index.html
+├─ 状态栏 (44px)
+├─ 顶部品牌区
+├─ 版本入口卡片 [A | B | C]
+└─ 其他页面快捷入口
+
+home-a.html
 ├─ 状态栏 (44px)
 ├─ 顶部导航 (52px) [Sales Hub | 搜索 铃铛]
-├─ 滚动内容区
-│  ├─ 高价值客户榜单
-│  │  ├─ Section Header + AB切换 [版本A] [版本B]
-│  │  ├─ 版本A: 综合榜单 (5张客户卡片)
-│  │  └─ 版本B: 子Tab [综合|现货|合约] + 对应榜单
-│  ├─ 高潜力客户榜单
-│  │  ├─ Section Header
-│  │  └─ 排名卡片 (3张，含利用率进度条)
-│  └─ 今日行动
-│     ├─ Section Header + AB切换 [版本A] [版本B]
-│     ├─ 版本A: 未开始列表 (3条)
-│     └─ 版本B: [未开始(3)] + [跟进中(2)] 分组
+├─ 顶部Tab [高价值客户 | 高潜客户]
+├─ 高价值客户榜单（综合卡片）
+├─ 高潜客户榜单（卡片）
+└─ 底部Tab (56px) [首页★ | 客群 | 事件(3) | 我的]
+
+home-b.html
+├─ 状态栏 (44px)
+├─ 顶部导航 (52px) [Sales Hub | 搜索 铃铛]
+├─ 顶部Tab [高价值客户 | 高潜客户]
+├─ 高价值客户榜单
+│  └─ 子Tab [综合 | 现货 | 合约]
+├─ 高潜客户榜单（卡片）
+└─ 底部Tab (56px) [首页★ | 客群 | 事件(3) | 我的]
+
+home-c.html
+├─ 状态栏 (44px)
+├─ 顶部导航 (52px) [Sales Hub | 搜索 铃铛]
+├─ 顶部Tab [高价值客户 | 高潜客户]
+├─ 高价值客户榜单（两行列表）
+├─ 高潜客户榜单（两行列表）
 └─ 底部Tab (56px) [首页★ | 客群 | 事件(3) | 我的]
 
 clients.html
@@ -700,12 +716,12 @@ events.html
 - All monetary values: right-aligned in tables, use monospace-style spacing
 - Loss values always red `#F6465D`, gain values always green `#0ECB81`
 
-**AB Test Version Toggle Behavior:**
-- Both versions' HTML exist in the DOM simultaneously
-- JS `onclick` on toggle buttons: add `hidden` class to inactive version, remove from active
-- Default on load: Version A active
-- Toggle state is NOT persisted (resets on reload — acceptable for prototype)
-- Visual distinction: active toggle has gold background, inactive has dim gray
+**Home Version Behavior:**
+- 首页 A / B / C 是三个独立 HTML 文件，不使用单页 AB toggle
+- `index.html` 负责提供版本入口
+- 各 home 页面在加载时写入 `sessionStorage('homeVersion', 'a'/'b'/'c')`
+- `clients.html` 和 `events.html` 底部首页 tab 通过 `goHome()` 读取 `homeVersion` 并跳转回当前版本首页
+- 版本 B 仅在高价值客户 section 内保留子 Tab `[综合 | 现货 | 合约]`
 
 **Event Four-State Machine (event-thread.html):**
 ```
@@ -725,7 +741,7 @@ Implement entirely in vanilla JS, update badge color/text + swap action buttons 
 - All event row taps → `event-thread.html`
 - Bottom tab "客群" → `clients.html`
 - Bottom tab "事件" → `events.html`
-- Bottom tab "首页" → `home.html`
+- Bottom tab "首页" → current home version via `sessionStorage('homeVersion')`
 - Use `<a href="...">` for navigation
 
 **Typography Precision:**
@@ -745,14 +761,16 @@ Implement entirely in vanilla JS, update badge color/text + swap action buttons 
 
 # Output Format
 
-Please output **6 complete independent HTML files**:
+Please output **8 complete independent HTML files**:
 
-1. `index.html` — 原型入口，iframe + 页面选择器
-2. `home.html` — 首页（含AB版本切换JS逻辑）
-3. `clients.html` — 客户列表
-4. `client-detail.html` — 客户详情（王伟明为默认展示数据）
-5. `event-thread.html` — 事件线程（大额出金预警为默认，含四态（未开始/跟进中/已结束/忽略）JS）
-6. `events.html` — 事件中心
+1. `index.html` — 原型入口，版本入口卡片 + 其他页面快捷入口
+2. `home-a.html` — 首页版本 A（综合卡片）
+3. `home-b.html` — 首页版本 B（综合 / 现货 / 合约子 Tab）
+4. `home-c.html` — 首页版本 C（两行列表）
+5. `clients.html` — 客户列表
+6. `client-detail.html` — 客户详情（王伟明为默认展示数据）
+7. `event-thread.html` — 事件线程（大额出金预警为默认，含四态（未开始/跟进中/已结束/忽略）JS）
+8. `events.html` — 事件中心
 
 Each file must:
 1. Be completely self-contained (no external local dependencies)
