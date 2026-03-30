@@ -1,60 +1,84 @@
+"""Tests for deposit-centric data contract (v2)."""
+import csv
+import pytest
 import sys
-import unittest
-from pathlib import Path
+import os
+
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+from scripts.prototype_data import build_mock_data
+
+CSV_PATH = "data/clients_simulation_v2.csv"
 
 
-ROOT = Path(__file__).resolve().parents[1]
-SCRIPTS_DIR = ROOT / "scripts"
-if str(SCRIPTS_DIR) not in sys.path:
-    sys.path.insert(0, str(SCRIPTS_DIR))
-
-from generate_prototype import load  # noqa: E402
-from prototype_data import (  # noqa: E402
-    build_mock_data,
-    client_detail_href,
-    event_thread_href,
-    serialize_mock_data_js,
-)
+def _load():
+    with open(CSV_PATH) as f:
+        return list(csv.DictReader(f))
 
 
-class PrototypeDataContractTest(unittest.TestCase):
-    @classmethod
-    def setUpClass(cls):
-        cls.rows = load()
-        cls.data = build_mock_data(cls.rows)
-
-    def test_client_detail_href_uses_uid_query(self):
-        self.assertEqual(client_detail_href("12345"), "client-detail.html?uid=12345")
-
-    def test_event_thread_href_uses_event_query(self):
-        self.assertEqual(event_thread_href("evt-001"), "event-thread.html?event=evt-001")
-
-    def test_build_mock_data_contains_clients_and_events(self):
-        self.assertEqual(len(self.data["clients"]), len(self.rows))
-        self.assertGreaterEqual(len(self.data["events"]), 8)
-        self.assertIn(self.data["defaultClientUid"], self.data["clientsById"])
-        self.assertIn(self.data["defaultEventId"], self.data["eventsById"])
-
-    def test_all_events_reference_known_clients(self):
-        client_ids = set(self.data["clientsById"])
-        for event in self.data["events"]:
-            self.assertIn(event["clientUid"], client_ids)
-            self.assertEqual(event["href"], event_thread_href(event["id"]))
-            self.assertEqual(event["thread"]["id"], event["id"])
-            self.assertEqual(event["thread"]["clientUid"], event["clientUid"])
-
-    def test_related_event_ids_resolve_to_same_client(self):
-        for client in self.data["clients"]:
-            for event_id in client["relatedEventIds"]:
-                event = self.data["eventsById"][event_id]
-                self.assertEqual(event["clientUid"], client["uid"])
-
-    def test_js_payload_exports_window_contract(self):
-        payload = serialize_mock_data_js(self.data)
-        self.assertIn("window.PROTOTYPE_DATA", payload)
-        self.assertIn(self.data["defaultClientUid"], payload)
-        self.assertIn(self.data["defaultEventId"], payload)
+@pytest.fixture(scope="module")
+def data():
+    return build_mock_data(_load())
 
 
-if __name__ == "__main__":
-    unittest.main()
+def test_top_level_keys(data):
+    for key in ["generatedAt", "clients", "clientsById",
+                "depositRankUids", "churnUids", "growthUids", "stats"]:
+        assert key in data, f"Missing key: {key}"
+
+
+def test_client_count(data):
+    assert len(data["clients"]) == 100
+
+
+def test_client_card_fields(data):
+    """每个客户包含卡片所需的四项信息。"""
+    for c in data["clients"]:
+        assert "depositDisplay" in c
+        assert "status" in c
+        assert "reasonTag" in c
+        assert "suggestedAction" in c
+
+
+def test_deposit_rank_sorted(data):
+    """资沉总量视图按 F_base 降序。"""
+    uids = data["depositRankUids"]
+    deposits = [data["clientsById"][uid]["fBase"] for uid in uids]
+    assert deposits == sorted(deposits, reverse=True)
+
+
+def test_churn_sorted(data):
+    """流失视图按 ChurnPriority 降序。"""
+    uids = data["churnUids"]
+    priorities = [data["clientsById"][uid]["churnPriority"] for uid in uids]
+    assert priorities == sorted(priorities, reverse=True)
+
+
+def test_growth_sorted(data):
+    """增长视图按 GrowthPriority 降序。"""
+    uids = data["growthUids"]
+    priorities = [data["clientsById"][uid]["growthPriority"] for uid in uids]
+    assert priorities == sorted(priorities, reverse=True)
+
+
+def test_churn_uids_all_have_churn_status(data):
+    for uid in data["churnUids"]:
+        assert data["clientsById"][uid]["status"] == "流失"
+
+
+def test_growth_uids_all_have_growth_status(data):
+    for uid in data["growthUids"]:
+        assert data["clientsById"][uid]["status"] == "增长"
+
+
+def test_stats_consistent(data):
+    s = data["stats"]
+    assert s["total"] == 100
+    assert s["churn"] == len(data["churnUids"])
+    assert s["growth"] == len(data["growthUids"])
+    assert s["stable"] == 100 - s["churn"] - s["growth"]
+
+
+def test_detail_href(data):
+    for c in data["clients"]:
+        assert c["detailHref"] == f"client-detail.html?uid={c['uid']}"
