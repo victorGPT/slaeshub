@@ -16,7 +16,7 @@ Create a high-fidelity multi-page HTML prototype for **Sales Hub** — a BD (Bus
 
 Design style: **custom dark crypto-finance** (inspired by Binance dark mode). Core keywords: **暗色专业、金色点睛、数据密集、层次清晰、移动优先**.
 
-Build 7 independent HTML pages + 1 index entry:
+Build 8 independent HTML pages + 1 index entry:
 
 | File | Page |
 |------|------|
@@ -28,6 +28,7 @@ Build 7 independent HTML pages + 1 index entry:
 | `client-detail.html` | 客户详情（360° 数据面板） |
 | `event-thread.html` | 事件线程（四态（未开始/跟进中/已结束/忽略）任务 + AI 建议） |
 | `events.html` | 事件中心 |
+| `profile.html` | 我的（BD 个人页 / 设置入口） |
 
 ---
 
@@ -38,7 +39,7 @@ Build 7 independent HTML pages + 1 index entry:
 - **Icons**: FontAwesome 6 Free via CDN `<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">`
 - **Device Simulation**: 393px width (iPhone 15 Pro), centered on desktop with `max-w-[393px] mx-auto`. Include simulated iOS status bar (44px, shows 9:41, signal, battery) and bottom safe area (34px).
 - **Images**: Use `https://i.pravatar.cc/40?u={name}` for client avatars (40px circles).
-- **JavaScript**: Vanilla JS only, inline `<script>` per page. Used for: home version state, task state transitions, tab switching.
+- **JavaScript**: Vanilla JS only, inline `<script>` per page. Used for: home version state, task state transitions, tab switching, query-param page context, owner switching.
 - **No build tools**, no external frameworks, no React. Pure HTML + Tailwind + vanilla JS.
 
 ---
@@ -362,6 +363,8 @@ Mock client list (10 clients):
 
 ## Page 3: client-detail.html — 客户详情
 
+> Current repo note: in the current repository, this page reads `uid` from the query string (`client-detail.html?uid=<uid>`) and falls back to `PROTOTYPE_DATA.defaultClientUid`. Header, metrics, business lines, note, related events, and follow-up records all render from shared mock data.
+
 **Top Nav:** Back arrow + `王伟明` title + right: `<i class="fa-solid fa-ellipsis">` menu
 
 **Client Header Card:**
@@ -447,6 +450,8 @@ Timeline style (left vertical line in `#2E3440`):
 
 ## Page 4: event-thread.html — 事件线程
 
+> Current repo note: in the current repository, this page reads `event` from the query string (`event-thread.html?event=<event-id>`) and falls back to `PROTOTYPE_DATA.defaultEventId`. Event header, state badge, AI suggestions, script, voucher area, and timeline all render from shared event data linked back to the client dataset.
+
 **Top Nav:** Back arrow + event type as title (e.g., `大额出金预警`) + signal dot
 
 **Event Header Card:**
@@ -528,6 +533,8 @@ Timeline entry input:
 
 ## Page 5: events.html — 事件中心
 
+> Current repo note: in the current repository, the state tabs, type pills, unread badge, and event cards are rendered from `PROTOTYPE_DATA.events`, and each row links to `event-thread.html?event=<event-id>`.
+
 **Top Nav:** `事件中心` title + right: filter icon + unread count badge
 
 **State Filter Tabs (horizontal, full-width):**
@@ -582,11 +589,57 @@ Mock event list (12 events, various states):
 
 ---
 
-## Page 6: index.html — 入口导航
+## Page 6: profile.html — 我的
+
+**Top Nav:** `我的` title
+
+**Profile Header Card:**
+- Avatar derived from BD owner name
+- Name / role / team badge
+- Active event count badge
+- Summary sentence describing current coverage
+
+**Owner Switcher (horizontal pills):**
+```
+[周宁 · 24] [张晨 · 22] [王璐 · 22] [陈哲 · 18] [李明远 · 14]
+```
+- Active owner pill: `bg-[#F0B90B] text-[#0B0E11]`
+- Inactive owner pill: `bg-[#1E2329] text-[#848E9C] border border-[#2E3440]`
+- Supports query param: `profile.html?owner=<bd-name>`
+
+**Stats Summary Row (3 metrics):**
+```
+┌──────────┬──────────┬──────────┐
+│ 管理客户  │ 关联事件  │ 闭环率    │
+│   24     │   2      │  100%    │
+└──────────┴──────────┴──────────┘
+```
+
+**Contribution Structure Card:**
+- Small bar chart derived from top client contribution bars
+- Right-aligned total N90 label
+- Supporting text for total current assets
+
+**重点客户 Section:**
+- Top 3 clients under the selected BD owner
+- Each row links to `client-detail.html?uid=<uid>`
+- Shows label, current assets, active event count, and N90 contribution
+
+**Settings Section:**
+- 通知设置
+- 语言设置
+- 关于 Sales Hub
+- 退出登录
+
+> Current repo note: this page does not introduce a separate profile payload. It derives BD identity, summary stats, chart bars, and focus clients from the same shared client/event mock data contract used by other pages. Settings rows remain static prototype scaffolding.
+
+---
+
+## Page 7: index.html — 入口导航
 
 移动端原生导航页（宽度同样锁定 393px），包含：
 - 三个版本入口卡片（A / B / C），各附说明文字和进入按钮
-- 其他共用页面快捷入口（客户列表、客户详情、事件中心、事件线程）
+- 其他共用页面快捷入口（客户列表、客户详情、事件中心、事件线程、我的）
 - 无 iframe，点击直接跳转对应页面
 
 ---
@@ -597,6 +650,9 @@ Mock event list (12 events, various states):
 - Scrollable content: `overflow-y-auto` in a flex column layout between sticky header and fixed footer
 - All bottom tab bars: `.fixed-bar { position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); width: 393px; }`
 - 版本持久化：各 home 页写入 `sessionStorage('homeVersion', 'a'/'b'/'c')`；clients / events 页底部首页 tab 用 `goHome()` 读取并跳转
+- 详情页上下文：`client-detail.html?uid=<uid>`
+- 事件线程上下文：`event-thread.html?event=<event-id>`
+- 个人页上下文：`profile.html?owner=<bd-name>`（可选，不传则默认覆盖客户最多的 BD）
 - Tailwind custom config: extend colors with all brand tokens (see config below)
 - Typography: `font-family: 'PingFang SC', 'Helvetica Neue', sans-serif` via inline style on `<body>`
 - Touch targets: all interactive elements minimum `44px × 44px`
@@ -680,21 +736,22 @@ clients.html
 └─ 底部Tab [首页 | 客群★ | 事件 | 我的]
 
 client-detail.html
-├─ 顶部导航 [← 王伟明 | ⋮]
+├─ 顶部导航 [← 当前客户 | ⋮]
 ├─ 客户头部卡片 (头像 + 系统Tag + BD标签)
-├─ 核心指标 2×3 网格
+├─ 核心指标 3格
 ├─ 业务线明细 (可折叠)
+├─ 礼金卡片 + 发券面板
 ├─ BD备注 (可编辑)
 ├─ 最近事件 (3条)
-├─ 跟进记录时间线 (3条)
-└─ 底部固定: [+ 添加跟进记录]
+└─ 跟进记录时间线 + 输入区
 
 event-thread.html
-├─ 顶部导航 [← 大额出金预警 | 🔴]
+├─ 顶部导航 [← 当前事件 | 信号点]
 ├─ 事件数据卡片
 ├─ 任务状态条 (四态（未开始/跟进中/已结束/忽略）切换，JS交互)
 ├─ AI行动建议卡片
 ├─ AI话术模板 (可编辑/复制)
+├─ 发券面板
 ├─ 跟进记录时间线 + 输入框
 └─ 无底部Tab (二级页面)
 
@@ -704,6 +761,16 @@ events.html
 ├─ 事件类型Pills (水平滚动)
 ├─ 事件列表 (12条，分页或全量)
 └─ 底部Tab [首页 | 客群 | 事件★(3) | 我的]
+
+profile.html
+├─ 顶部导航 [我的]
+├─ 负责人资料卡
+├─ 负责人切换 pills
+├─ 统计汇总行 (3格)
+├─ 客户贡献结构图
+├─ 当前重点客户 (Top 3)
+├─ 设置列表
+└─ 底部Tab [首页 | 客群 | 事件 | 我的★]
 ```
 
 ---
@@ -738,9 +805,11 @@ Implement entirely in vanilla JS, update badge color/text + swap action buttons 
 
 **Navigation Between Pages:**
 - All client name links → `client-detail.html`
-- All event row taps → `event-thread.html`
+- All client links should use `client-detail.html?uid=<uid>`
+- All event row taps → `event-thread.html?event=<event-id>`
 - Bottom tab "客群" → `clients.html`
 - Bottom tab "事件" → `events.html`
+- Bottom tab "我的" → `profile.html`
 - Bottom tab "首页" → current home version via `sessionStorage('homeVersion')`
 - Use `<a href="...">` for navigation
 
@@ -761,7 +830,7 @@ Implement entirely in vanilla JS, update badge color/text + swap action buttons 
 
 # Output Format
 
-Please output **8 complete independent HTML files**:
+Please output **9 complete independent HTML files**:
 
 1. `index.html` — 原型入口，版本入口卡片 + 其他页面快捷入口
 2. `home-a.html` — 首页版本 A（综合卡片）
@@ -771,6 +840,7 @@ Please output **8 complete independent HTML files**:
 6. `client-detail.html` — 客户详情（王伟明为默认展示数据）
 7. `event-thread.html` — 事件线程（大额出金预警为默认，含四态（未开始/跟进中/已结束/忽略）JS）
 8. `events.html` — 事件中心
+9. `profile.html` — 我的（从共享客户/事件数据派生 BD 视图）
 
 Each file must:
 1. Be completely self-contained (no external local dependencies)
