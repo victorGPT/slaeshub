@@ -4,13 +4,16 @@ Sales Hub — 原型数据注入脚本
 读取 clients_simulation.csv，用真实模拟数据替换原型 HTML 里的假数据。
 
 生成：
-  - home-a.html  高价值 Top5（综合）+ 高潜 Top3
-  - home-b.html  高价值（综合/现货/合约子Tab）+ 高潜 Top3
-  - home-c.html  两行列表版
-  - clients.html 全量 100 客户
+  - prototype/mock-data.js  共享运行时数据
+  - home-a.html             高价值 Top5（综合）+ 高潜 Top3
+  - home-b.html             高价值（综合/现货/合约子Tab）+ 高潜 Top3
+  - home-c.html             两行列表版
+  - clients.html            全量 100 客户
 """
 
 import csv, os, math
+
+from prototype_data import build_mock_data, client_detail_href, serialize_mock_data_js
 
 BASE  = '/Users/victor/Developer/slaeshub'
 CSV   = f'{BASE}/data/clients_simulation.csv'
@@ -344,7 +347,7 @@ def hv_card(r, i):
     signals = gen_signals(r)
     sig_html = signal_badges_html(signals)
 
-    return f'''        <div class="bg-[#1E2329] rounded-xl border border-[#2E3440] p-4 mx-4 mb-2">
+    return f'''        <a href="{client_detail_href(r['uid'])}" class="block bg-[#1E2329] rounded-xl border border-[#2E3440] p-4 mx-4 mb-2 active:bg-[#2B3139]">
           <div class="flex items-center gap-3 mb-2">
             <span class="text-[13px] font-bold w-6 flex-shrink-0" style="color:{rc}">#{i}</span>
             <img src="{avatar_url(r['name'])}" class="w-10 h-10 rounded-full {border} flex-shrink-0" />
@@ -367,7 +370,7 @@ def hv_card(r, i):
             <span class="text-[11px] text-[#848E9C]">效率</span>
             <span class="text-[11px] text-[#EAECEF]">{r['E90']*100:.2f}%</span>
           </div>
-        </div>
+        </a>
 '''
 
 def hp_card(r, i):
@@ -376,7 +379,7 @@ def hp_card(r, i):
     bar_w = min(int(gap_pct), 100)
     rec = recommend_short(r['recommend'])
 
-    return f'''        <div class="bg-[#1E2329] rounded-xl border border-[#2E3440] p-4 mx-4 mb-2">
+    return f'''        <a href="{client_detail_href(r['uid'])}" class="block bg-[#1E2329] rounded-xl border border-[#2E3440] p-4 mx-4 mb-2 active:bg-[#2B3139]">
           <div class="flex items-center gap-3 mb-2">
             <span class="text-[13px] font-bold text-[#4DA6FF] w-6 flex-shrink-0">#{i}</span>
             <img src="{avatar_url(r['name'])}" class="w-10 h-10 rounded-full border-2 border-[#4DA6FF] flex-shrink-0" />
@@ -400,7 +403,7 @@ def hp_card(r, i):
             <span class="text-[10px] text-[#848E9C]">（按变现均线估算）</span>
           </div>
           <p class="text-[12px] text-[#F0B90B] truncate">推荐方向：{rec} →</p>
-        </div>
+        </a>
 '''
 
 # ─── 列表行 (Version C) ────────────────────────────────────────────
@@ -416,7 +419,7 @@ def hv_row(r, i, last=False):
         tag_html_str = '<span class="bg-[#0D1F2D] text-[#4DA6FF] text-[10px] px-1.5 py-0.5 rounded-full">沉淀强</span>'
     signals = gen_signals(r)
     sig_html = signal_badges_html(signals)
-    return f'''        <a href="client-detail.html" class="flex items-center px-4 py-3 {border} active:bg-[#2B3139]">
+    return f'''        <a href="{client_detail_href(r['uid'])}" class="flex items-center px-4 py-3 {border} active:bg-[#2B3139]">
           <span class="text-[12px] font-bold w-6 flex-shrink-0" style="color:{rc}">#{i}</span>
           <div class="flex-1 min-w-0">
             <div class="flex items-center gap-1.5 mb-0.5 flex-wrap">
@@ -436,7 +439,7 @@ def hp_row(r, i, last=False):
     border = '' if last else 'border-b border-[#2E3440]'
     rec = recommend_short(r['recommend'])
     bar_w = min(int((r['E90'] / 0.003) * 100), 100)
-    return f'''        <a href="client-detail.html" class="flex items-center px-4 py-3 {border} active:bg-[#2B3139]">
+    return f'''        <a href="{client_detail_href(r['uid'])}" class="flex items-center px-4 py-3 {border} active:bg-[#2B3139]">
           <span class="text-[12px] font-bold text-[#4DA6FF] w-6 flex-shrink-0">#{i}</span>
           <div class="flex-1 min-w-0">
             <div class="flex items-center gap-1.5 mb-0.5 flex-wrap">
@@ -612,7 +615,7 @@ def gen_clients(all_rows, hv, hp):
         name_html = f'<span class="text-[13px] font-semibold text-[#EAECEF]">{nickname}</span>' if nickname else ''
         uid_html  = f'<span class="text-[12px] {"text-[#848E9C]" if nickname else "font-semibold text-[#EAECEF]"}">{r["uid"]}</span>'
 
-        return f'''        <div data-uid="{r['uid']}" onclick="location.href='client-detail.html'"
+        return f'''        <div data-uid="{r['uid']}" onclick="location.href='{client_detail_href(r['uid'])}'"
           class="flex items-center px-4 py-3 {border} active:bg-[#2B3139] cursor-pointer">
           {dot_html}
           <span class="text-[11px] text-[#474D57] w-6 flex-shrink-0">#{i}</span>
@@ -645,7 +648,7 @@ def gen_clients(all_rows, hv, hp):
         nickname = gen_nickname(r, i)
         name_html = f'<span class="text-[13px] font-semibold text-[#EAECEF]">{nickname}</span>' if nickname else ''
         uid_html  = f'<span class="text-[12px] {"text-[#848E9C]" if nickname else "font-semibold text-[#EAECEF]"}">{r["uid"]}</span>'
-        return f'''        <div data-uid="{r['uid']}" onclick="location.href='client-detail.html'"
+        return f'''        <div data-uid="{r['uid']}" onclick="location.href='{client_detail_href(r['uid'])}'"
           class="flex items-center px-4 py-3 {border} active:bg-[#2B3139] cursor-pointer">
           {dot_html}
           <span class="text-[11px] text-[#4DA6FF] font-bold w-6 flex-shrink-0">#{i}</span>
@@ -806,7 +809,8 @@ def gen_clients(all_rows, hv, hp):
     search_data = [{
         'uid': r['uid'], 'name': r['name'],
         'n90': fmt_n(r['N90']), 'f90': fmt_f(r['F90']),
-        'label': r['label'], 'recommend': recommend_short(r['recommend'])
+        'label': r['label'], 'recommend': recommend_short(r['recommend']),
+        'href': client_detail_href(r['uid'])
     } for r in all_sorted]
 
     import json
@@ -857,7 +861,7 @@ def gen_clients(all_rows, hv, hp):
     if(!items.length) {{ list.innerHTML=''; list.classList.add('hidden'); empty.classList.remove('hidden'); return; }}
     empty.classList.add('hidden'); list.classList.remove('hidden');
     list.innerHTML = items.map((c,i) => `
-      <div onclick="location.href='client-detail.html'" class="flex items-center px-4 py-3 ${{i<items.length-1?'border-b border-[#2E3440]':''}} active:bg-[#2B3139] cursor-pointer">
+      <div onclick="location.href='${{c.href}}'" class="flex items-center px-4 py-3 ${{i<items.length-1?'border-b border-[#2E3440]':''}} active:bg-[#2B3139] cursor-pointer">
         <div class="flex-1 min-w-0">
           <div class="flex items-center gap-1.5 mb-0.5">
             <span class="text-[14px] font-semibold text-[#EAECEF]">${{c.name}}</span>
@@ -926,7 +930,7 @@ def gen_clients(all_rows, hv, hp):
     const list = document.getElementById('search-list');
     if(!matched.length) {{ list.innerHTML = `<div class="px-4 py-6 text-center text-[13px] text-[#474D57]">未找到 UID 或姓名包含"${{q}}"的客户</div>`; return; }}
     list.innerHTML = matched.map((c,i) => `
-      <div onclick="location.href='client-detail.html'" class="flex items-center px-4 py-3 ${{i<matched.length-1?'border-b border-[#2E3440]':''}} active:bg-[#2B3139] cursor-pointer">
+      <div onclick="location.href='${{c.href}}'" class="flex items-center px-4 py-3 ${{i<matched.length-1?'border-b border-[#2E3440]':''}} active:bg-[#2B3139] cursor-pointer">
         <div class="flex-1 min-w-0">
           <div class="flex items-center gap-1.5 mb-0.5">
             <span class="text-[14px] font-semibold text-[#EAECEF]">${{c.name}}</span>
@@ -953,6 +957,7 @@ def gen_clients(all_rows, hv, hp):
 def main():
     print('读取模拟数据...')
     rows = load()
+    runtime_data = build_mock_data(rows)
 
     hv = sorted([r for r in rows if r['label'] == '高价值客户'],
                 key=lambda x: x['N90'], reverse=True)
@@ -960,6 +965,11 @@ def main():
                 key=lambda x: x['opportunity_gap'], reverse=True)
 
     print(f'高价值: {len(hv)}人  高潜: {len(hp)}人  总计: {len(rows)}人')
+
+    runtime_path = f'{PROTO}/mock-data.js'
+    with open(runtime_path, 'w', encoding='utf-8') as f:
+        f.write(serialize_mock_data_js(runtime_data))
+    print(f'  写入 mock-data.js  ({os.path.getsize(runtime_path)//1024}KB)')
 
     pages = {
         'home-a.html': gen_home_a(hv, hp),

@@ -1,11 +1,13 @@
 id: PROTO-001
 title: Unify mock data contract
 domain: prototype
-status: open
-owner: null
+status: in_progress
+owner: codex-main
 touches:
+  - scripts/prototype_data.py
   - scripts/generate_prototype.py
   - scripts/simulate_clients.py
+  - tests/test_prototype_data.py
   - prototype/mock-data.js
   - prototype/home-a.html
   - prototype/home-b.html
@@ -28,5 +30,8 @@ verify:
 definition_of_done:
   - Shared mock data file exists and is generated from the Python pipeline.
   - Homepage and client list pages derive entity links from shared ids.
-notes: []
+notes:
+  - "DECISION: Generate one browser-loadable prototype/mock-data.js from the Python pipeline so file:// pages can consume shared data without fetch."
+  - "DECISION: Keep home-a/home-b/home-c and clients script-generated, but switch all client navigation to uid query params."
+  - "NEXT: Add shared event payload generation now, then use it in later tasks for detail and event pages."
 commit_refs: []

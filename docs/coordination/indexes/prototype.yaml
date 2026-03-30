@@ -1,12 +1,14 @@
 tasks:
   - id: PROTO-001
     title: Unify mock data contract
-    status: open
-    owner: null
+    status: in_progress
+    owner: codex-main
     path: docs/coordination/tasks/prototype/active/PROTO-001.yaml
     touches:
+      - scripts/prototype_data.py
       - scripts/generate_prototype.py
       - scripts/simulate_clients.py
+      - tests/test_prototype_data.py
       - prototype/mock-data.js
       - prototype/home-a.html
       - prototype/home-b.html
