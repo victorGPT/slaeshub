@@ -25,9 +25,9 @@ tasks:
       - scripts/generate_prototype.py
   - id: PROTO-003
     title: Connect events and event thread to shared mock data
-    status: open
-    owner: null
-    path: docs/coordination/tasks/prototype/active/PROTO-003.yaml
+    status: done
+    owner: codex-main
+    path: docs/coordination/tasks/prototype/done/PROTO-003.yaml
     touches:
       - prototype/events.html
       - prototype/event-thread.html

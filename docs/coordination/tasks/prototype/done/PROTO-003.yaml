@@ -1,0 +1,37 @@
+id: PROTO-003
+title: Connect events and event thread to shared mock data
+domain: prototype
+status: done
+owner: codex-main
+touches:
+  - prototype/events.html
+  - prototype/event-thread.html
+  - prototype/mock-data.js
+  - scripts/generate_prototype.py
+goal: Make events.html and event-thread.html render from one shared event dataset linked to the client dataset.
+in_scope:
+  - Render event list from shared data.
+  - Read event id from query params in event-thread.html.
+  - Keep event state machine and follow-up actions working on the selected event view.
+out_of_scope:
+  - Persisting event state across reloads.
+constraints:
+  - Maintain current static-prototype interaction style.
+verify:
+  - open prototype/events.html
+  - open prototype/event-thread.html?event=<known-event-id>
+  - python3 -m unittest tests/test_prototype_data.py
+  - npx playwright screenshot 'file:///Users/victor/Developer/slaeshub/prototype/events.html' /tmp/slaeshub-events.png
+  - npx playwright screenshot 'file:///Users/victor/Developer/slaeshub/prototype/event-thread.html?event=evt-001' /tmp/slaeshub-thread-evt-001.png
+  - npx playwright screenshot 'file:///Users/victor/Developer/slaeshub/prototype/event-thread.html?event=evt-004' /tmp/slaeshub-thread-evt-004.png
+definition_of_done:
+  - Event preview and thread detail stay consistent for the same event.
+  - Thread links resolve to the correct client context.
+notes:
+  - "DECISION: events.html now renders tab counts, type pills, and event cards directly from PROTOTYPE_DATA.events."
+  - "DECISION: event-thread.html now resolves event from the query string and links back into the shared client context via detailHref."
+  - "DECISION: State changes, script editing, voucher sends, and follow-up records operate on the selected event view in memory without introducing a second data source."
+  - "VERIFIED: Shared contract tests now assert event href and thread/client consistency."
+  - "VERIFIED: Screenshots of events.html plus evt-001 and evt-004 thread pages matched the shared event payload and state badges."
+commit_refs:
+  - 5bf4924
