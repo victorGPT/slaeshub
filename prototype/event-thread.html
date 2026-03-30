@@ -1,29 +1,28 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-  <title>事件详情</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Sales Hub -- 事件详情</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
   <script src="https://cdn.tailwindcss.com"></script>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-  <script src="mock-data.js"></script>
   <script>
     tailwind.config = {
       theme: {
         extend: {
           colors: {
-            'hub-bg': '#0B0E11',
-            'hub-card': '#1E2329',
+            'hub-bg':         '#0B0E11',
+            'hub-card':       '#1E2329',
             'hub-card-hover': '#2B3139',
-            'hub-border': '#2E3440',
-            'hub-gold': '#F0B90B',
-            'hub-gold-text': '#F8D33A',
-            'hub-red': '#F6465D',
-            'hub-green': '#0ECB81',
-            'hub-blue': '#4DA6FF',
-            'hub-text': '#EAECEF',
-            'hub-muted': '#848E9C',
-            'hub-disabled': '#474D57',
+            'hub-border':     '#2E3440',
+            'hub-gold':       '#F0B90B',
+            'hub-gold-text':  '#F8D33A',
+            'hub-red':        '#F6465D',
+            'hub-green':      '#0ECB81',
+            'hub-blue':       '#4DA6FF',
+            'hub-text':       '#EAECEF',
+            'hub-muted':      '#848E9C',
+            'hub-disabled':   '#474D57',
           }
         }
       }
@@ -32,403 +31,161 @@
   <style>
     body { font-family: 'PingFang SC', 'Helvetica Neue', sans-serif; background: #0B0E11; }
     ::-webkit-scrollbar { display: none; }
-    * { scrollbar-width: none; }
     html { background: #000; }
     html, body { width: 393px !important; margin: 0 auto !important; overflow-x: hidden; }
+    .fixed-bar { position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); width: 393px; }
+    .state-btn { transition: all 0.15s ease; }
+    .state-btn.active { transform: scale(1.02); }
   </style>
 </head>
-<body class="bg-hub-bg text-hub-text">
-  <div class="w-full min-h-screen flex flex-col">
-    <div class="h-[44px] flex items-center justify-between px-6 shrink-0">
-      <span class="text-[12px] font-semibold text-hub-text">9:41</span>
-      <div class="flex items-center gap-1.5">
-        <i class="fa-solid fa-signal text-[12px] text-hub-text"></i>
-        <i class="fa-solid fa-wifi text-[12px] text-hub-text"></i>
-        <i class="fa-solid fa-battery-full text-[12px] text-hub-text"></i>
-      </div>
-    </div>
+<body class="bg-[#0B0E11] text-[#EAECEF]">
+<div class="w-full">
 
-    <div class="h-[52px] flex items-center justify-between px-4 sticky top-0 bg-hub-bg z-10 border-b border-hub-border shrink-0">
-      <a id="back-link" href="events.html" class="w-8 h-8 flex items-center justify-center text-hub-text">
-        <i class="fa-solid fa-chevron-left text-[16px]"></i>
-      </a>
-      <span id="nav-title" class="text-[17px] font-semibold text-hub-text">事件详情</span>
-      <div class="w-8 h-8 flex items-center justify-center">
-        <span id="nav-pulse" class="w-2.5 h-2.5 rounded-full bg-[#F6465D] inline-block"></span>
-      </div>
-    </div>
-
-    <div class="overflow-y-auto pb-[24px]">
-      <div id="event-card" class="mx-4 mt-4 mb-3"></div>
-      <div id="state-section" class="mx-4 mb-3"></div>
-      <div id="ai-card" class="mx-4 mb-3"></div>
-      <div id="script-card" class="mx-4 mb-3"></div>
-      <div id="voucher-card" class="mx-4 mb-3"></div>
-      <div id="timeline-card" class="mx-4 mb-6"></div>
+  <!-- iOS Status Bar -->
+  <div class="h-[44px] bg-[#0B0E11] flex items-center justify-between px-6 flex-shrink-0">
+    <span class="text-[12px] font-semibold text-[#EAECEF]">9:41</span>
+    <div class="flex items-center gap-1.5 text-[#EAECEF]">
+      <i class="fa-solid fa-signal text-[12px]"></i>
+      <i class="fa-solid fa-wifi text-[12px]"></i>
+      <i class="fa-solid fa-battery-full text-[13px]"></i>
     </div>
   </div>
 
-  <script>
-    const DATA = window.PROTOTYPE_DATA || {};
-    const params = new URLSearchParams(window.location.search);
-    const requestedEventId = params.get('event') || DATA.defaultEventId;
-    const event = DATA.eventsById?.[requestedEventId] || DATA.eventsById?.[DATA.defaultEventId];
-    const client = event ? DATA.clientsById?.[event.clientUid] : null;
-    const thread = event?.thread || null;
-    const stateStyle = {
-      '未开始': { badgeBg: '#2D1B00', badgeText: '#F0B90B', pulse: '#F6465D' },
-      '跟进中': { badgeBg: '#0D1F2D', badgeText: '#4DA6FF', pulse: '#4DA6FF' },
-      '已结束': { badgeBg: '#0D2620', badgeText: '#0ECB81', pulse: '#0ECB81' },
-      '已忽略': { badgeBg: '#1A1A1A', badgeText: '#848E9C', pulse: '#848E9C' },
-    };
+  <!-- Top Nav with Back -->
+  <div class="h-[52px] sticky top-0 z-20 bg-[#0B0E11] border-b border-[#2E3440] flex items-center justify-between px-4">
+    <a href="events.html" class="w-8 h-8 flex items-center justify-center text-[#EAECEF]">
+      <i class="fa-solid fa-chevron-left text-[16px]"></i>
+    </a>
+    <h1 class="text-[17px] font-bold text-[#EAECEF] tracking-wide">事件详情</h1>
+    <div class="w-8"></div>
+  </div>
 
-    let currentState = event ? event.state : '未开始';
-    let scriptText = thread ? thread.script : '';
-    let scriptEditing = false;
-    let selectedAmount = 0;
-    let voucherSentAmount = 0;
-    let followTimeline = thread ? [...thread.followTimeline] : [];
+  <!-- Content -->
+  <div class="px-4 pb-[100px]">
 
-    function escapeHtml(text) {
-      return String(text)
-        .replaceAll('&', '&amp;')
-        .replaceAll('<', '&lt;')
-        .replaceAll('>', '&gt;')
-        .replaceAll('"', '&quot;')
-        .replaceAll("'", '&#39;');
-    }
-
-    function formatMoney(value) {
-      return '$' + value.toLocaleString();
-    }
-
-    function renderNotFound() {
-      document.title = '事件详情';
-      document.getElementById('nav-title').textContent = '事件详情';
-      document.getElementById('event-card').innerHTML = `
-        <div class="bg-hub-card rounded-xl border border-hub-border p-6 text-center text-hub-muted">
-          未找到对应事件
-        </div>`;
-      document.getElementById('state-section').innerHTML = '';
-      document.getElementById('ai-card').innerHTML = '';
-      document.getElementById('script-card').innerHTML = '';
-      document.getElementById('voucher-card').innerHTML = '';
-      document.getElementById('timeline-card').innerHTML = '';
-    }
-
-    function renderHeader() {
-      if (!event || !client || !thread) {
-        renderNotFound();
-        return;
-      }
-      document.title = `${event.title} · 事件详情`;
-      document.getElementById('nav-title').textContent = event.title;
-      document.getElementById('back-link').href = client.detailHref;
-      document.getElementById('nav-pulse').style.background = stateStyle[currentState].pulse;
-    }
-
-    function renderEventCard() {
-      if (!event || !client || !thread) return;
-      document.getElementById('event-card').innerHTML = `
-        <div class="bg-hub-card rounded-xl border border-hub-border p-4">
-          <div class="flex items-start justify-between mb-3">
-            <div class="flex items-center gap-2">
-              <span class="w-2.5 h-2.5 rounded-full shrink-0 mt-0.5" style="background:${event.iconColor}"></span>
-              <span class="text-[15px] font-semibold" style="color:${event.iconColor}">${escapeHtml(event.title)}</span>
-            </div>
-            <span class="text-[11px] text-hub-muted shrink-0">${escapeHtml(thread.occurredAt)}</span>
-          </div>
-          <a href="${escapeHtml(client.detailHref)}" class="flex items-center gap-2 mb-3 active:opacity-80">
-            <div class="w-8 h-8 rounded-full bg-[#2B3139] border border-[#F0B90B] flex items-center justify-center shrink-0">
-              <span class="text-[12px] font-bold text-[#F0B90B]">${escapeHtml(client.name.slice(0, 1))}</span>
-            </div>
-            <span class="text-[13px] text-hub-text">${escapeHtml(client.name)} · UID ${escapeHtml(client.uid)}</span>
-          </a>
-          <div class="border-t border-hub-border mb-3"></div>
-          <div class="grid grid-cols-2 gap-y-3">
-            <div>
-              <div class="text-[11px] text-hub-muted mb-0.5">${escapeHtml(thread.metricPrimaryLabel)}</div>
-              <div class="text-[22px] font-bold leading-tight" style="color:${event.iconColor}">${escapeHtml(thread.metricPrimaryValue)}</div>
-            </div>
-            <div>
-              <div class="text-[11px] text-hub-muted mb-0.5">事件类型</div>
-              <div class="text-[15px] text-hub-text leading-tight pt-1">${escapeHtml(event.type)}</div>
-            </div>
-            <div>
-              <div class="text-[11px] text-hub-muted mb-0.5">${escapeHtml(thread.metricSecondaryLabel)}</div>
-              <div class="text-[15px] text-hub-text">${escapeHtml(thread.metricSecondaryValue)}</div>
-            </div>
-            <div>
-              <div class="text-[11px] text-hub-muted mb-0.5">当前状态</div>
-              <div class="inline-flex mt-1 px-2 py-0.5 rounded-full text-[11px]" style="background:${stateStyle[currentState].badgeBg};color:${stateStyle[currentState].badgeText}">${escapeHtml(currentState)}</div>
-            </div>
-          </div>
-          <div class="mt-3 text-[11px] text-hub-disabled italic">${escapeHtml(thread.rule)}</div>
-        </div>`;
-    }
-
-    function renderStateSection() {
-      if (!event || !client || !thread) return;
-      let actions = '';
-      if (currentState === '未开始') {
-        actions = `
-          <div class="flex gap-3">
-            <button onclick="changeState('跟进中')" class="flex-1 bg-[#F0B90B] text-[#0B0E11] font-semibold py-3 rounded-lg text-[15px]">开始跟进</button>
-            <button onclick="changeState('已忽略')" class="flex-1 bg-[#2B3139] text-hub-text font-semibold py-3 rounded-lg text-[15px]">忽略</button>
-          </div>`;
-      } else if (currentState === '跟进中') {
-        actions = `
-          <div class="flex gap-3">
-            <button onclick="changeState('已结束')" class="flex-1 py-3 rounded-lg text-[15px] font-semibold bg-[#0ECB81] text-[#0B0E11]">标记完成</button>
-            <button onclick="document.getElementById('follow-input').focus()" class="flex-1 bg-[#2B3139] text-hub-text font-semibold py-3 rounded-lg text-[15px]">添加跟进记录</button>
-          </div>`;
-      } else if (currentState === '已结束') {
-        actions = `
-          <div class="flex items-center justify-between">
-            <span class="text-hub-muted text-[13px]">已结束 · ${escapeHtml(event.relativeTime)}</span>
-            <button onclick="document.getElementById('follow-input').focus()" class="bg-[#2B3139] text-hub-text px-4 py-2 rounded-lg text-[13px]">查看记录</button>
-          </div>`;
-      } else {
-        actions = `
-          <div class="flex items-center justify-between">
-            <span class="text-hub-muted text-[13px]">已忽略</span>
-            <button onclick="changeState('未开始')" class="bg-[#2B3139] text-hub-text px-4 py-2 rounded-lg text-[13px]">重新打开</button>
-          </div>`;
-      }
-
-      document.getElementById('state-section').innerHTML = `
-        <div id="state-badge" class="text-center mb-4">
-          <span class="px-4 py-2 rounded-full text-[13px] font-semibold" style="background:${stateStyle[currentState].badgeBg};color:${stateStyle[currentState].badgeText}">${escapeHtml(currentState)}</span>
+    <!-- Event Header -->
+    <div class="bg-[#1E2329] rounded-xl border border-[#2E3440] p-4 mt-4">
+      <div class="flex items-start justify-between mb-3">
+        <div class="flex items-center gap-2">
+          <span class="w-2.5 h-2.5 rounded-full bg-[#F6465D] shrink-0"></span>
+          <span class="text-[15px] font-semibold text-[#F6465D]">资沉流失预警</span>
         </div>
-        <div id="action-buttons">${actions}</div>`;
-    }
-
-    function renderAiCard() {
-      if (!thread) return;
-      document.getElementById('ai-card').innerHTML = `
-        <div class="bg-[#1A2420] border border-[#0ECB81]/30 rounded-xl p-4">
-          <div class="flex items-center justify-between mb-3">
-            <span class="text-[14px] font-semibold text-[#0ECB81]">AI 行动建议</span>
-            <button class="text-[12px] text-hub-muted border border-hub-border px-2.5 py-1 rounded-lg">重新生成</button>
-          </div>
-          <div class="text-[14px] text-hub-text leading-relaxed">
-            <p class="mb-2"><span class="text-[#0ECB81] font-medium">核心判断：</span>${escapeHtml(thread.aiSummary)}</p>
-            <p class="text-hub-muted text-[12px] mb-1.5 font-medium">建议行动：</p>
-            <ol class="space-y-1.5 pl-0">
-              ${thread.aiActions.map((action, index) => `
-                <li class="flex gap-2">
-                  <span class="text-[#F0B90B] font-bold text-[13px] shrink-0">${index + 1}.</span>
-                  <span class="text-[13px]">${escapeHtml(action)}</span>
-                </li>`).join('')}
-            </ol>
-          </div>
-        </div>`;
-    }
-
-    function renderScriptCard() {
-      if (!thread) return;
-      document.getElementById('script-card').innerHTML = `
-        <div class="bg-hub-card rounded-xl border border-hub-border p-4">
-          <div class="flex items-center justify-between mb-3">
-            <span class="text-[14px] font-semibold text-hub-text">话术模板</span>
-            <div class="flex gap-2">
-              <button onclick="toggleScriptEdit()" id="script-edit-btn" class="text-[12px] text-hub-muted border border-hub-border px-2.5 py-1 rounded-lg">${scriptEditing ? '保存' : '编辑'}</button>
-              <button onclick="copyScript()" id="copy-btn" class="text-[12px] text-hub-muted border border-hub-border px-2.5 py-1 rounded-lg">复制</button>
-            </div>
-          </div>
-          <div id="script-content" class="${scriptEditing ? 'hidden' : ''} text-[14px] text-hub-text leading-relaxed whitespace-pre-wrap">${escapeHtml(scriptText)}</div>
-          <textarea id="script-edit" class="${scriptEditing ? '' : 'hidden'} w-full bg-[#2B3139] text-hub-text text-[14px] rounded-lg p-3 border border-hub-border outline-none resize-none min-h-[100px] leading-relaxed">${escapeHtml(scriptText)}</textarea>
-        </div>`;
-    }
-
-    function renderVoucherCard() {
-      if (!thread) return;
-      const budget = thread.voucher.budget;
-      document.getElementById('voucher-card').innerHTML = `
-        <div class="bg-hub-card rounded-xl border border-hub-border p-4">
-          <div class="flex items-center justify-between mb-3">
-            <div class="flex items-center gap-2">
-              <i class="fa-solid fa-ticket text-[#F0B90B] text-[14px]"></i>
-              <span class="text-[14px] font-semibold text-hub-text">发送代金券</span>
-            </div>
-            <span class="text-[11px] text-hub-muted">比例后台可配置</span>
-          </div>
-
-          <div class="bg-[#2B3139] rounded-lg p-3 mb-3">
-            <div class="flex items-center justify-between mb-1">
-              <span class="text-[11px] text-hub-muted">客户综合净贡献（N90）</span>
-              <span class="text-[13px] font-semibold text-[#F8D33A]">${escapeHtml(client.n90Display)}</span>
-            </div>
-            <div class="flex items-center justify-between mb-1">
-              <span class="text-[11px] text-hub-muted">发券比例（统一配置）</span>
-              <span class="text-[13px] text-hub-text">${escapeHtml(thread.voucher.ratioDisplay)}</span>
-            </div>
-            <div class="h-px bg-hub-border my-2"></div>
-            <div class="flex items-center justify-between">
-              <span class="text-[12px] font-semibold text-hub-text">本客户可用额度</span>
-              <span class="text-[15px] font-bold text-[#F0B90B]">${escapeHtml(thread.voucher.budgetDisplay)}</span>
-            </div>
-          </div>
-
-          <div class="flex gap-2 mb-3">
-            <button onclick="setVoucher(0.25, this)" class="voucher-preset flex-1 py-2 rounded-lg text-[12px] ${voucherSentAmount ? 'bg-hub-card text-hub-disabled' : 'bg-[#2B3139] text-hub-muted'}" ${voucherSentAmount ? 'disabled' : ''}>25%</button>
-            <button onclick="setVoucher(0.5, this)" class="voucher-preset flex-1 py-2 rounded-lg text-[12px] ${voucherSentAmount ? 'bg-hub-card text-hub-disabled' : 'bg-[#2B3139] text-hub-muted'}" ${voucherSentAmount ? 'disabled' : ''}>50%</button>
-            <button onclick="setVoucher(1.0, this)" class="voucher-preset flex-1 py-2 rounded-lg text-[12px] ${voucherSentAmount ? 'bg-hub-card text-hub-disabled' : 'bg-[#2B3139] text-hub-muted'}" ${voucherSentAmount ? 'disabled' : ''}>满额</button>
-            <div class="flex-1 flex items-center bg-[#2B3139] rounded-lg px-2">
-              <span class="text-[11px] text-hub-muted">$</span>
-              <input id="voucher-input" type="number" placeholder="自定义"
-                class="w-full bg-transparent text-hub-text text-[12px] outline-none"
-                oninput="onVoucherInput(this.value)" ${voucherSentAmount ? 'disabled' : ''}
-                value="${selectedAmount || ''}" />
-            </div>
-          </div>
-
-          <div id="voucher-confirm-area" class="${selectedAmount > 0 && !voucherSentAmount ? '' : 'hidden'}">
-            <div class="flex items-center justify-between mb-3 bg-[#0D2620] rounded-lg px-3 py-2">
-              <span class="text-[13px] text-hub-text">本次发送</span>
-              <span id="voucher-amount-display" class="text-[15px] font-bold text-[#0ECB81]">${selectedAmount > 0 ? formatMoney(selectedAmount) : '—'}</span>
-            </div>
-            <button onclick="sendVoucher()" class="w-full bg-[#F0B90B] text-[#0B0E11] font-semibold py-3 rounded-xl text-[15px]">确认发送代金券</button>
-          </div>
-
-          <div id="voucher-sent" class="${voucherSentAmount ? '' : 'hidden'} flex items-center justify-between bg-[#0D2620] rounded-lg px-3 py-3">
-            <div class="flex items-center gap-2">
-              <i class="fa-solid fa-circle-check text-[#0ECB81] text-[16px]"></i>
-              <span class="text-[13px] text-[#0ECB81]">代金券已发送</span>
-            </div>
-            <span id="voucher-sent-amount" class="text-[13px] font-semibold text-[#F8D33A]">${voucherSentAmount ? formatMoney(voucherSentAmount) : ''}</span>
-          </div>
-
-          <div class="mt-3 text-[11px] text-hub-muted">额度上限 ${escapeHtml(formatMoney(budget))}，发送后仅在当前原型会话内保留。</div>
-        </div>`;
-    }
-
-    function renderTimelineCard() {
-      if (!thread) return;
-      document.getElementById('timeline-card').innerHTML = `
-        <div class="text-[15px] font-semibold text-hub-text mb-3">跟进记录</div>
-        <div id="follow-timeline" class="relative pl-6 mb-3">
-          <div class="absolute left-2 top-0 bottom-0 w-px bg-hub-border"></div>
-          ${followTimeline.map(record => `
-            <div class="relative mb-4">
-              <div class="absolute -left-4 top-1.5 w-2 h-2 rounded-full bg-[#F0B90B]"></div>
-              <div class="text-[12px] font-semibold text-hub-muted mb-1">${escapeHtml(record.time)}</div>
-              <div class="text-[14px] text-hub-text leading-relaxed">${escapeHtml(record.text)}</div>
-              <div class="text-[12px] text-hub-muted mt-1">— ${escapeHtml(record.author)}</div>
-            </div>`).join('')}
+        <span class="text-[11px] text-[#848E9C]">2小时前</span>
+      </div>
+      <div class="flex items-center gap-2 mb-3">
+        <div class="w-8 h-8 rounded-full bg-[#2B3139] border border-[#F0B90B] flex items-center justify-center shrink-0">
+          <span class="text-[12px] font-bold text-[#F0B90B]">张</span>
         </div>
-        <div class="bg-hub-card rounded-xl border border-hub-border p-3">
-          <textarea id="follow-input" placeholder="记录本次跟进内容..."
-            class="w-full bg-transparent text-hub-text text-[14px] resize-none outline-none min-h-[80px] placeholder-hub-disabled"></textarea>
-          <div class="flex justify-end mt-2">
-            <button onclick="addFollowRecord()" class="bg-[#F0B90B] text-[#0B0E11] font-semibold px-6 py-2 rounded-lg text-[14px]">记录</button>
-          </div>
-        </div>`;
-    }
+        <span class="text-[13px] text-[#EAECEF]">张伟 · UID 100023</span>
+      </div>
+      <div class="border-t border-[#2E3440] pt-3">
+        <div class="text-[11px] text-[#848E9C] mb-0.5">资沉变化</div>
+        <div class="text-[22px] font-bold text-[#F6465D] leading-tight">-$150万</div>
+      </div>
+    </div>
 
-    function renderPage() {
-      renderHeader();
-      if (!event || !client || !thread) return;
-      renderEventCard();
-      renderStateSection();
-      renderAiCard();
-      renderScriptCard();
-      renderVoucherCard();
-      renderTimelineCard();
-    }
+    <!-- AI Context -->
+    <div class="bg-[#1A2420] border border-[#0ECB81]/30 rounded-xl p-4 mt-3">
+      <div class="flex items-center gap-2 mb-3">
+        <i class="fa-solid fa-robot text-[#0ECB81] text-[14px]"></i>
+        <span class="text-[14px] font-semibold text-[#0ECB81]">AI 背景分析</span>
+      </div>
+      <p class="text-[13px] text-[#EAECEF] leading-relaxed">
+        该客户近7天持续出金，30日均资沉从 $1,350万 降至 $1,200万。理财产品已到期未续存。
+      </p>
+    </div>
 
-    function changeState(newState) {
-      currentState = newState;
-      renderPage();
-    }
+    <!-- Suggested Actions -->
+    <div class="bg-[#1E2329] rounded-xl border border-[#2E3440] p-4 mt-3">
+      <div class="flex items-center gap-2 mb-3">
+        <i class="fa-solid fa-list-check text-[#F0B90B] text-[14px]"></i>
+        <span class="text-[14px] font-semibold text-[#EAECEF]">建议行动</span>
+      </div>
+      <ol class="space-y-2.5 pl-0">
+        <li class="flex gap-2">
+          <span class="text-[#F0B90B] font-bold text-[13px] shrink-0">1.</span>
+          <span class="text-[13px] text-[#EAECEF]">安排销售回访，了解出金原因</span>
+        </li>
+        <li class="flex gap-2">
+          <span class="text-[#F0B90B] font-bold text-[13px] shrink-0">2.</span>
+          <span class="text-[13px] text-[#EAECEF]">推送续存权益说明</span>
+        </li>
+        <li class="flex gap-2">
+          <span class="text-[#F0B90B] font-bold text-[13px] shrink-0">3.</span>
+          <span class="text-[13px] text-[#EAECEF]">提供资沉补贴券</span>
+        </li>
+      </ol>
+    </div>
 
-    function toggleScriptEdit() {
-      if (!thread) return;
-      if (scriptEditing) {
-        scriptText = document.getElementById('script-edit').value.trim() || scriptText;
-      }
-      scriptEditing = !scriptEditing;
-      renderScriptCard();
-    }
+    <!-- Task State Buttons -->
+    <div class="mt-4 mb-2">
+      <div class="text-[13px] text-[#848E9C] mb-2">任务状态</div>
+      <div class="flex gap-2" id="state-buttons">
+        <button onclick="setTaskState(this, '未开始')"
+          class="state-btn active flex-1 py-2.5 rounded-lg text-[13px] font-semibold bg-[#2D1B00] text-[#F0B90B] border border-[#F0B90B]/30">
+          未开始
+        </button>
+        <button onclick="setTaskState(this, '跟进中')"
+          class="state-btn flex-1 py-2.5 rounded-lg text-[13px] bg-[#2B3139] text-[#848E9C] border border-transparent">
+          跟进中
+        </button>
+        <button onclick="setTaskState(this, '已完成')"
+          class="state-btn flex-1 py-2.5 rounded-lg text-[13px] bg-[#2B3139] text-[#848E9C] border border-transparent">
+          已完成
+        </button>
+        <button onclick="setTaskState(this, '已忽略')"
+          class="state-btn flex-1 py-2.5 rounded-lg text-[13px] bg-[#2B3139] text-[#848E9C] border border-transparent">
+          已忽略
+        </button>
+      </div>
+    </div>
 
-    function copyScript() {
-      const button = document.getElementById('copy-btn');
-      navigator.clipboard.writeText(scriptText).then(() => {
-        button.textContent = '已复制！';
-        button.classList.add('text-[#0ECB81]');
-        setTimeout(() => {
-          button.textContent = '复制';
-          button.classList.remove('text-[#0ECB81]');
-        }, 2000);
-      }).catch(() => {
-        button.textContent = '已复制！';
-        setTimeout(() => {
-          button.textContent = '复制';
-        }, 2000);
-      });
-    }
+  </div>
 
-    function setVoucher(pct, button) {
-      if (!thread || voucherSentAmount) return;
-      selectedAmount = Math.floor(thread.voucher.budget * pct);
-      document.getElementById('voucher-input').value = selectedAmount;
-      document.querySelectorAll('.voucher-preset').forEach(node => {
-        node.className = 'voucher-preset flex-1 py-2 rounded-lg text-[12px] bg-[#2B3139] text-hub-muted';
-      });
-      button.className = 'voucher-preset flex-1 py-2 rounded-lg text-[12px] bg-[#F0B90B] text-[#0B0E11] font-semibold';
-      showVoucherConfirm();
-    }
+</div>
 
-    function onVoucherInput(value) {
-      if (!thread || voucherSentAmount) return;
-      selectedAmount = Math.min(parseInt(value || '0', 10) || 0, thread.voucher.budget);
-      document.querySelectorAll('.voucher-preset').forEach(node => {
-        node.className = 'voucher-preset flex-1 py-2 rounded-lg text-[12px] bg-[#2B3139] text-hub-muted';
-      });
-      if (selectedAmount > 0) {
-        showVoucherConfirm();
-      } else {
-        document.getElementById('voucher-confirm-area').classList.add('hidden');
-      }
-    }
+<!-- Bottom Tab Bar -->
+<div class="fixed-bar bg-[#0B0E11] border-t border-[#2E3440] z-30">
+  <div class="flex items-center justify-around h-[56px]">
+    <a href="home.html" class="flex flex-col items-center gap-0.5">
+      <i class="fa-solid fa-house text-[18px] text-[#848E9C]"></i>
+      <span class="text-[10px] text-[#848E9C]">首页</span>
+    </a>
+    <a href="clients.html" class="flex flex-col items-center gap-0.5">
+      <i class="fa-solid fa-users text-[18px] text-[#848E9C]"></i>
+      <span class="text-[10px] text-[#848E9C]">客户</span>
+    </a>
+    <a href="events.html" class="flex flex-col items-center gap-0.5">
+      <i class="fa-solid fa-bell text-[18px] text-[#F0B90B]"></i>
+      <span class="text-[10px] text-[#F0B90B] font-semibold">事件</span>
+    </a>
+    <a href="profile.html" class="flex flex-col items-center gap-0.5">
+      <i class="fa-solid fa-user text-[18px] text-[#848E9C]"></i>
+      <span class="text-[10px] text-[#848E9C]">我的</span>
+    </a>
+  </div>
+  <div class="h-[34px]"></div>
+</div>
 
-    function showVoucherConfirm() {
-      document.getElementById('voucher-confirm-area').classList.remove('hidden');
-      document.getElementById('voucher-amount-display').textContent = formatMoney(selectedAmount);
-    }
+<script>
+  const stateStyles = {
+    '未开始': { bg: '#2D1B00', text: '#F0B90B', border: 'rgba(240,185,11,0.3)' },
+    '跟进中': { bg: '#0D1F2D', text: '#4DA6FF', border: 'rgba(77,166,255,0.3)' },
+    '已完成': { bg: '#0D2620', text: '#0ECB81', border: 'rgba(14,203,129,0.3)' },
+    '已忽略': { bg: '#1A1A1A', text: '#848E9C', border: 'rgba(132,142,156,0.3)' },
+  };
 
-    function sendVoucher() {
-      if (!thread || !selectedAmount || voucherSentAmount) return;
-      voucherSentAmount = selectedAmount;
-      const amountText = formatMoney(voucherSentAmount);
-      if (!scriptText.includes(amountText)) {
-        scriptText += `\n\n另外，我们已为您发放了一张 ${amountText} 的专属代金券，可直接用于抵扣手续费，希望能对您有所帮助。`;
-      }
-      followTimeline.unshift({
-        time: '2026-03-30 18:20',
-        text: `已发送 ${amountText} 代金券，作为当前事件跟进补充动作。`,
-        author: client.bdOwner,
-      });
-      selectedAmount = 0;
-      renderScriptCard();
-      renderVoucherCard();
-      renderTimelineCard();
-    }
+  function setTaskState(el, state) {
+    document.querySelectorAll('#state-buttons .state-btn').forEach(btn => {
+      btn.className = 'state-btn flex-1 py-2.5 rounded-lg text-[13px] bg-[#2B3139] text-[#848E9C] border border-transparent';
+    });
+    const s = stateStyles[state];
+    el.style.background = s.bg;
+    el.style.color = s.text;
+    el.style.borderColor = s.border;
+    el.className = 'state-btn active flex-1 py-2.5 rounded-lg text-[13px] font-semibold border';
+  }
+</script>
 
-    function addFollowRecord() {
-      if (!client) return;
-      const input = document.getElementById('follow-input');
-      const text = input.value.trim();
-      if (!text) return;
-      followTimeline.unshift({
-        time: '2026-03-30 18:30',
-        text,
-        author: client.bdOwner,
-      });
-      renderTimelineCard();
-    }
-
-    renderPage();
-  </script>
 </body>
 </html>
