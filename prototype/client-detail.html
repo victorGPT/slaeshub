@@ -1,29 +1,28 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <title>客户详情</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
   <script src="https://cdn.tailwindcss.com"></script>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-  <script src="mock-data.js"></script>
   <script>
     tailwind.config = {
       theme: {
         extend: {
           colors: {
-            'hub-bg': '#0B0E11',
-            'hub-card': '#1E2329',
+            'hub-bg':         '#0B0E11',
+            'hub-card':       '#1E2329',
             'hub-card-hover': '#2B3139',
-            'hub-border': '#2E3440',
-            'hub-gold': '#F0B90B',
-            'hub-gold-text': '#F8D33A',
-            'hub-red': '#F6465D',
-            'hub-green': '#0ECB81',
-            'hub-blue': '#4DA6FF',
-            'hub-text': '#EAECEF',
-            'hub-muted': '#848E9C',
-            'hub-disabled': '#474D57',
+            'hub-border':     '#2E3440',
+            'hub-gold':       '#F0B90B',
+            'hub-gold-text':  '#F8D33A',
+            'hub-red':        '#F6465D',
+            'hub-green':      '#0ECB81',
+            'hub-blue':       '#4DA6FF',
+            'hub-text':       '#EAECEF',
+            'hub-muted':      '#848E9C',
+            'hub-disabled':   '#474D57',
           }
         }
       }
@@ -32,383 +31,198 @@
   <style>
     body { font-family: 'PingFang SC', 'Helvetica Neue', sans-serif; background: #0B0E11; }
     ::-webkit-scrollbar { display: none; }
-    * { scrollbar-width: none; }
     html { background: #000; }
     html, body { width: 393px !important; margin: 0 auto !important; overflow-x: hidden; }
+    .fixed-bar { position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); width: 393px; }
   </style>
 </head>
-<body class="bg-hub-bg text-hub-text">
-<div class="w-full min-h-screen flex flex-col">
-  <div class="h-[44px] flex items-center justify-between px-6 shrink-0">
-    <span class="text-[12px] font-semibold">9:41</span>
-    <div class="flex items-center gap-1.5">
+<body class="bg-[#0B0E11] text-[#EAECEF]">
+<div class="w-full">
+
+  <!-- iOS Status Bar -->
+  <div class="h-[44px] bg-[#0B0E11] flex items-center justify-between px-6 flex-shrink-0">
+    <span class="text-[12px] font-semibold text-[#EAECEF]">9:41</span>
+    <div class="flex items-center gap-1.5 text-[#EAECEF]">
       <i class="fa-solid fa-signal text-[12px]"></i>
       <i class="fa-solid fa-wifi text-[12px]"></i>
-      <i class="fa-solid fa-battery-full text-[12px]"></i>
+      <i class="fa-solid fa-battery-full text-[13px]"></i>
     </div>
   </div>
 
-  <div class="h-[52px] flex items-center justify-between px-4 sticky top-0 bg-hub-bg z-10 border-b border-hub-border shrink-0">
-    <a href="clients.html" class="w-8 h-8 flex items-center justify-center">
-      <i class="fa-solid fa-chevron-left text-[16px]"></i>
-    </a>
-    <span id="nav-title" class="text-[17px] font-semibold">客户详情</span>
-    <button class="w-8 h-8 flex items-center justify-center">
-      <i class="fa-solid fa-ellipsis text-[16px]"></i>
+  <!-- Top Nav -->
+  <div class="h-[52px] sticky top-0 z-20 bg-[#0B0E11] border-b border-[#2E3440] flex items-center justify-between px-4">
+    <button onclick="history.back()" class="w-8 h-8 flex items-center justify-center">
+      <i class="fa-solid fa-chevron-left text-[16px] text-[#EAECEF]"></i>
     </button>
+    <h1 class="text-[17px] font-bold text-[#EAECEF]">客户详情</h1>
+    <div class="w-8"></div>
   </div>
 
-  <div id="content" class="overflow-y-auto pb-[32px]">
-    <div id="client-header" class="mx-4 mt-4"></div>
-    <div id="metric-grid" class="grid grid-cols-3 gap-2 mx-4 mb-3"></div>
+  <!-- Page Content -->
+  <div id="page-content" class="overflow-y-auto pb-[120px]"></div>
 
-    <div class="bg-hub-card rounded-xl border border-hub-border mx-4 mb-3 overflow-hidden">
-      <button onclick="toggleBiz()" class="w-full flex items-center justify-between p-4">
-        <span class="text-[14px] font-semibold">业务线明细 <span class="text-hub-muted font-normal text-[12px]">· 近90天</span></span>
-        <i id="biz-arrow" class="fa-solid fa-chevron-down text-[12px] text-hub-muted"></i>
-      </button>
-      <div id="biz-body" class="hidden px-4 pb-3"></div>
-    </div>
-
-    <div id="gift-card" class="mx-4 mb-3"></div>
-    <div id="voucher-sheet" class="hidden mx-4 mb-3 bg-[#1A2420] border border-[#0ECB81]/30 rounded-xl p-4"></div>
-
-    <div id="note-card" class="mx-4 mb-3"></div>
-    <div id="events-card" class="mx-4 mb-3"></div>
-    <div id="records-card" class="mx-4 mb-6"></div>
-  </div>
 </div>
 
+<!-- Bottom Tab Bar -->
+<div class="fixed-bar bg-[#0B0E11] border-t border-[#2E3440] z-30">
+  <div class="flex items-center justify-around h-[56px]">
+    <a href="home.html" class="flex flex-col items-center gap-0.5">
+      <i class="fa-solid fa-house text-[18px] text-[#848E9C]"></i>
+      <span class="text-[10px] text-[#848E9C]">首页</span>
+    </a>
+    <a href="clients.html" class="flex flex-col items-center gap-0.5">
+      <i class="fa-solid fa-users text-[18px] text-[#848E9C]"></i>
+      <span class="text-[10px] text-[#848E9C]">客户</span>
+    </a>
+    <a href="events.html" class="flex flex-col items-center gap-0.5">
+      <i class="fa-solid fa-bell text-[18px] text-[#848E9C]"></i>
+      <span class="text-[10px] text-[#848E9C]">事件</span>
+    </a>
+    <a href="profile.html" class="flex flex-col items-center gap-0.5">
+      <i class="fa-solid fa-user text-[18px] text-[#848E9C]"></i>
+      <span class="text-[10px] text-[#848E9C]">我的</span>
+    </a>
+  </div>
+  <div class="h-[34px]"></div>
+</div>
+
+<script src="mock-data.js"></script>
 <script>
-  const DATA = window.PROTOTYPE_DATA || {};
-  const params = new URLSearchParams(window.location.search);
-  const requestedUid = params.get('uid') || DATA.defaultClientUid;
+(function() {
+  var D = window.PROTOTYPE_DATA;
+  var uid = new URLSearchParams(location.search).get('uid');
+  var c = uid ? D.clientsById[uid] : null;
 
-  let client = DATA.clientsById?.[requestedUid];
-  if (!client && DATA.defaultClientUid) {
-    client = DATA.clientsById[DATA.defaultClientUid];
+  if (!c) {
+    document.getElementById('page-content').innerHTML =
+      '<div class="mx-4 mt-8 bg-[#1E2329] rounded-xl border border-[#2E3440] p-6 text-center text-[#848E9C]">未找到客户数据</div>';
+    return;
   }
 
-  let draftNote = client ? client.note : '';
-  let isEditingNote = false;
-  let businessOpen = false;
-  let selectedVoucherAmount = 0;
-  let currentRecords = client ? [...client.records] : [];
-
-  function escapeHtml(text) {
-    return String(text)
-      .replaceAll('&', '&amp;')
-      .replaceAll('<', '&lt;')
-      .replaceAll('>', '&gt;')
-      .replaceAll('"', '&quot;')
-      .replaceAll("'", '&#39;');
+  // Format fRecent as display string
+  function formatWan(val) {
+    var wan = val / 10000;
+    if (wan >= 1) return '$ ' + Math.round(wan).toLocaleString() + ' 万';
+    return '$ ' + wan.toFixed(1) + ' 万';
   }
 
-  function businessToneClass(tone) {
-    return tone === 'negative'
-      ? 'text-[#F6465D]'
-      : 'text-[#0ECB81]';
-  }
+  var fRecentDisplay = formatWan(c.fRecent);
+  var trendColor = c.adjustedTrendF > 0 ? '#0ECB81' : (c.adjustedTrendF < 0 ? '#F6465D' : '#848E9C');
+  var trendSign = c.adjustedTrendF > 0 ? '+' : '';
+  var trendPct = trendSign + (c.adjustedTrendF * 100).toFixed(1) + '%';
+  var absArrow = c.absChange > 0 ? ' \\u2191' : (c.absChange < 0 ? ' \\u2193' : '');
 
-  function renderHeader() {
-    document.title = client ? `客户详情 · ${client.name}` : '客户详情';
-    document.getElementById('nav-title').textContent = client ? client.name : '客户详情';
+  // All 6 business lines
+  var allBizLines = ['合约', '杠杆', '理财', '金融卡', '云算力', 'Mini合约'];
+  var bizSet = {};
+  c.bizLines.forEach(function(b) { bizSet[b] = true; });
 
-    if (!client) {
-      document.getElementById('client-header').innerHTML = `
-        <div class="bg-hub-card rounded-xl border border-hub-border p-6 text-center text-hub-muted">
-          未找到对应客户
-        </div>`;
-      return;
-    }
-
-    const systemTags = client.systemTags.map(tag => `
-      <span class="bg-[#2C2E38] text-[#C0C6D1] text-[10px] px-1.5 py-0.5 rounded-full flex items-center gap-1">
-        <i class="fa-solid fa-lock text-[8px]"></i>${escapeHtml(tag)}
-      </span>`).join('');
-    const bdTags = client.bdTags.map(tag => `
-      <span class="bg-[#1A2634] text-[#5B9BD5] text-[10px] px-1.5 py-0.5 rounded-full flex items-center gap-1">
-        <i class="fa-solid fa-pencil text-[8px]"></i>${escapeHtml(tag)}
-      </span>`).join('');
-
-    document.getElementById('client-header').innerHTML = `
-      <div class="bg-hub-card rounded-xl border border-hub-border p-4 mb-3">
-        <div class="flex gap-3 items-start">
-          <div class="w-14 h-14 rounded-full border-2 border-hub-gold bg-[#2B3139] flex items-center justify-center shrink-0">
-            <span class="text-[20px] font-bold text-hub-gold">${escapeHtml(client.name.slice(0, 1))}</span>
-          </div>
-          <div class="flex-1 min-w-0">
-            <div class="flex items-center gap-2 mb-0.5 flex-wrap">
-              <span class="text-[18px] font-bold">${escapeHtml(client.name)}</span>
-              <span class="bg-[#2D1B1E] text-[#F6465D] text-[10px] px-1.5 py-0.5 rounded-full">${escapeHtml(client.label)}</span>
-            </div>
-            <div class="text-[11px] text-hub-muted">
-              UID ${escapeHtml(client.uid)} · BD ${escapeHtml(client.bdOwner)} · 接入 ${escapeHtml(client.onboardingDate)}
-            </div>
-            <div class="flex flex-wrap gap-1 mt-2">${systemTags}</div>
-            <div class="flex flex-wrap gap-1 mt-1">${bdTags}</div>
-            <p class="text-[12px] text-hub-muted mt-3 leading-relaxed">${escapeHtml(client.note)}</p>
-          </div>
-        </div>
-      </div>`;
-  }
-
-  function renderMetrics() {
-    if (!client) return;
-    document.getElementById('metric-grid').innerHTML = `
-      <div class="bg-hub-card rounded-xl border border-hub-border p-3">
-        <div class="text-[10px] text-hub-muted mb-1">综合净贡献</div>
-        <div class="text-[16px] font-bold text-hub-green leading-tight">${escapeHtml(client.n90Display)}</div>
-        <div class="text-[10px] text-hub-green mt-0.5">${escapeHtml(client.quarterTrendDisplay)} 季度环比</div>
-      </div>
-      <div class="bg-hub-card rounded-xl border border-hub-border p-3">
-        <div class="text-[10px] text-hub-muted mb-1">当前资沉</div>
-        <div class="text-[16px] font-bold text-hub-gold-text leading-tight">${escapeHtml(client.currentAssetsDisplay)}</div>
-        <div class="text-[10px] text-hub-muted mt-0.5">近90天日均 ${escapeHtml(client.f90Display)}</div>
-      </div>
-      <div class="bg-hub-card rounded-xl border border-hub-border p-3">
-        <div class="text-[10px] text-hub-muted mb-1">机会缺口</div>
-        <div class="text-[16px] font-bold ${client.opportunityGap > 0 ? 'text-hub-gold-text' : 'text-hub-green'} leading-tight">${escapeHtml(client.opportunityGapDisplay)}</div>
-        <div class="text-[10px] ${client.opportunityGap > 0 ? 'text-hub-red' : 'text-hub-green'} mt-0.5">${client.opportunityGap > 0 ? '待释放' : '超均线'}</div>
-      </div>`;
-  }
-
-  function renderBusinessLines() {
-    if (!client) return;
-    document.getElementById('biz-body').innerHTML = `
-      <div class="flex items-center justify-between py-1.5 border-b border-hub-border">
-        <span class="text-[12px] text-hub-muted w-[90px]">业务线</span>
-        <span class="text-[12px] text-hub-muted flex-1 text-right">净贡献</span>
-        <span class="text-[11px] text-hub-muted w-[40px] text-right">占比</span>
-        <div class="w-16 ml-2"></div>
-      </div>
-      ${client.businessLines.map(line => `
-        <div class="flex items-center justify-between py-2 border-b border-hub-border last:border-b-0">
-          <span class="text-[13px] w-[90px]">${escapeHtml(line.name)}</span>
-          <span class="text-[13px] ${businessToneClass(line.tone)} flex-1 text-right">${escapeHtml(line.valueDisplay)}</span>
-          <span class="text-[11px] text-hub-muted w-[40px] text-right">${escapeHtml(line.ratioDisplay)}</span>
-          <div class="w-16 h-1 bg-hub-border rounded-full overflow-hidden ml-2">
-            <div class="h-full ${line.tone === 'negative' ? 'bg-hub-red' : 'bg-hub-gold'} rounded-full" style="width:${line.barPercent}%"></div>
-          </div>
-        </div>`).join('')}`;
-  }
-
-  function renderGift() {
-    if (!client) return;
-    const gift = client.gift;
-    document.getElementById('gift-card').innerHTML = `
-      <div class="bg-hub-card rounded-xl border border-hub-border p-4">
-        <div class="flex items-center justify-between mb-3">
-          <div class="flex items-center gap-2">
-            <i class="fa-solid fa-ticket text-hub-gold text-[13px]"></i>
-            <span class="text-[14px] font-semibold">礼金</span>
-          </div>
-          <button onclick="openVoucher()" class="bg-hub-gold text-[#0B0E11] text-[12px] font-semibold px-3 py-1 rounded-lg">
-            发送代金券
-          </button>
-        </div>
-        <div class="grid grid-cols-3 gap-2 mb-3">
-          <div class="text-center">
-            <div class="text-[10px] text-hub-muted mb-0.5">已发礼金</div>
-            <div class="text-[14px] font-bold text-hub-gold-text">${escapeHtml(gift.sentDisplay)}</div>
-          </div>
-          <div class="text-center border-x border-hub-border">
-            <div class="text-[10px] text-hub-muted mb-0.5">已激活</div>
-            <div class="text-[14px] font-bold text-hub-green">${escapeHtml(gift.activatedDisplay)}</div>
-          </div>
-          <div class="text-center">
-            <div class="text-[10px] text-hub-muted mb-0.5">剩余额度</div>
-            <div class="text-[14px] font-bold text-hub-gold-text">${escapeHtml(gift.remainingDisplay)}</div>
-          </div>
-        </div>
-        <div class="flex items-center gap-2">
-          <span class="text-[11px] text-hub-muted shrink-0">礼金激活率</span>
-          <div class="flex-1 h-1.5 bg-[#2E3440] rounded-full overflow-hidden">
-            <div class="h-full bg-hub-gold rounded-full" style="width:${gift.activationRate}"></div>
-          </div>
-          <span class="text-[11px] font-semibold text-hub-gold-text shrink-0">${escapeHtml(gift.activationRate)}</span>
-        </div>
-      </div>`;
-
-    document.getElementById('voucher-sheet').innerHTML = `
-      <div class="flex items-center justify-between mb-3">
-        <span class="text-[14px] font-semibold">发送代金券</span>
-        <button onclick="closeVoucher()" class="text-hub-muted text-[12px]">取消</button>
-      </div>
-      <div class="text-[11px] text-hub-muted mb-3">
-        可用额度 <span class="text-hub-gold font-semibold">${escapeHtml(gift.budgetDisplay)}</span>（N90 × ${escapeHtml(gift.ratio)}）
-      </div>
-      <div class="flex gap-2 mb-3">
-        <button onclick="setAmt(0.25, this)" class="vp flex-1 py-2 rounded-lg text-[12px] bg-[#2B3139] text-hub-muted">25%</button>
-        <button onclick="setAmt(0.5, this)" class="vp flex-1 py-2 rounded-lg text-[12px] bg-[#2B3139] text-hub-muted">50%</button>
-        <button onclick="setAmt(1.0, this)" class="vp flex-1 py-2 rounded-lg text-[12px] bg-[#2B3139] text-hub-muted">满额</button>
-        <div class="flex-1 flex items-center bg-[#2B3139] rounded-lg px-2">
-          <span class="text-[11px] text-hub-muted">$</span>
-          <input id="vamt" type="number" placeholder="自定义"
-            class="w-full bg-transparent text-hub-text text-[12px] outline-none"
-            oninput="onVAmt(this.value)" />
-        </div>
-      </div>
-      <div id="voucher-confirm" class="hidden">
-        <div class="flex items-center justify-between mb-3 bg-[#0D2620] rounded-lg px-3 py-2">
-          <span class="text-[13px] text-hub-text">本次发送</span>
-          <span id="voucher-amount" class="text-[15px] font-bold text-hub-green">—</span>
-        </div>
-        <button onclick="doSend()" class="w-full bg-hub-gold text-[#0B0E11] font-semibold py-3 rounded-xl text-[14px]">确认发送</button>
-      </div>`;
-  }
-
-  function renderNote() {
-    if (!client) return;
-    document.getElementById('note-card').innerHTML = `
-      <div class="bg-hub-card rounded-xl border border-hub-border p-4">
-        <div class="flex items-center justify-between mb-3">
-          <span class="text-[14px] font-semibold">BD 备注</span>
-          <button onclick="toggleNote()" id="note-btn" class="text-hub-gold text-[12px]">${isEditingNote ? '保存' : '编辑'}</button>
-        </div>
-        <div id="note-view" class="${isEditingNote ? 'hidden' : ''} text-[13px] text-hub-text leading-relaxed">${escapeHtml(draftNote)}</div>
-        <textarea id="note-edit" class="${isEditingNote ? '' : 'hidden'} w-full bg-[#2B3139] text-hub-text text-[13px] rounded-lg p-3 border border-hub-border outline-none resize-none min-h-[100px]">${escapeHtml(draftNote)}</textarea>
-      </div>`;
-  }
-
-  function renderEvents() {
-    if (!client) return;
-    const events = (client.relatedEventIds || [])
-      .map(id => DATA.eventsById?.[id])
-      .filter(Boolean);
-
-    document.getElementById('events-card').innerHTML = `
-      <div class="bg-hub-card rounded-xl border border-hub-border p-4">
-        <div class="flex items-center justify-between mb-3">
-          <span class="text-[14px] font-semibold">最近事件</span>
-          <a href="events.html" class="text-[12px] text-hub-gold">查看全部</a>
-        </div>
-        ${events.length ? events.map(event => `
-          <a href="${escapeHtml(event.href)}" class="flex items-start gap-3 py-3 border-b border-hub-border last:border-b-0 active:bg-hub-card-hover">
-            <div class="w-9 h-9 rounded-xl flex items-center justify-center shrink-0" style="background:${event.iconBg}">
-              <i class="fa-solid fa-${event.icon}" style="color:${event.iconColor}"></i>
-            </div>
-            <div class="flex-1 min-w-0">
-              <div class="flex items-center justify-between gap-2 mb-1">
-                <span class="text-[13px] font-semibold text-hub-text">${escapeHtml(event.title)}</span>
-                <span class="text-[10px] px-2 py-0.5 rounded-full" style="background:${event.badgeBg};color:${event.badgeText}">${escapeHtml(event.state)}</span>
-              </div>
-              <p class="text-[11px] text-hub-muted truncate">${escapeHtml(event.summary)}</p>
-              <p class="text-[11px] text-hub-gold truncate mt-1">${escapeHtml(event.suggestion)}</p>
-            </div>
-          </a>`).join('') : '<div class="text-[12px] text-hub-muted">当前没有关联事件。</div>'}
-      </div>`;
-  }
-
-  function renderRecords() {
-    if (!client) return;
-    document.getElementById('records-card').innerHTML = `
-      <div class="bg-hub-card rounded-xl border border-hub-border p-4">
-        <div class="flex items-center justify-between mb-3">
-          <span class="text-[14px] font-semibold">跟进记录</span>
-          <span class="text-[11px] text-hub-muted">${currentRecords.length} 条</span>
-        </div>
-        <div id="follow-timeline" class="relative pl-4 border-l border-hub-border mb-4">
-          ${currentRecords.map(record => `
-            <div class="relative mb-4 last:mb-0">
-              <div class="absolute -left-[21px] top-1.5 w-2 h-2 rounded-full bg-hub-gold"></div>
-              <div class="text-[12px] font-semibold text-hub-muted mb-1">${escapeHtml(record.time)}</div>
-              <div class="text-[13px] text-hub-text leading-relaxed">${escapeHtml(record.text)}</div>
-              <div class="text-[12px] text-hub-muted mt-1">— ${escapeHtml(record.author)}</div>
-            </div>`).join('')}
-        </div>
-        <div class="bg-[#2B3139] rounded-xl border border-hub-border p-3 mb-3">
-          <textarea id="follow-input" class="w-full bg-transparent text-hub-text text-[13px] min-h-[80px] outline-none resize-none" placeholder="记录本次跟进内容..."></textarea>
-        </div>
-        <button onclick="addRecord()" class="w-full bg-hub-gold text-[#0B0E11] font-semibold py-3.5 text-[15px] rounded-xl">添加跟进记录</button>
-      </div>`;
-  }
-
-  function renderPage() {
-    renderHeader();
-    renderMetrics();
-    renderBusinessLines();
-    renderGift();
-    renderNote();
-    renderEvents();
-    renderRecords();
-  }
-
-  function toggleBiz() {
-    businessOpen = !businessOpen;
-    document.getElementById('biz-body').classList.toggle('hidden', !businessOpen);
-    document.getElementById('biz-arrow').classList.toggle('rotate-180', businessOpen);
-  }
-
-  function openVoucher() {
-    document.getElementById('voucher-sheet').classList.remove('hidden');
-  }
-
-  function closeVoucher() {
-    document.getElementById('voucher-sheet').classList.add('hidden');
-    selectedVoucherAmount = 0;
-  }
-
-  function setAmt(pct, button) {
-    selectedVoucherAmount = Math.floor(client.gift.budget * pct);
-    document.getElementById('vamt').value = selectedVoucherAmount;
-    document.querySelectorAll('.vp').forEach(btn => {
-      btn.className = 'vp flex-1 py-2 rounded-lg text-[12px] bg-[#2B3139] text-hub-muted';
-    });
-    button.className = 'vp flex-1 py-2 rounded-lg text-[12px] bg-hub-gold text-[#0B0E11] font-semibold';
-    showVoucherConfirm();
-  }
-
-  function onVAmt(value) {
-    selectedVoucherAmount = Math.min(parseInt(value || '0', 10) || 0, client.gift.budget);
-    document.querySelectorAll('.vp').forEach(btn => {
-      btn.className = 'vp flex-1 py-2 rounded-lg text-[12px] bg-[#2B3139] text-hub-muted';
-    });
-    if (selectedVoucherAmount > 0) {
-      showVoucherConfirm();
+  var bizHTML = allBizLines.map(function(line) {
+    var active = bizSet[line];
+    if (active) {
+      return '<div class="flex items-center gap-1.5">'
+        + '<i class="fa-solid fa-check text-[12px] text-[#0ECB81]"></i>'
+        + '<span class="text-[13px] text-[#EAECEF]">' + line + '</span>'
+        + '</div>';
     } else {
-      document.getElementById('voucher-confirm').classList.add('hidden');
+      return '<div class="flex items-center gap-1.5">'
+        + '<i class="fa-solid fa-xmark text-[12px] text-[#848E9C]"></i>'
+        + '<span class="text-[13px] text-[#848E9C]">' + line + '</span>'
+        + '</div>';
     }
-  }
+  }).join('');
 
-  function showVoucherConfirm() {
-    document.getElementById('voucher-confirm').classList.remove('hidden');
-    document.getElementById('voucher-amount').textContent = '$' + selectedVoucherAmount.toLocaleString();
-  }
+  // Load BD notes from localStorage
+  var noteKey = 'bd_note_' + c.uid;
+  var savedNote = localStorage.getItem(noteKey) || '';
 
-  function doSend() {
-    const sentAmount = selectedVoucherAmount;
-    closeVoucher();
-    currentRecords.unshift({
-      time: '2026-03-30 18:00',
-      text: `发送代金券 $${sentAmount.toLocaleString()}，用于后续手续费激活。`,
-      author: client.bdOwner,
+  var html = ''
+    // Client header
+    + '<div class="px-4 pt-4 pb-3">'
+    +   '<div class="text-[20px] font-bold text-[#EAECEF] mb-1">' + c.name + '</div>'
+    +   '<div class="flex items-center gap-2">'
+    +     '<span class="text-[13px] text-[#848E9C]">UID: ' + c.uid + '</span>'
+    +     '<span class="text-[11px] px-2 py-0.5 rounded-full" style="background:' + c.statusBadge.bg + ';color:' + c.statusBadge.text + '">' + c.status + '</span>'
+    +   '</div>'
+    + '</div>'
+
+    // Deposit card
+    + '<div class="mx-4 mb-3 bg-[#1E2329] rounded-xl border border-[#2E3440] p-4">'
+    +   '<div class="text-[13px] text-[#848E9C] mb-1">当前资沉</div>'
+    +   '<div class="text-[28px] font-bold text-[#EAECEF] mb-3">' + c.depositDisplay + '</div>'
+    +   '<div class="flex items-center gap-4 pb-3 border-b border-[#2E3440]">'
+    +     '<div class="flex-1">'
+    +       '<div class="text-[11px] text-[#848E9C] mb-0.5">30日均值</div>'
+    +       '<div class="text-[15px] font-semibold text-[#EAECEF]">' + c.depositDisplay + '</div>'
+    +     '</div>'
+    +     '<div class="flex-1">'
+    +       '<div class="text-[11px] text-[#848E9C] mb-0.5">7日均值</div>'
+    +       '<div class="text-[15px] font-semibold text-[#EAECEF]">' + fRecentDisplay + '</div>'
+    +     '</div>'
+    +   '</div>'
+    +   '<div class="pt-3 flex items-center justify-between">'
+    +     '<div>'
+    +       '<span class="text-[12px] text-[#848E9C]">趋势(去市场): </span>'
+    +       '<span class="text-[14px] font-bold" style="color:' + trendColor + '">' + trendPct + '</span>'
+    +     '</div>'
+    +     '<div>'
+    +       '<span class="text-[12px] text-[#848E9C]">绝对变化: </span>'
+    +       '<span class="text-[14px] font-bold" style="color:' + trendColor + '">' + c.absChangeDisplay + absArrow + '</span>'
+    +     '</div>'
+    +   '</div>'
+    + '</div>'
+
+    // Reason analysis
+    + '<div class="mx-4 mb-3">'
+    +   '<div class="text-[14px] font-semibold text-[#EAECEF] mb-2">原因分析</div>'
+    +   '<div class="bg-[#1E2329] rounded-xl border border-[#2E3440] p-4">'
+    +     '<div class="text-[13px] text-[#EAECEF]">' + c.reasonTag + '</div>'
+    +   '</div>'
+    + '</div>'
+
+    // Suggested action
+    + '<div class="mx-4 mb-3">'
+    +   '<div class="text-[14px] font-semibold text-[#EAECEF] mb-2">建议动作</div>'
+    +   '<div class="bg-[#1E2329] rounded-xl border border-[#2E3440] p-4">'
+    +     '<div class="text-[13px] text-[#F0B90B]"><i class="fa-solid fa-arrow-right text-[11px] mr-1"></i>' + c.suggestedAction + '</div>'
+    +   '</div>'
+    + '</div>'
+
+    // Business participation
+    + '<div class="mx-4 mb-3">'
+    +   '<div class="text-[14px] font-semibold text-[#EAECEF] mb-2">业务参与情况</div>'
+    +   '<div class="bg-[#1E2329] rounded-xl border border-[#2E3440] p-4">'
+    +     '<div class="grid grid-cols-3 gap-3">' + bizHTML + '</div>'
+    +   '</div>'
+    + '</div>'
+
+    // BD notes
+    + '<div class="mx-4 mb-3">'
+    +   '<div class="text-[14px] font-semibold text-[#EAECEF] mb-2">BD 备注</div>'
+    +   '<div class="bg-[#1E2329] rounded-xl border border-[#2E3440] p-4">'
+    +     '<textarea id="bd-note" class="w-full bg-[#2B3139] text-[#EAECEF] text-[13px] rounded-lg p-3 border border-[#2E3440] outline-none resize-none min-h-[100px]" placeholder="添加备注...">' + savedNote.replace(/</g, '&lt;') + '</textarea>'
+    +   '</div>'
+    + '</div>'
+
+    // Follow-up records placeholder
+    + '<div class="mx-4 mb-6">'
+    +   '<div class="text-[14px] font-semibold text-[#EAECEF] mb-2">跟进记录</div>'
+    +   '<div class="bg-[#1E2329] rounded-xl border border-[#2E3440] p-4">'
+    +     '<div class="text-[13px] text-[#848E9C]">暂无跟进记录，后续版本将支持添加跟进。</div>'
+    +   '</div>'
+    + '</div>';
+
+  document.getElementById('page-content').innerHTML = html;
+
+  // Auto-save BD notes on input
+  var noteEl = document.getElementById('bd-note');
+  if (noteEl) {
+    noteEl.addEventListener('input', function() {
+      localStorage.setItem(noteKey, noteEl.value);
     });
-    renderRecords();
   }
-
-  function toggleNote() {
-    if (!client) return;
-    if (isEditingNote) {
-      draftNote = document.getElementById('note-edit').value.trim() || draftNote;
-    }
-    isEditingNote = !isEditingNote;
-    renderNote();
-  }
-
-  function addRecord() {
-    const input = document.getElementById('follow-input');
-    const text = input.value.trim();
-    if (!text) return;
-    currentRecords.unshift({
-      time: '2026-03-30 18:10',
-      text,
-      author: client.bdOwner,
-    });
-    renderRecords();
-  }
-
-  renderPage();
+})();
 </script>
+
 </body>
 </html>
