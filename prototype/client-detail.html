@@ -2,643 +2,455 @@
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Sales Hub — 客户详情</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+  <title>客户详情 · 王伟明</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
   <script>
     tailwind.config = {
       theme: {
         extend: {
           colors: {
-            'dark-bg': '#0B0E11',
-            'dark-card': '#1E2329',
-            'dark-hover': '#2B3139',
-            'dark-border': '#2B3139',
-            'brand-gold': '#F0B90B',
-            'brand-gold-hover': '#D4A50A',
-            'profit-green': '#0ECB81',
-            'loss-red': '#F6465D',
-            'info-blue': '#1E88E5',
-            'text-primary': '#EAECEF',
-            'text-secondary': '#848E9C',
-            'text-tertiary': '#5E6673',
-          },
-          fontFamily: {
-            'sans': ['-apple-system', 'BlinkMacSystemFont', '"Segoe UI"', 'Roboto', 'sans-serif'],
-            'mono': ['"SF Mono"', 'Monaco', '"Fira Mono"', 'monospace'],
+            'hub-bg': '#0B0E11', 'hub-card': '#1E2329', 'hub-card-hover': '#2B3139',
+            'hub-border': '#2E3440', 'hub-gold': '#F0B90B', 'hub-gold-text': '#F8D33A',
+            'hub-red': '#F6465D', 'hub-green': '#0ECB81', 'hub-blue': '#4DA6FF',
+            'hub-text': '#EAECEF', 'hub-muted': '#848E9C', 'hub-disabled': '#474D57',
           }
         }
       }
     }
   </script>
   <style>
-    * { -webkit-tap-highlight-color: transparent; }
-    body { background: #0B0E11; overscroll-behavior: none; }
-    .no-scrollbar::-webkit-scrollbar { display: none; }
-    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-    @keyframes fadeUp {
-      from { opacity: 0; transform: translateY(10px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-    .animate-in { animation: fadeUp 0.35s ease forwards; }
-    .tag-item button { opacity: 0; transition: opacity 0.15s; font-size: 13px; line-height: 1; }
-    .tag-item:hover button, .tag-item:active button { opacity: 0.7; }
-    .tag-system { cursor: default; }
-    .tag-custom { cursor: pointer; position: relative; }
-    .tag-custom::after {
-      content: attr(data-author) ' 添加';
-      position: absolute; bottom: calc(100% + 4px); left: 50%; transform: translateX(-50%);
-      background: #2B3139; color: #848E9C; font-size: 10px; padding: 2px 6px; border-radius: 4px;
-      white-space: nowrap; pointer-events: none; opacity: 0; transition: opacity 0.15s;
-    }
-    .tag-custom:hover::after, .tag-custom:active::after { opacity: 1; }
+    body { font-family: 'PingFang SC', 'Helvetica Neue', sans-serif; background: #0B0E11; }
+    ::-webkit-scrollbar { display: none; }
+    * { scrollbar-width: none; }
+    html { background: #000; }
+    html, body { width: 393px !important; margin: 0 auto !important; overflow-x: hidden; }
+    .fixed-bar { position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); width: 393px; }
   </style>
 </head>
-<body class="bg-dark-bg text-text-primary max-w-[393px] mx-auto min-h-screen flex flex-col">
+<body class="bg-hub-bg text-hub-text">
+<div class="w-full min-h-screen flex flex-col">
 
-  <!-- Status Bar -->
-  <div class="h-[44px] flex items-end justify-between px-6 pb-1 bg-dark-bg sticky top-0 z-50">
-    <span class="text-[14px] font-semibold">14:23</span>
-    <div class="flex items-center gap-1">
-      <i class="fas fa-signal text-[12px]"></i>
-      <i class="fas fa-wifi text-[12px]"></i>
-      <i class="fas fa-battery-full text-[12px]"></i>
+  <!-- 状态栏 -->
+  <div class="h-[44px] flex items-center justify-between px-6 shrink-0">
+    <span class="text-[12px] font-semibold">9:41</span>
+    <div class="flex items-center gap-1.5">
+      <i class="fa-solid fa-signal text-[12px]"></i>
+      <i class="fa-solid fa-wifi text-[12px]"></i>
+      <i class="fa-solid fa-battery-full text-[12px]"></i>
     </div>
   </div>
 
-  <!-- Top Navigation -->
-  <div class="h-[56px] flex items-center justify-between px-4 bg-dark-bg sticky top-[44px] z-50 border-b border-dark-border">
-    <a href="clients.html" class="w-[44px] h-[44px] flex items-center justify-center active:opacity-85">
-      <i class="fas fa-chevron-left text-[16px] text-text-primary"></i>
+  <!-- 顶部导航 -->
+  <div class="h-[52px] flex items-center justify-between px-4 sticky top-0 bg-hub-bg z-10 border-b border-hub-border shrink-0">
+    <a href="clients.html" class="w-8 h-8 flex items-center justify-center">
+      <i class="fa-solid fa-chevron-left text-[16px]"></i>
     </a>
-    <h1 class="text-[18px] font-bold">张伟</h1>
-    <div class="w-[44px] h-[44px] flex items-center justify-center active:opacity-85">
-      <i class="fas fa-ellipsis-vertical text-[16px] text-text-secondary"></i>
-    </div>
+    <span class="text-[17px] font-semibold">王伟明</span>
+    <button class="w-8 h-8 flex items-center justify-center">
+      <i class="fa-solid fa-ellipsis text-[16px]"></i>
+    </button>
   </div>
 
-  <!-- Content -->
-  <div class="flex-1 overflow-y-auto pb-[40px] no-scrollbar">
+  <!-- 滚动内容区 -->
+  <div class="overflow-y-auto pb-[80px]">
 
-    <!-- Client Header Card -->
-    <div class="mx-4 mt-4 bg-dark-card rounded-xl p-4 animate-in">
-      <div class="flex items-start gap-3">
-        <img src="https://ui-avatars.com/api/?name=张伟&background=F0B90B&color=0B0E11&size=96&font-size=0.4&bold=true" class="w-[56px] h-[56px] rounded-full flex-shrink-0" alt="张伟">
-        <div class="flex-1">
-          <h2 class="text-[18px] font-bold">张伟</h2>
-          <div class="flex items-center gap-2 mt-0.5">
-            <p class="text-[13px] text-text-secondary">Whale Capital</p>
-            <span class="text-[11px] font-mono text-text-tertiary bg-dark-hover px-1.5 py-0.5 rounded">UID: 8834710</span>
-          </div>
-          <div id="tags-container" class="flex flex-wrap gap-1.5 mt-2">
-            <!-- System tags: lock icon, no × -->
-            <span class="tag-system text-[11px] px-2 py-0.5 rounded bg-[rgba(240,185,11,0.12)] text-brand-gold flex items-center gap-1" title="系统自动标签"><i class="fas fa-lock text-[8px] opacity-50"></i>🐋 鲸鱼</span>
-            <span class="tag-system text-[11px] px-2 py-0.5 rounded bg-[rgba(240,185,11,0.12)] text-brand-gold flex items-center gap-1" title="系统自动标签"><i class="fas fa-lock text-[8px] opacity-50"></i>高频交易</span>
-            <span class="tag-system text-[11px] px-2 py-0.5 rounded bg-[rgba(246,70,93,0.12)] text-loss-red flex items-center gap-1" title="系统自动标签"><i class="fas fa-lock text-[8px] opacity-50"></i>VIP-1</span>
-            <!-- Custom tags: × to delete, shows who added -->
-            <span class="tag-item tag-custom text-[11px] px-2 py-0.5 rounded bg-[rgba(30,136,229,0.12)] text-info-blue flex items-center gap-1" data-author="张三" title="张三 添加">脾气急<button onclick="removeTag(this)" class="ml-0.5">×</button></span>
-            <button id="add-tag-btn" onclick="showTagInput()" class="text-[11px] px-2 py-0.5 rounded border border-dashed border-text-tertiary text-text-tertiary active:opacity-85">+ 标签</button>
-          </div>
-          <!-- Tag Input (hidden) -->
-          <div id="tag-input-wrap" class="hidden mt-2 flex items-center gap-2">
-            <input id="tag-input" type="text" maxlength="6" placeholder="输入标签（最多6字）" class="flex-1 h-[32px] bg-dark-hover border border-dark-border rounded-lg px-2.5 text-[12px] text-text-primary placeholder-text-tertiary outline-none focus:border-brand-gold transition">
-            <button onclick="addTag()" class="h-[32px] px-3 bg-brand-gold text-dark-bg text-[12px] font-semibold rounded-lg active:opacity-85">添加</button>
-            <button onclick="hideTagInput()" class="h-[32px] px-2 text-[12px] text-text-tertiary active:opacity-85">取消</button>
-          </div>
-          <p id="tag-limit-msg" class="hidden text-[11px] text-loss-red mt-1"></p>
+    <!-- ① 客户头部 -->
+    <div class="bg-hub-card rounded-xl border border-hub-border p-4 mx-4 mt-4 mb-3">
+      <div class="flex gap-3 items-start">
+        <div class="w-14 h-14 rounded-full border-2 border-hub-gold bg-[#2B3139] flex items-center justify-center shrink-0">
+          <span class="text-[20px] font-bold text-hub-gold">王</span>
         </div>
-      </div>
-      <!-- BD Note -->
-      <div class="mt-3 pt-3 border-t border-dark-border">
-        <!-- Display mode -->
-        <div id="note-display" class="flex items-start gap-2">
-          <i class="fas fa-sticky-note text-[12px] text-text-tertiary mt-0.5"></i>
-          <p id="note-text" class="text-[13px] text-text-secondary leading-relaxed flex-1">偏好短线合约，脾气急，响应要快</p>
-          <button onclick="editNote()" class="text-[12px] text-brand-gold active:opacity-85 flex-shrink-0">编辑备注</button>
-        </div>
-        <!-- Edit mode (hidden) -->
-        <div id="note-edit" class="hidden">
-          <textarea id="note-input" rows="2" maxlength="60" class="w-full bg-dark-hover border border-brand-gold rounded-lg px-3 py-2 text-[13px] text-text-primary placeholder-text-tertiary outline-none resize-none leading-relaxed"></textarea>
-          <div class="flex items-center justify-between mt-2">
-            <span id="note-count" class="text-[11px] text-text-tertiary">0/60</span>
-            <div class="flex gap-2">
-              <button onclick="cancelNote()" class="h-[32px] px-3 text-[12px] text-text-tertiary active:opacity-85">取消</button>
-              <button onclick="saveNote()" class="h-[32px] px-3 bg-brand-gold text-dark-bg text-[12px] font-semibold rounded-lg active:opacity-85">保存</button>
-            </div>
+        <div class="flex-1 min-w-0">
+          <div class="flex items-center gap-2 mb-0.5">
+            <span class="text-[18px] font-bold">王伟明</span>
+            <!-- 盈亏状态 小标签 -->
+            <span class="bg-[#2D1B1E] text-[#F6465D] text-[10px] px-1.5 py-0.5 rounded-full">本月亏损</span>
+          </div>
+          <div class="text-[11px] text-hub-muted">UID 10023841 · BD 李明远 · 接入 2024.06</div>
+          <!-- 系统标签 -->
+          <div class="flex flex-wrap gap-1 mt-2">
+            <span class="bg-[#2C2E38] text-[#C0C6D1] text-[10px] px-1.5 py-0.5 rounded-full flex items-center gap-1">
+              <i class="fa-solid fa-lock text-[8px]"></i>合约强
+            </span>
+            <span class="bg-[#2C2E38] text-[#C0C6D1] text-[10px] px-1.5 py-0.5 rounded-full flex items-center gap-1">
+              <i class="fa-solid fa-lock text-[8px]"></i>贡献Top5
+            </span>
+            <span class="bg-[#2D1B1E] text-[#F6465D] text-[10px] px-1.5 py-0.5 rounded-full flex items-center gap-1">
+              <i class="fa-solid fa-lock text-[8px]"></i>沉淀弱
+            </span>
+          </div>
+          <!-- BD 手动标签 -->
+          <div class="flex flex-wrap gap-1 mt-1">
+            <span class="bg-[#1A2634] text-[#5B9BD5] text-[10px] px-1.5 py-0.5 rounded-full flex items-center gap-1">
+              <i class="fa-solid fa-pencil text-[8px]"></i>脾气不好
+            </span>
+            <span class="bg-[#1A2634] text-[#5B9BD5] text-[10px] px-1.5 py-0.5 rounded-full flex items-center gap-1">
+              <i class="fa-solid fa-pencil text-[8px]"></i>偏好短线
+            </span>
+            <span class="bg-[#1A2634] text-[#5B9BD5] text-[10px] px-1.5 py-0.5 rounded-full flex items-center gap-1">
+              <i class="fa-solid fa-pencil text-[8px]"></i>英文沟通
+            </span>
+            <button class="border border-dashed border-hub-border text-hub-muted text-[10px] px-1.5 py-0.5 rounded-full">
+              + 添加
+            </button>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- Metric Cards Grid -->
-    <div class="grid grid-cols-2 gap-3 px-4 mt-4 animate-in" style="animation-delay: 0.08s">
-      <div class="bg-dark-card rounded-xl p-3">
-        <p class="text-[12px] text-text-secondary">本月盈利</p>
-        <p class="text-[20px] font-bold font-mono text-profit-green mt-1">+$182,400</p>
+    <!-- ② 三核心指标（一行三格） -->
+    <div class="grid grid-cols-3 gap-2 mx-4 mb-3">
+      <!-- N90：综合净贡献，季度环比 -->
+      <div class="bg-hub-card rounded-xl border border-hub-border p-3">
+        <div class="text-[10px] text-hub-muted mb-1">综合净贡献</div>
+        <div class="text-[16px] font-bold text-hub-green leading-tight">+$284K</div>
+        <div class="text-[10px] text-hub-green mt-0.5">▲12% 季度环比</div>
       </div>
-      <div class="bg-dark-card rounded-xl p-3">
-        <p class="text-[12px] text-text-secondary">累计交易额</p>
-        <p class="text-[20px] font-bold font-mono text-brand-gold mt-1">$12.4M</p>
+      <!-- F7：近7日资沉，vs 前8周均值 -->
+      <div class="bg-hub-card rounded-xl border border-hub-border p-3">
+        <div class="text-[10px] text-hub-muted mb-1">近7日资沉</div>
+        <div class="text-[16px] font-bold text-hub-gold-text leading-tight">$9.8M</div>
+        <div class="text-[10px] text-hub-red mt-0.5">▼21% vs 8周均</div>
       </div>
-      <div class="bg-dark-card rounded-xl p-3">
-        <p class="text-[12px] text-text-secondary">已投入福利</p>
-        <p class="text-[20px] font-bold font-mono text-info-blue mt-1">$8,200</p>
-      </div>
-      <div class="bg-dark-card rounded-xl p-3">
-        <p class="text-[12px] text-text-secondary">可投入福利</p>
-        <p class="text-[20px] font-bold font-mono text-brand-gold mt-1">$36,480</p>
-      </div>
-      <div class="bg-dark-card rounded-xl p-3">
-        <p class="text-[12px] text-text-secondary">现货持仓</p>
-        <p class="text-[20px] font-bold font-mono text-text-primary mt-1">$2.1M</p>
-      </div>
-      <div class="bg-dark-card rounded-xl p-3">
-        <p class="text-[12px] text-text-secondary">合约持仓</p>
-        <p class="text-[20px] font-bold font-mono text-text-primary mt-1">$4.8M</p>
-      </div>
-    </div>
-
-    <!-- Business Distribution -->
-    <div class="mx-4 mt-4 bg-dark-card rounded-xl p-4 animate-in" style="animation-delay: 0.16s">
-      <h3 class="text-[15px] font-semibold mb-3">业务分布</h3>
-      <div class="space-y-3">
-        <div>
-          <div class="flex justify-between text-[12px] mb-1">
-            <span class="text-text-secondary">合约</span>
-            <span class="text-text-primary font-mono">55%</span>
-          </div>
-          <div class="h-[6px] bg-dark-hover rounded-full overflow-hidden">
-            <div class="h-full bg-brand-gold rounded-full" style="width: 55%"></div>
-          </div>
+      <!-- 机会缺口：和前两格结构一致，标签 + 大数字 + 小副文字 -->
+      <div class="bg-hub-card rounded-xl border border-hub-border p-3">
+        <div class="text-[10px] text-hub-muted mb-1">机会缺口</div>
+        <!-- 高价值：超均线，绿色 -->
+        <div id="gap-high-value">
+          <div class="text-[16px] font-bold text-hub-green leading-tight">+$18,000</div>
+          <div class="text-[10px] text-hub-green mt-0.5">超均线</div>
         </div>
-        <div>
-          <div class="flex justify-between text-[12px] mb-1">
-            <span class="text-text-secondary">现货</span>
-            <span class="text-text-primary font-mono">30%</span>
-          </div>
-          <div class="h-[6px] bg-dark-hover rounded-full overflow-hidden">
-            <div class="h-full bg-info-blue rounded-full" style="width: 30%"></div>
-          </div>
-        </div>
-        <div>
-          <div class="flex justify-between text-[12px] mb-1">
-            <span class="text-text-secondary">理财</span>
-            <span class="text-text-primary font-mono">10%</span>
-          </div>
-          <div class="h-[6px] bg-dark-hover rounded-full overflow-hidden">
-            <div class="h-full bg-profit-green rounded-full" style="width: 10%"></div>
-          </div>
-        </div>
-        <div>
-          <div class="flex justify-between text-[12px] mb-1">
-            <span class="text-text-secondary">U卡</span>
-            <span class="text-text-primary font-mono">5%</span>
-          </div>
-          <div class="h-[6px] bg-dark-hover rounded-full overflow-hidden">
-            <div class="h-full bg-text-tertiary rounded-full" style="width: 5%"></div>
+        <!-- 高潜：缺口金额 + 等级 -->
+        <div id="gap-potential" class="hidden">
+          <div class="text-[16px] font-bold text-hub-gold-text leading-tight">$42,000</div>
+          <div class="mt-0.5">
+            <span class="bg-[#2D1B1E] text-[#F6465D] text-[10px] px-1.5 py-0.5 rounded-full">高</span>
           </div>
         </div>
       </div>
     </div>
+    <!-- ⑦ 业务线明细（折叠） -->
+    <div class="bg-hub-card rounded-xl border border-hub-border mx-4 mb-4 overflow-hidden">
+      <button onclick="toggleBiz()" class="w-full flex items-center justify-between p-4">
+        <span class="text-[14px] font-semibold">业务线明细 <span class="text-hub-muted font-normal text-[12px]">· 近30天</span></span>
+        <i id="biz-arrow" class="fa-solid fa-chevron-down text-[12px] text-hub-muted"></i>
+      </button>
+      <div id="biz-body" class="hidden px-4 pb-3">
+        <div class="flex items-center justify-between py-1.5 border-b border-hub-border">
+          <span class="text-[12px] text-hub-muted w-[90px]">业务线</span>
+          <span class="text-[12px] text-hub-muted flex-1 text-right">净贡献</span>
+          <span class="text-[11px] text-hub-muted w-[32px] text-right">占比</span>
+          <div class="w-16 ml-2"></div>
+        </div>
+        <div class="flex items-center justify-between py-2 border-b border-hub-border">
+          <span class="text-[13px] w-[90px]">双仓合约</span>
+          <span class="text-[13px] text-hub-green flex-1 text-right">+$198,400</span>
+          <span class="text-[11px] text-hub-muted w-[32px] text-right">69.8%</span>
+          <div class="w-16 h-1 bg-hub-border rounded-full overflow-hidden ml-2">
+            <div class="h-full bg-hub-gold rounded-full" style="width:69.8%"></div>
+          </div>
+        </div>
+        <div class="flex items-center justify-between py-2 border-b border-hub-border">
+          <span class="text-[13px] w-[90px]">超级杠杆</span>
+          <span class="text-[13px] text-hub-green flex-1 text-right">+$42,800</span>
+          <span class="text-[11px] text-hub-muted w-[32px] text-right">15.1%</span>
+          <div class="w-16 h-1 bg-hub-border rounded-full overflow-hidden ml-2">
+            <div class="h-full bg-hub-gold rounded-full" style="width:15.1%"></div>
+          </div>
+        </div>
+        <div class="flex items-center justify-between py-2 border-b border-hub-border">
+          <span class="text-[13px] w-[90px]">Mini合约</span>
+          <span class="text-[13px] text-hub-muted flex-1 text-right">—</span>
+          <span class="text-[11px] text-hub-muted w-[32px] text-right">—</span>
+          <div class="w-16 ml-2"></div>
+        </div>
+        <div class="flex items-center justify-between py-2 border-b border-hub-border">
+          <span class="text-[13px] w-[90px]">金融卡</span>
+          <span class="text-[13px] text-hub-green flex-1 text-right">+$12,300</span>
+          <span class="text-[11px] text-hub-muted w-[32px] text-right">4.3%</span>
+          <div class="w-16 h-1 bg-hub-border rounded-full overflow-hidden ml-2">
+            <div class="h-full bg-hub-gold rounded-full" style="width:4.3%"></div>
+          </div>
+        </div>
+        <div class="flex items-center justify-between py-2 border-b border-hub-border">
+          <span class="text-[13px] w-[90px]">云算力</span>
+          <span class="text-[13px] text-hub-green flex-1 text-right">+$8,200</span>
+          <span class="text-[11px] text-hub-muted w-[32px] text-right">2.9%</span>
+          <div class="w-16 h-1 bg-hub-border rounded-full overflow-hidden ml-2">
+            <div class="h-full bg-hub-gold rounded-full" style="width:2.9%"></div>
+          </div>
+        </div>
+        <div class="flex items-center justify-between py-2 border-b border-hub-border">
+          <span class="text-[13px] w-[90px]">理财利息</span>
+          <span class="text-[13px] text-hub-red flex-1 text-right">-$18,500</span>
+          <span class="text-[11px] text-hub-muted w-[32px] text-right">-6.5%</span>
+          <div class="w-16 h-1 bg-hub-border rounded-full overflow-hidden ml-2">
+            <div class="h-full bg-hub-red rounded-full" style="width:6.5%"></div>
+          </div>
+        </div>
+        <div class="flex items-center justify-between py-2">
+          <span class="text-[13px] w-[90px]">返佣支出</span>
+          <span class="text-[13px] text-hub-red flex-1 text-right">-$8,380</span>
+          <span class="text-[11px] text-hub-muted w-[32px] text-right">-3.0%</span>
+          <div class="w-16 h-1 bg-hub-border rounded-full overflow-hidden ml-2">
+            <div class="h-full bg-hub-red rounded-full" style="width:3.0%"></div>
+          </div>
+        </div>
+      </div>
+    </div>
 
-    <!-- Recent Events -->
-    <div class="mx-4 mt-4 animate-in" style="animation-delay: 0.24s">
+
+    <!-- ③ 礼金卡片 -->
+    <div class="bg-hub-card rounded-xl border border-hub-border p-4 mx-4 mb-3">
       <div class="flex items-center justify-between mb-3">
-        <h3 class="text-[15px] font-semibold">最近事件</h3>
-        <button onclick="document.getElementById('create-event-modal').classList.remove('hidden')" class="text-[12px] text-brand-gold flex items-center gap-1 active:opacity-85"><i class="fas fa-plus text-[10px]"></i> 创建事件</button>
-      </div>
-
-      <a href="event-thread.html" class="block bg-dark-card rounded-xl p-3 mb-3 border-l-[3px] border-loss-red active:opacity-85">
-        <div class="flex items-center gap-2 mb-1">
-          <span class="text-[11px] px-1.5 py-0.5 rounded bg-[rgba(246,70,93,0.12)] text-loss-red">⚠️ 大额爆仓</span>
-          <span class="text-[11px] text-text-tertiary">10 分钟前</span>
+        <div class="flex items-center gap-2">
+          <i class="fa-solid fa-ticket text-hub-gold text-[13px]"></i>
+          <span class="text-[14px] font-semibold">礼金</span>
         </div>
-        <p class="text-[13px] text-text-primary">合约爆仓 $320,000</p>
+        <button onclick="openVoucher()" class="bg-hub-gold text-[#0B0E11] text-[12px] font-semibold px-3 py-1 rounded-lg">
+          发送代金券
+        </button>
+      </div>
+      <!-- 三项数据一行 -->
+      <div class="grid grid-cols-3 gap-2 mb-3">
+        <div class="text-center">
+          <div class="text-[10px] text-hub-muted mb-0.5">已发礼金</div>
+          <div class="text-[14px] font-bold text-hub-gold-text">$12,000</div>
+        </div>
+        <div class="text-center border-x border-hub-border">
+          <div class="text-[10px] text-hub-muted mb-0.5">已激活</div>
+          <div class="text-[14px] font-bold text-hub-green">$5,000</div>
+        </div>
+        <div class="text-center">
+          <div class="text-[10px] text-hub-muted mb-0.5">剩余额度</div>
+          <div class="text-[14px] font-bold text-hub-gold-text">$44,864</div>
+        </div>
+      </div>
+      <!-- 礼金激活率 -->
+      <div class="flex items-center gap-2">
+        <span class="text-[11px] text-hub-muted shrink-0">礼金激活率</span>
+        <div class="flex-1 h-1.5 bg-[#2E3440] rounded-full overflow-hidden">
+          <div class="h-full bg-hub-gold rounded-full" style="width:41.7%"></div>
+        </div>
+        <span class="text-[11px] font-semibold text-hub-gold-text shrink-0">41.7%</span>
+      </div>
+    </div>
+
+    <!-- 发券弹层（默认隐藏） -->
+    <div id="voucher-sheet" class="hidden mx-4 mb-3 bg-[#1A2420] border border-[#0ECB81]/30 rounded-xl p-4">
+      <div class="flex items-center justify-between mb-3">
+        <span class="text-[14px] font-semibold">发送代金券</span>
+        <button onclick="closeVoucher()" class="text-hub-muted text-[12px]">取消</button>
+      </div>
+      <div class="text-[11px] text-hub-muted mb-3">
+        可用额度 <span class="text-hub-gold font-semibold">$44,864</span>（N90 × 20%，统一配置）
+      </div>
+      <div class="flex gap-2 mb-3">
+        <button onclick="setAmt(0.25)" class="vp flex-1 py-2 rounded-lg text-[12px] bg-[#2B3139] text-hub-muted">25%</button>
+        <button onclick="setAmt(0.5)"  class="vp flex-1 py-2 rounded-lg text-[12px] bg-[#2B3139] text-hub-muted">50%</button>
+        <button onclick="setAmt(1.0)"  class="vp flex-1 py-2 rounded-lg text-[12px] bg-[#2B3139] text-hub-muted">满额</button>
+        <div class="flex-1 flex items-center bg-[#2B3139] rounded-lg px-2">
+          <span class="text-[11px] text-hub-muted">$</span>
+          <input id="vamt" type="number" placeholder="自定义"
+            class="w-full bg-transparent text-hub-text text-[12px] outline-none"
+            oninput="onVAmt(this.value)" />
+        </div>
+      </div>
+      <div id="vconfirm" class="hidden mb-2">
+        <div class="flex items-center justify-between bg-[#0D2620] rounded-lg px-3 py-2 mb-2">
+          <span class="text-[12px] text-hub-text">本次发送</span>
+          <span class="text-[15px] font-bold text-hub-green" id="vamt-display">—</span>
+        </div>
+        <button onclick="doSend()" class="w-full bg-hub-gold text-[#0B0E11] font-semibold py-3 rounded-xl text-[14px]">确认发送</button>
+      </div>
+    </div>
+
+    <!-- ④ 最近事件 -->
+    <div class="mx-4 mb-3">
+      <div class="text-[15px] font-semibold mb-2">最近事件</div>
+
+      <a href="event-thread.html" class="flex items-center gap-3 bg-hub-card rounded-xl border border-hub-border p-3 mb-2 active:bg-hub-card-hover">
+        <div class="w-8 h-8 rounded-lg bg-[#2D1B1E] flex items-center justify-center shrink-0">
+          <i class="fa-solid fa-arrow-trend-down text-hub-red text-[13px]"></i>
+        </div>
+        <div class="flex-1 min-w-0">
+          <div class="flex items-center gap-2 mb-0.5">
+            <span class="text-[13px] font-medium">大额出金预警</span>
+            <span class="bg-[#2D1B00] text-hub-gold text-[10px] px-1.5 py-0.5 rounded-full">未开始</span>
+          </div>
+          <div class="text-[11px] text-hub-muted">$2.1M · 10分钟前</div>
+        </div>
+        <i class="fa-solid fa-chevron-right text-[12px] text-hub-disabled shrink-0"></i>
       </a>
 
-      <div class="bg-dark-card rounded-xl p-3 mb-3 border-l-[3px] border-brand-gold">
-        <div class="flex items-center gap-2 mb-1">
-          <span class="text-[11px] px-1.5 py-0.5 rounded bg-[rgba(240,185,11,0.12)] text-brand-gold">📊 异常行为</span>
-          <span class="text-[11px] text-text-tertiary">昨天</span>
+      <a href="event-thread.html" class="flex items-center gap-3 bg-hub-card rounded-xl border border-hub-border p-3 mb-2 active:bg-hub-card-hover">
+        <div class="w-8 h-8 rounded-lg bg-[#2D2010] flex items-center justify-center shrink-0">
+          <i class="fa-solid fa-chart-line text-hub-gold text-[13px]"></i>
         </div>
-        <p class="text-[13px] text-text-primary">高频交易频率较上周提升 40%</p>
-        <div class="mt-2 pt-2 border-t border-dark-border flex items-start gap-2">
-          <div class="w-[4px] h-[4px] rounded-full bg-brand-gold mt-1.5 flex-shrink-0"></div>
-          <p class="text-[11px] text-text-tertiary leading-relaxed flex-1"><span class="text-text-secondary">张三</span> · 昨天 16:00 — 已观察到频率变化，初步判断为策略调整，持续监控中</p>
+        <div class="flex-1 min-w-0">
+          <div class="flex items-center gap-2 mb-0.5">
+            <span class="text-[13px] font-medium">本月盈利超阈值</span>
+            <span class="bg-[#2D1B00] text-hub-gold text-[10px] px-1.5 py-0.5 rounded-full">未开始</span>
+          </div>
+          <div class="text-[11px] text-hub-muted">盈利 $82K · 3小时前</div>
         </div>
-      </div>
+        <i class="fa-solid fa-chevron-right text-[12px] text-hub-disabled shrink-0"></i>
+      </a>
 
-      <div class="bg-dark-card rounded-xl p-3 mb-3 border-l-[3px] border-profit-green">
-        <div class="flex items-center gap-2 mb-1">
-          <span class="text-[11px] px-1.5 py-0.5 rounded bg-[rgba(14,203,129,0.12)] text-profit-green">✅ 跟进完成</span>
-          <span class="text-[11px] text-text-tertiary">03-25</span>
+      <a href="event-thread.html" class="flex items-center gap-3 bg-hub-card rounded-xl border border-hub-border p-3 mb-2 active:bg-hub-card-hover">
+        <div class="w-8 h-8 rounded-lg bg-[#222] flex items-center justify-center shrink-0">
+          <i class="fa-solid fa-file-pen text-hub-muted text-[13px]"></i>
         </div>
-        <p class="text-[13px] text-text-primary">VIP 手续费方案已确认</p>
-        <div class="mt-2 pt-2 border-t border-dark-border flex items-start gap-2">
-          <div class="w-[4px] h-[4px] rounded-full bg-profit-green mt-1.5 flex-shrink-0"></div>
-          <p class="text-[11px] text-text-tertiary leading-relaxed flex-1"><span class="text-text-secondary">张三</span> · 03-25 10:15 — 客户同意续约，手续费方案已生效</p>
+        <div class="flex-1 min-w-0">
+          <div class="flex items-center gap-2 mb-0.5">
+            <span class="text-[13px] font-medium">首次合约体验邀约</span>
+            <span class="bg-[#0D2620] text-hub-green text-[10px] px-1.5 py-0.5 rounded-full">已结束</span>
+          </div>
+          <div class="text-[11px] text-hub-muted">BD 主动记录 · 3天前</div>
         </div>
-      </div>
-
-      <a href="events.html" class="block text-center text-[13px] text-brand-gold py-2 active:opacity-85">查看全部事件 →</a>
+        <i class="fa-solid fa-chevron-right text-[12px] text-hub-disabled shrink-0"></i>
+      </a>
     </div>
 
-    <!-- Follow-up Records -->
-    <div class="mx-4 mt-4 mb-6 animate-in" style="animation-delay: 0.32s">
-      <h3 class="text-[15px] font-semibold mb-3">跟进记录</h3>
+    <!-- ⑤ 跟进记录 -->
+    <div class="mx-4 mb-3">
+      <div class="text-[15px] font-semibold mb-3">跟进记录</div>
+      <div id="follow-timeline" class="relative pl-6">
+        <div class="absolute left-2 top-0 bottom-0 w-px bg-hub-border"></div>
 
-      <div id="detail-timeline" class="relative pl-4 border-l-2 border-dark-border space-y-4">
-        <div class="relative">
-          <div class="absolute -left-[21px] top-1 w-[8px] h-[8px] bg-brand-gold rounded-full"></div>
-          <p class="text-[12px] text-text-tertiary">03-26 14:30 — 张三</p>
-          <span class="inline-block text-[10px] px-1.5 py-0.5 rounded font-medium mt-0.5" style="background:rgba(14,203,129,0.15);color:#0ECB81">🤝 口头安抚</span>
-          <p class="text-[13px] text-text-secondary mt-0.5 leading-relaxed">客户反馈合约延迟问题已解决，表示满意</p>
+        <div class="relative mb-4">
+          <div class="absolute -left-4 top-1.5 w-2 h-2 rounded-full bg-hub-gold"></div>
+          <div class="text-[11px] font-semibold text-hub-muted mb-1">2026-03-25</div>
+          <div class="text-[13px] text-hub-text leading-relaxed">致电约15分钟，确认资产不会继续出金，暂时稳住。</div>
+          <div class="text-[11px] text-hub-muted mt-1">— 李明远</div>
         </div>
-        <div class="relative">
-          <div class="absolute -left-[21px] top-1 w-[8px] h-[8px] bg-text-tertiary rounded-full"></div>
-          <p class="text-[12px] text-text-tertiary">03-25 10:15 — 张三</p>
-          <span class="inline-block text-[10px] px-1.5 py-0.5 rounded font-medium mt-0.5" style="background:rgba(94,102,115,0.2);color:#EAECEF">📨 已传达消息</span>
-          <p class="text-[13px] text-text-secondary mt-0.5 leading-relaxed">与客户确认 VIP 手续费优惠方案，客户同意续约</p>
+
+        <div class="relative mb-4">
+          <div class="absolute -left-4 top-1.5 w-2 h-2 rounded-full bg-hub-gold"></div>
+          <div class="text-[11px] font-semibold text-hub-muted mb-1">2026-03-18</div>
+          <div class="text-[13px] text-hub-text leading-relaxed">微信发送了黄金合约活动资料，王总表示感兴趣。</div>
+          <div class="text-[11px] text-hub-muted mt-1">— 李明远</div>
         </div>
-        <div class="relative">
-          <div class="absolute -left-[21px] top-1 w-[8px] h-[8px] bg-text-tertiary rounded-full"></div>
-          <p class="text-[12px] text-text-tertiary">03-22 16:40 — 李四</p>
-          <span class="inline-block text-[10px] px-1.5 py-0.5 rounded font-medium mt-0.5" style="background:rgba(240,185,11,0.15);color:#F0B90B">💰 送礼金</span>
-          <p class="text-[13px] text-text-secondary mt-0.5 leading-relaxed">协助客户处理大额提现，已走加急通道</p>
+
+        <div class="relative mb-4">
+          <div class="absolute -left-4 top-1.5 w-2 h-2 rounded-full bg-hub-gold"></div>
+          <div class="text-[11px] font-semibold text-hub-muted mb-1">2026-03-10</div>
+          <div class="text-[13px] text-hub-text leading-relaxed">线下会面，送了定制礼品，氛围不错。</div>
+          <div class="text-[11px] text-hub-muted mt-1">— 李明远</div>
         </div>
       </div>
-
-      <!-- Add record: AI classify input -->
-      <div id="add-record-input" class="hidden mt-4">
-        <div class="flex gap-2">
-          <input id="detail-record-input" type="text" placeholder="随便说，AI 自动归类..." class="flex-1 h-[44px] bg-dark-card border border-dark-border rounded-xl px-3 text-[13px] text-text-primary placeholder-text-tertiary outline-none focus:border-brand-gold transition">
-          <button onclick="aiClassifyDetail()" class="w-[44px] h-[44px] bg-brand-gold rounded-xl flex items-center justify-center active:opacity-85 transition flex-shrink-0">
-            <i class="fas fa-paper-plane text-dark-bg text-[14px]"></i>
-          </button>
-        </div>
-        <!-- AI preview -->
-        <div id="detail-record-preview" class="hidden mt-2 bg-dark-card rounded-xl p-3 border border-dashed border-brand-gold">
-          <div class="flex items-center gap-1.5 mb-2">
-            <i class="fas fa-wand-magic-sparkles text-[10px] text-brand-gold"></i>
-            <span class="text-[11px] text-brand-gold">AI 已归类</span>
-          </div>
-          <div class="flex items-center gap-2 mb-2">
-            <span class="text-[11px] text-text-tertiary">行动类型</span>
-            <span id="detail-preview-tag" class="text-[11px] px-2 py-0.5 rounded font-medium"></span>
-          </div>
-          <p id="detail-preview-content" class="text-[13px] text-text-secondary leading-relaxed"></p>
-          <div class="mt-2 pt-2 border-t border-dark-border">
-            <p class="text-[11px] text-text-tertiary mb-1.5">手动修改类型：</p>
-            <div class="flex flex-wrap gap-1.5">
-              <button onclick="overrideDetailType(this,'💰','送礼金','rgba(240,185,11,0.15)','#F0B90B')" class="detail-type-opt text-[11px] px-2 py-1 rounded bg-dark-hover text-text-secondary active:opacity-85">💰 送礼金</button>
-              <button onclick="overrideDetailType(this,'🎁','送礼物','rgba(30,136,229,0.15)','#1E88E5')" class="detail-type-opt text-[11px] px-2 py-1 rounded bg-dark-hover text-text-secondary active:opacity-85">🎁 送礼物</button>
-              <button onclick="overrideDetailType(this,'🤝','口头安抚','rgba(14,203,129,0.15)','#0ECB81')" class="detail-type-opt text-[11px] px-2 py-1 rounded bg-dark-hover text-text-secondary active:opacity-85">🤝 口头安抚</button>
-              <button onclick="overrideDetailType(this,'📨','已传达消息','rgba(94,102,115,0.2)','#EAECEF')" class="detail-type-opt text-[11px] px-2 py-1 rounded bg-dark-hover text-text-secondary active:opacity-85">📨 已传达消息</button>
-              <button onclick="overrideDetailType(this,'📝','其他','rgba(94,102,115,0.15)','#848E9C')" class="detail-type-opt text-[11px] px-2 py-1 rounded bg-dark-hover text-text-secondary active:opacity-85">📝 其他</button>
-            </div>
-          </div>
-          <div class="flex gap-2 mt-3">
-            <button onclick="document.getElementById('detail-record-preview').classList.add('hidden')" class="flex-1 h-[36px] bg-dark-hover text-text-secondary text-[12px] rounded-lg active:opacity-85">取消</button>
-            <button onclick="confirmDetailRecord()" class="flex-1 h-[36px] bg-brand-gold text-dark-bg text-[12px] font-semibold rounded-lg active:opacity-85">确认提交</button>
-          </div>
-        </div>
-      </div>
-
-      <button id="add-record-btn" onclick="showRecordInput()" class="w-full mt-4 h-[44px] bg-brand-gold text-dark-bg font-semibold text-[14px] rounded-lg active:opacity-85 transition">
-        <i class="fas fa-plus mr-1"></i> 添加记录
-      </button>
     </div>
 
+    <!-- ⑥ BD 备注 -->
+    <div class="bg-hub-card rounded-xl border border-hub-border p-4 mx-4 mb-3">
+      <div class="flex items-center justify-between mb-2">
+        <span class="text-[14px] font-semibold">BD 备注</span>
+        <button onclick="toggleNote()" id="note-btn" class="text-hub-gold text-[12px]">编辑</button>
+      </div>
+      <div id="note-view" class="text-[13px] text-hub-text leading-relaxed">
+        王总比较强势，沟通时避免推荐复杂产品。偏好短线合约，每周五结账。上次见面 2026-03-15，送了礼品券。
+      </div>
+      <textarea id="note-edit" class="hidden w-full bg-[#2B3139] text-hub-text text-[13px] rounded-lg p-3 border border-hub-border outline-none resize-none min-h-[80px] leading-relaxed">王总比较强势，沟通时避免推荐复杂产品。偏好短线合约，每周五结账。上次见面 2026-03-15，送了礼品券。</textarea>
+    </div>
+
+  </div><!-- end scroll -->
+
+  <!-- 底部固定 -->
+  <div class="fixed-bar bg-hub-bg border-t border-hub-border">
+    <button onclick="addRecord()" class="w-full bg-hub-gold text-[#0B0E11] font-semibold py-3.5 text-[15px]">
+      + 添加跟进记录
+    </button>
   </div>
 
-  <!-- Create Event Modal -->
-  <div id="create-event-modal" class="hidden fixed inset-0 z-[100] flex items-end justify-center" style="background: rgba(0,0,0,0.7);" onclick="if(event.target===this)this.classList.add('hidden')">
-    <div class="bg-dark-card w-full max-w-[393px] rounded-t-2xl p-4 pb-8 max-h-[85vh] overflow-y-auto">
-      <div class="flex items-center justify-between mb-4">
-        <h3 class="text-[16px] font-bold">创建事件</h3>
-        <button onclick="document.getElementById('create-event-modal').classList.add('hidden')" class="w-[32px] h-[32px] flex items-center justify-center text-text-tertiary active:opacity-85">
-          <i class="fas fa-xmark text-[16px]"></i>
-        </button>
-      </div>
+</div>
 
-      <!-- AI Input -->
-      <div class="mb-4">
-        <div class="flex items-center gap-1.5 mb-2">
-          <span class="text-[14px]">🤖</span>
-          <p class="text-[13px] text-brand-gold font-medium">AI 智能填写</p>
-        </div>
-        <div class="relative">
-          <textarea id="ai-input" placeholder="随便说，例如：&#10;「客户说合约手续费太贵了想谈个优惠」&#10;「张伟今天充了50万 想了解下意图」" rows="3" class="w-full bg-dark-bg border border-dashed border-brand-gold rounded-xl px-3 py-2.5 text-[13px] text-text-primary placeholder-text-tertiary outline-none transition resize-none pr-[52px]" oninput="toggleAiBtn()"></textarea>
-          <button id="ai-parse-btn" onclick="aiParse()" class="absolute right-2 bottom-2 h-[32px] px-3 bg-brand-gold text-dark-bg text-[12px] font-semibold rounded-lg active:opacity-85 transition opacity-30" disabled>
-            <i class="fas fa-wand-magic-sparkles mr-1"></i>解析
-          </button>
-        </div>
-      </div>
+<script>
+  // ── 发券 ──
+  const BUDGET = 44864;
+  let vAmt = 0;
 
-      <!-- AI Result (hidden initially) -->
-      <div id="ai-result" class="hidden mb-4 bg-dark-bg rounded-xl p-3 border border-dark-border">
-        <div class="flex items-center gap-1.5 mb-2">
-          <i class="fas fa-sparkles text-[10px] text-brand-gold"></i>
-          <p class="text-[11px] text-brand-gold">AI 已自动归类，可手动修改</p>
-        </div>
-        <div class="space-y-2">
-          <div class="flex items-center gap-2">
-            <span class="text-[11px] text-text-tertiary w-[48px] flex-shrink-0">类型</span>
-            <span id="ai-type" class="text-[12px] px-2 py-0.5 rounded bg-[rgba(240,185,11,0.15)] text-brand-gold"></span>
-          </div>
-          <div class="flex items-center gap-2">
-            <span class="text-[11px] text-text-tertiary w-[48px] flex-shrink-0">标题</span>
-            <span id="ai-title" class="text-[12px] text-text-primary"></span>
-          </div>
-          <div class="flex items-start gap-2">
-            <span class="text-[11px] text-text-tertiary w-[48px] flex-shrink-0 mt-0.5">描述</span>
-            <span id="ai-desc" class="text-[12px] text-text-secondary leading-relaxed"></span>
-          </div>
-        </div>
-      </div>
+  function openVoucher() {
+    document.getElementById('voucher-sheet').classList.remove('hidden');
+  }
+  function closeVoucher() {
+    document.getElementById('voucher-sheet').classList.add('hidden');
+    document.getElementById('vconfirm').classList.add('hidden');
+    document.getElementById('vamt').value = '';
+    document.querySelectorAll('.vp').forEach(b => b.className = 'vp flex-1 py-2 rounded-lg text-[12px] bg-[#2B3139] text-[#848E9C]');
+  }
+  function setAmt(pct) {
+    vAmt = Math.floor(BUDGET * pct);
+    document.getElementById('vamt').value = vAmt;
+    document.querySelectorAll('.vp').forEach(b => b.className = 'vp flex-1 py-2 rounded-lg text-[12px] bg-[#2B3139] text-[#848E9C]');
+    event.target.className = 'vp flex-1 py-2 rounded-lg text-[12px] bg-[#F0B90B] text-[#0B0E11] font-semibold';
+    showVC(vAmt);
+  }
+  function onVAmt(v) {
+    vAmt = Math.min(parseInt(v)||0, BUDGET);
+    document.querySelectorAll('.vp').forEach(b => b.className = 'vp flex-1 py-2 rounded-lg text-[12px] bg-[#2B3139] text-[#848E9C]');
+    if (vAmt > 0) showVC(vAmt); else document.getElementById('vconfirm').classList.add('hidden');
+  }
+  function showVC(v) {
+    document.getElementById('vamt-display').textContent = '$' + v.toLocaleString();
+    document.getElementById('vconfirm').classList.remove('hidden');
+  }
+  function doSend() {
+    closeVoucher();
+    // 更新礼金卡数据（原型模拟）
+    document.querySelectorAll('#voucher-sheet').forEach(el => el.classList.add('hidden'));
+  }
 
-      <!-- Divider -->
-      <div class="flex items-center gap-2 mb-3">
-        <div class="flex-1 h-px bg-dark-border"></div>
-        <button onclick="toggleManual()" class="text-[11px] text-text-tertiary flex items-center gap-1 active:opacity-85">
-          <span id="manual-toggle-text">手动填写</span> <i id="manual-toggle-icon" class="fas fa-chevron-down text-[9px]"></i>
-        </button>
-        <div class="flex-1 h-px bg-dark-border"></div>
-      </div>
+  // ── 业务线折叠 ──
+  function toggleBiz() {
+    const body = document.getElementById('biz-body');
+    const arrow = document.getElementById('biz-arrow');
+    const hidden = body.classList.contains('hidden');
+    body.classList.toggle('hidden', !hidden);
+    arrow.className = hidden
+      ? 'fa-solid fa-chevron-up text-[12px] text-[#848E9C]'
+      : 'fa-solid fa-chevron-down text-[12px] text-[#848E9C]';
+  }
 
-      <!-- Manual Fields (collapsed) -->
-      <div id="manual-fields" class="hidden">
-        <p class="text-[12px] text-text-secondary mb-2">事件类型</p>
-        <div class="flex flex-wrap gap-2 mb-4">
-          <button class="event-type-btn text-[12px] px-3 py-1.5 rounded-lg bg-brand-gold text-dark-bg font-medium" onclick="selectType(this)">📞 主动联系</button>
-          <button class="event-type-btn text-[12px] px-3 py-1.5 rounded-lg bg-dark-hover text-text-secondary" onclick="selectType(this)">🎁 福利投放</button>
-          <button class="event-type-btn text-[12px] px-3 py-1.5 rounded-lg bg-dark-hover text-text-secondary" onclick="selectType(this)">⚠️ 风险预警</button>
-          <button class="event-type-btn text-[12px] px-3 py-1.5 rounded-lg bg-dark-hover text-text-secondary" onclick="selectType(this)">📝 其他</button>
-        </div>
-        <p class="text-[12px] text-text-secondary mb-2">事件标题</p>
-        <input id="manual-title" type="text" placeholder="简要描述事件内容..." class="w-full h-[40px] bg-dark-hover border border-dark-border rounded-lg px-3 text-[13px] text-text-primary placeholder-text-tertiary outline-none focus:border-brand-gold transition mb-4">
-        <p class="text-[12px] text-text-secondary mb-2">详细描述（可选）</p>
-        <textarea id="manual-desc" placeholder="补充说明..." rows="3" class="w-full bg-dark-hover border border-dark-border rounded-lg px-3 py-2 text-[13px] text-text-primary placeholder-text-tertiary outline-none focus:border-brand-gold transition resize-none mb-4"></textarea>
-      </div>
-
-      <button onclick="document.getElementById('create-event-modal').classList.add('hidden')" class="w-full h-[48px] bg-brand-gold text-dark-bg font-bold text-[15px] rounded-xl active:opacity-85 transition">创建</button>
-    </div>
-  </div>
-
-  <script>
-    function selectType(btn) {
-      document.querySelectorAll('.event-type-btn').forEach(b => {
-        b.className = 'event-type-btn text-[12px] px-3 py-1.5 rounded-lg bg-dark-hover text-text-secondary';
-      });
-      btn.className = 'event-type-btn text-[12px] px-3 py-1.5 rounded-lg bg-brand-gold text-dark-bg font-medium';
+  // ── BD 备注编辑 ──
+  function toggleNote() {
+    const view = document.getElementById('note-view');
+    const edit = document.getElementById('note-edit');
+    const btn  = document.getElementById('note-btn');
+    const isEditing = !edit.classList.contains('hidden');
+    if (isEditing) {
+      view.textContent = edit.value.trim();
+      view.classList.remove('hidden');
+      edit.classList.add('hidden');
+      btn.textContent = '编辑';
+    } else {
+      edit.value = view.textContent.trim();
+      view.classList.add('hidden');
+      edit.classList.remove('hidden');
+      edit.focus();
+      btn.textContent = '保存';
     }
+  }
 
-    function toggleAiBtn() {
-      const btn = document.getElementById('ai-parse-btn');
-      const val = document.getElementById('ai-input').value.trim();
-      btn.disabled = !val;
-      btn.style.opacity = val ? '1' : '0.3';
-    }
-
-    function toggleManual() {
-      const fields = document.getElementById('manual-fields');
-      const icon = document.getElementById('manual-toggle-icon');
-      fields.classList.toggle('hidden');
-      icon.classList.toggle('fa-chevron-down');
-      icon.classList.toggle('fa-chevron-up');
-    }
-
-    // Simulated AI parse with typing effect
-    function aiParse() {
-      const input = document.getElementById('ai-input').value.trim();
-      if (!input) return;
-
-      const btn = document.getElementById('ai-parse-btn');
-      btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-1"></i>解析中';
-      btn.disabled = true;
-
-      // Mock AI mapping rules
-      const rules = [
-        { keywords: ['手续费', '费率', '优惠', '折扣', '太贵'], type: '📞 主动联系', titleFn: () => '张伟 — 手续费优惠洽谈', desc: '客户反馈当前合约手续费偏高，希望获得 VIP 专属费率优惠。建议准备阶梯费率方案后联系客户。' },
-        { keywords: ['充值', '充了', '入金'], type: '💰 大额充值', titleFn: () => '张伟 — 大额充值跟进', desc: '客户近期有大额入金行为，建议了解交易意向和仓位规划，提供相应支持。' },
-        { keywords: ['提现', '出金', '转出'], type: '⚠️ 风险预警', titleFn: () => '张伟 — 异常提现预警', desc: '客户出现异常提现行为，可能存在流失风险。建议主动沟通了解原因并制定挽留方案。' },
-        { keywords: ['福利', '礼品', '奖励', '送'], type: '🎁 福利投放', titleFn: () => '张伟 — 福利投放计划', desc: '根据客户近期交易表现，建议安排对应福利投放以提升客户粘性。' },
-        { keywords: ['延迟', '卡', 'bug', '报错', '问题'], type: '🔧 系统反馈', titleFn: () => '张伟 — 系统问题反馈', desc: '客户反馈平台使用中遇到技术问题，需要提交工单至技术团队跟进处理。' },
-      ];
-
-      let matched = rules.find(r => r.keywords.some(k => input.includes(k)));
-      if (!matched) {
-        matched = { type: '📝 其他', titleFn: () => '张伟 — 自定义事件', desc: input };
-      }
-
-      setTimeout(() => {
-        const result = document.getElementById('ai-result');
-        result.classList.remove('hidden');
-
-        // Type out results
-        const typeEl = document.getElementById('ai-type');
-        const titleEl = document.getElementById('ai-title');
-        const descEl = document.getElementById('ai-desc');
-
-        typeEl.textContent = matched.type;
-        typewrite(titleEl, matched.titleFn(), 30, () => {
-          typewrite(descEl, matched.desc, 15);
-        });
-
-        btn.innerHTML = '<i class="fas fa-wand-magic-sparkles mr-1"></i>重新解析';
-        btn.disabled = false;
-        btn.style.opacity = '1';
-      }, 800);
-    }
-
-    function typewrite(el, text, speed, cb) {
-      el.textContent = '';
-      let i = 0;
-      const timer = setInterval(() => {
-        el.textContent += text[i];
-        i++;
-        if (i >= text.length) { clearInterval(timer); if (cb) cb(); }
-      }, speed);
-    }
-
-    function editNote() {
-      const text = document.getElementById('note-text').textContent;
-      const input = document.getElementById('note-input');
-      input.value = text;
-      document.getElementById('note-display').classList.add('hidden');
-      document.getElementById('note-edit').classList.remove('hidden');
-      document.getElementById('note-count').textContent = text.length + '/60';
-      input.focus();
-      input.setSelectionRange(text.length, text.length);
-    }
-
-    function cancelNote() {
-      document.getElementById('note-edit').classList.add('hidden');
-      document.getElementById('note-display').classList.remove('hidden');
-    }
-
-    function saveNote() {
-      const val = document.getElementById('note-input').value.trim();
-      if (val) document.getElementById('note-text').textContent = val;
-      cancelNote();
-    }
-
-    document.addEventListener('DOMContentLoaded', function() {
-      const ni = document.getElementById('note-input');
-      if (ni) {
-        ni.addEventListener('input', function() {
-          document.getElementById('note-count').textContent = this.value.length + '/60';
-        });
-        ni.addEventListener('keydown', function(e) {
-          if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); saveNote(); }
-          if (e.key === 'Escape') cancelNote();
-        });
-      }
-    });
-
-    const DETAIL_ACTION_RULES = [
-      { keywords: ['礼金', '返佣', '补贴', '折扣', '手续费', '优惠', '减免', '返还'], icon: '💰', label: '送礼金', bg: 'rgba(240,185,11,0.15)', color: '#F0B90B' },
-      { keywords: ['礼物', '礼品', '送了', '赠送', '寄出', '快递', '红酒', '茶叶'], icon: '🎁', label: '送礼物', bg: 'rgba(30,136,229,0.15)', color: '#1E88E5' },
-      { keywords: ['安抚', '安慰', '情绪', '关心', '表示理解', '道歉', '聊了', '沟通', '满意'], icon: '🤝', label: '口头安抚', bg: 'rgba(14,203,129,0.15)', color: '#0ECB81' },
-      { keywords: ['通知', '告知', '传达', '转告', '同步', '已说', '已回', '消息', '反馈给', '工单', '确认'], icon: '📨', label: '已传达消息', bg: 'rgba(94,102,115,0.2)', color: '#EAECEF' },
-    ];
-    let detailAction = {};
-
-    function showRecordInput() {
-      document.getElementById('add-record-input').classList.remove('hidden');
-      document.getElementById('add-record-btn').classList.add('hidden');
-      document.getElementById('detail-record-input').focus();
-    }
-
-    function aiClassifyDetail() {
-      const input = document.getElementById('detail-record-input');
-      const text = input.value.trim();
-      if (!text) return;
-      let matched = DETAIL_ACTION_RULES.find(r => r.keywords.some(k => text.includes(k)));
-      if (!matched) matched = { icon: '📝', label: '其他', bg: 'rgba(94,102,115,0.15)', color: '#848E9C' };
-      detailAction = { ...matched, content: text };
-      const tag = document.getElementById('detail-preview-tag');
-      tag.textContent = matched.icon + ' ' + matched.label;
-      tag.style.background = matched.bg;
-      tag.style.color = matched.color;
-      document.getElementById('detail-preview-content').textContent = text;
-      document.getElementById('detail-record-preview').classList.remove('hidden');
-    }
-
-    function overrideDetailType(btn, icon, label, bg, color) {
-      detailAction = { ...detailAction, icon, label, bg, color };
-      const tag = document.getElementById('detail-preview-tag');
-      tag.textContent = icon + ' ' + label;
-      tag.style.background = bg;
-      tag.style.color = color;
-      document.querySelectorAll('.detail-type-opt').forEach(b => b.classList.remove('border', 'border-brand-gold'));
-      btn.classList.add('border', 'border-brand-gold');
-    }
-
-    function confirmDetailRecord() {
-      const timeline = document.getElementById('detail-timeline');
-      const entry = document.createElement('div');
-      entry.className = 'relative';
-      entry.innerHTML = `
-        <div class="absolute -left-[21px] top-1 w-[8px] h-[8px] bg-brand-gold rounded-full"></div>
-        <p class="text-[12px] text-text-tertiary">刚刚 — 张三</p>
-        <span class="inline-block text-[10px] px-1.5 py-0.5 rounded font-medium mt-0.5" style="background:${detailAction.bg};color:${detailAction.color}">${detailAction.icon} ${detailAction.label}</span>
-        <p class="text-[13px] text-text-secondary mt-0.5 leading-relaxed">${detailAction.content}</p>
-      `;
-      timeline.prepend(entry);
-      document.getElementById('detail-record-input').value = '';
-      document.getElementById('detail-record-preview').classList.add('hidden');
-      document.getElementById('detail-record-input').focus();
-    }
-
-    document.addEventListener('DOMContentLoaded', function() {
-      const el = document.getElementById('detail-record-input');
-      if (el) el.addEventListener('keydown', function(e) {
-        if (e.key === 'Enter') { e.preventDefault(); aiClassifyDetail(); }
-      });
-    });
-
-    const MAX_TAGS = 5;
-    const MAX_LEN = 6;
-    const TAG_COLORS = [
-      { bg: 'rgba(240,185,11,0.12)', text: '#F0B90B' },
-      { bg: 'rgba(30,136,229,0.12)', text: '#1E88E5' },
-      { bg: 'rgba(14,203,129,0.12)', text: '#0ECB81' },
-      { bg: 'rgba(246,70,93,0.12)', text: '#F6465D' },
-      { bg: 'rgba(234,236,239,0.08)', text: '#EAECEF' },
-    ];
-
-    function getTagCount() {
-      return document.querySelectorAll('#tags-container .tag-item, #tags-container .tag-system').length;
-    }
-
-    function showTagInput() {
-      if (getTagCount() >= MAX_TAGS) {
-        showLimitMsg('最多只能添加 ' + MAX_TAGS + ' 个标签');
-        return;
-      }
-      document.getElementById('tag-input-wrap').classList.remove('hidden');
-      document.getElementById('add-tag-btn').classList.add('hidden');
-      document.getElementById('tag-input').focus();
-    }
-
-    function hideTagInput() {
-      document.getElementById('tag-input-wrap').classList.add('hidden');
-      document.getElementById('add-tag-btn').classList.remove('hidden');
-      document.getElementById('tag-input').value = '';
-      document.getElementById('tag-limit-msg').classList.add('hidden');
-    }
-
-    function showLimitMsg(msg) {
-      const el = document.getElementById('tag-limit-msg');
-      el.textContent = msg;
-      el.classList.remove('hidden');
-      setTimeout(() => el.classList.add('hidden'), 2500);
-    }
-
-    function addTag() {
-      const input = document.getElementById('tag-input');
-      let val = input.value.trim();
-      if (!val) return;
-      if (val.length > MAX_LEN) {
-        val = val.slice(0, MAX_LEN);
-        showLimitMsg('已截断为 ' + MAX_LEN + ' 个字');
-      }
-      if (getTagCount() >= MAX_TAGS) {
-        showLimitMsg('最多只能添加 ' + MAX_TAGS + ' 个标签');
-        return;
-      }
-
-      const color = TAG_COLORS[getTagCount() % TAG_COLORS.length];
-      const tag = document.createElement('span');
-      tag.className = 'tag-item tag-custom text-[11px] px-2 py-0.5 rounded flex items-center gap-1';
-      tag.style.background = color.bg;
-      tag.style.color = color.text;
-      tag.setAttribute('data-author', '张三');
-      tag.title = '张三 添加';
-      tag.innerHTML = val + '<button onclick="removeTag(this)" class="ml-0.5">×</button>';
-
-      const addBtn = document.getElementById('add-tag-btn');
-      addBtn.parentNode.insertBefore(tag, addBtn);
-
-      hideTagInput();
-      if (getTagCount() >= MAX_TAGS) {
-        document.getElementById('add-tag-btn').classList.add('hidden');
-      }
-    }
-
-    function removeTag(btn) {
-      btn.parentElement.remove();
-      document.getElementById('add-tag-btn').classList.remove('hidden');
-    }
-
-    // Enter key to add
-    document.getElementById('tag-input').addEventListener('keydown', function(e) {
-      if (e.key === 'Enter') { e.preventDefault(); addTag(); }
-      if (e.key === 'Escape') { hideTagInput(); }
-    });
-  </script>
-
+  // ── 添加跟进记录 ──
+  function addRecord() {
+    const text = prompt('记录本次跟进内容：');
+    if (!text) return;
+    const tl = document.getElementById('follow-timeline');
+    const line = tl.querySelector('.absolute.left-2');
+    const now = new Date();
+    const d = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;
+    const entry = document.createElement('div');
+    entry.className = 'relative mb-4';
+    entry.innerHTML = `
+      <div class="absolute -left-4 top-1.5 w-2 h-2 rounded-full bg-[#F0B90B]"></div>
+      <div class="text-[11px] font-semibold text-[#848E9C] mb-1">${d}</div>
+      <div class="text-[13px] text-[#EAECEF] leading-relaxed">${text}</div>
+      <div class="text-[11px] text-[#848E9C] mt-1">— 李明远</div>`;
+    const first = tl.querySelector('.relative.mb-4');
+    if (first) tl.insertBefore(entry, first); else tl.appendChild(entry);
+  }
+</script>
 </body>
 </html>

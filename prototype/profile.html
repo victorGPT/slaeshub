@@ -42,9 +42,12 @@
       to { opacity: 1; transform: translateY(0); }
     }
     .animate-in { animation: fadeUp 0.35s ease forwards; opacity: 0; }
+    html { background: #000; }
+    html, body { width: 393px !important; margin: 0 auto !important; overflow-x: hidden; }
+    .fixed-bar { position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); width: 393px; }
   </style>
 </head>
-<body class="bg-dark-bg text-text-primary max-w-[393px] mx-auto min-h-screen flex flex-col">
+<body class="bg-dark-bg text-text-primary w-full min-h-screen flex flex-col">
 
   <!-- Status Bar -->
   <div class="h-[44px] flex items-end justify-between px-6 pb-1 bg-dark-bg sticky top-0 z-50">
@@ -165,7 +168,7 @@
   </div>
 
   <!-- Bottom Tab Bar -->
-  <div class="fixed bottom-0 left-0 right-0 max-w-[393px] mx-auto bg-dark-card border-t border-dark-border z-50">
+  <div class="fixed-bar bg-dark-card border-t border-dark-border z-50">
     <div class="flex items-center justify-around h-[56px]">
       <a href="clients.html" class="flex flex-col items-center gap-0.5 min-w-[44px] min-h-[44px] justify-center active:opacity-85">
         <i class="fas fa-users text-[18px] text-text-tertiary"></i>

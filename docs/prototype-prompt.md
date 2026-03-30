@@ -25,7 +25,8 @@ The prototype must demonstrate the complete BD workflow:
 
 - **File Structure**: Multi-page HTML files with shared navigation
   - `index.html` — entry point with iframe to host pages, simulating iPhone 15 Pro device frame
-  - `clients.html` — client list (home page)
+  - `home.html` — homepage: rankings + today's actions (with A/B version toggles)
+  - `clients.html` — client list
   - `client-detail.html` — client 360° dashboard
   - `events.html` — event feed (all clients)
   - `event-thread.html` — single event thread detail
@@ -140,24 +141,90 @@ The prototype must demonstrate the complete BD workflow:
 
 ## 4. Page Content Specifications
 
-### Page 1: 客户列表 (clients.html) — Home
+### Page 1: 首页 (home.html) — Home Tab
 
 **Top Bar:**
 - Title: "Sales Hub"
 - Right: bell icon (fa-bell) with red dot badge
 
-**Search Bar:**
+**=== 上半屏：客户排行榜 ===**
+
+需要出两个布局版本（Version A 和 Version B），在同一个 HTML 文件内用 tab 切换展示。
+
+**Version A — 折叠模式:**
+- 默认展开"今日交易量 Top 5"排行榜
+- "沉淀资金 Top 5"和"本周盈亏 Top 5"折叠为可点击展开的标题行
+- 每个排行项: 排名序号 + 客户头像 + 名称 + 数值（右对齐，font-mono）
+- 折叠标题行右侧显示 chevron-down 图标
+
+**Version B — 紧凑模式:**
+- 三个排行榜纵向排列，每个只展示 Top 3
+- 每个排行区块: 标题行 + 3 条排行项 + "查看全部 →" 链接
+- 排行项更紧凑: 排名 + 头像(32px) + 名称 + 数值
+
+**顶部添加版本切换按钮:** 两个小按钮 "版本A" / "版本B"，用 JavaScript 切换显示，方便体验对比。
+
+**排行 Mock 数据:**
+
+今日交易量 Top 5:
+| # | 客户 | 交易量 |
+|---|------|--------|
+| 1 | 陈志强 (Alpha Trading) | $4,230,000 |
+| 2 | 张伟 (Whale Capital) | $3,870,000 |
+| 3 | 周雅琴 (Genesis Holdings) | $2,910,000 |
+| 4 | 刘洋 (Momentum Capital) | $1,650,000 |
+| 5 | 赵雪梅 (个人大户) | $1,120,000 |
+
+沉淀资金 Top 5:
+| # | 客户 | 沉淀资金 |
+|---|------|----------|
+| 1 | 周雅琴 (Genesis Holdings) | $8,420,000 |
+| 2 | 陈志强 (Alpha Trading) | $6,150,000 |
+| 3 | 张伟 (Whale Capital) | $4,890,000 |
+| 4 | 李明远 (Dragon Fund) | $3,210,000 |
+| 5 | 黄海涛 (个人大户) | $2,740,000 |
+
+本周盈亏 Top 5:
+| # | 客户 | 本周盈亏 |
+|---|------|----------|
+| 1 | 周雅琴 (Genesis Holdings) | +$528,000 |
+| 2 | 陈志强 (Alpha Trading) | +$312,000 |
+| 3 | 张伟 (Whale Capital) | +$182,400 |
+| 4 | 刘洋 (Momentum Capital) | +$156,000 |
+| 5 | 王芳 (个人大户) | -$23,000 |
+
+- 盈利绿色，亏损红色
+- 点击排行项 → 跳转 client-detail.html
+
+**=== 下半屏：今日行动 ===**
+
+需要出两个内容版本（Version A 和 Version B），同样用 tab 切换。
+
+**Version A — 仅待处理:**
+- Section title: "待处理事件" + 红色数字 badge "5"
+- 展示 5 条待处理事件卡片（简化版：左色条 + 类型标签 + 标题 + 时间）
+- 底部: "查看全部事件 →" 链接跳转 events.html
+
+**Version B — 待处理 + 跟进中:**
+- Section 1: "待处理" + badge "5"，展示 3 条
+- Section 2: "跟进中" + badge "3"，展示 3 条
+- 两个 section 视觉上用分隔线区分
+- 底部: "查看全部事件 →"
+
+**顶部同样添加 "版本A" / "版本B" 切换按钮（独立于排行榜版本切换）。**
+
+事件 Mock 数据复用 Page 3 事件中心的数据。
+
+### Page 2: 客户列表 (clients.html) — 客户 Tab
+
+**Top Bar:**
+- Title: "我的客户"
+- Right: search icon (fa-search)
+
+**Search Bar (点击 search icon 后展开):**
 - Background: #2B3139
 - Placeholder: "搜索客户名称..."
-- Icon: fa-search, #5E6673
 - Height: 40px, radius 8px
-
-**Quick Stats Row (horizontal scroll):**
-- Card 1: "总客户" → "47" (gold)
-- Card 2: "本月活跃" → "38" (green)
-- Card 3: "待跟进事件" → "12" (red)
-- Card 4: "本月福利已投" → "$45.2K" (blue)
-- Each card: min-width 120px, background #1E2329, padding 12px, radius 8px
 
 **Client List:**
 Mock 8 clients with realistic Chinese names and data:

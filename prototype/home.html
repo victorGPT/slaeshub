@@ -1,0 +1,749 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Sales Hub – 首页</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            'hub-bg':         '#0B0E11',
+            'hub-card':       '#1E2329',
+            'hub-card-hover': '#2B3139',
+            'hub-border':     '#2E3440',
+            'hub-gold':       '#F0B90B',
+            'hub-gold-dim':   '#B8860B',
+            'hub-gold-text':  '#F8D33A',
+            'hub-red':        '#F6465D',
+            'hub-green':      '#0ECB81',
+            'hub-blue':       '#4DA6FF',
+            'hub-text':       '#EAECEF',
+            'hub-muted':      '#848E9C',
+            'hub-disabled':   '#474D57',
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body { font-family: 'PingFang SC', 'Helvetica Neue', sans-serif; background: #0B0E11; }
+    ::-webkit-scrollbar { display: none; }
+    html { background: #000; }
+    html, body { width: 393px !important; margin: 0 auto !important; overflow-x: hidden; }
+    .fixed-bar { position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); width: 393px; }
+  </style>
+</head>
+<body class="bg-[#0B0E11] text-[#EAECEF]">
+
+  <!-- iOS 状态栏 -->
+  <div class="w-full">
+    <div class="h-[44px] bg-[#0B0E11] flex items-center justify-between px-6 flex-shrink-0">
+      <span class="text-[12px] font-semibold text-[#EAECEF]">9:41</span>
+      <div class="flex items-center gap-1.5 text-[#EAECEF]">
+        <i class="fa-solid fa-signal text-[12px]"></i>
+        <i class="fa-solid fa-wifi text-[12px]"></i>
+        <i class="fa-solid fa-battery-full text-[13px]"></i>
+      </div>
+    </div>
+
+    <!-- 顶部导航栏 -->
+    <div class="h-[52px] sticky top-0 z-10 bg-[#0B0E11] border-b border-[#2E3440] flex items-center justify-between px-4">
+      <div class="w-[60px]"></div>
+      <h1 class="text-[17px] font-bold text-[#EAECEF] tracking-wide">Sales Hub</h1>
+      <div class="flex items-center gap-4">
+        <i class="fa-solid fa-magnifying-glass text-[#848E9C] text-[16px]"></i>
+        <div class="relative">
+          <i class="fa-solid fa-bell text-[#848E9C] text-[16px]"></i>
+          <span class="absolute -top-1 -right-1 w-2 h-2 rounded-full bg-[#F6465D]"></span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 滚动内容区 -->
+    <div class="overflow-y-auto pb-[90px]" style="scrollbar-width: none; height: calc(100vh - 44px - 52px - 90px); max-height: calc(100vh - 44px - 52px - 90px);">
+
+      <!-- ======== Section 1: 高价值客户榜单 ======== -->
+      <div class="px-4 pt-4 pb-2">
+        <div class="flex items-center justify-between">
+          <div>
+            <h2 class="text-[15px] font-semibold text-[#EAECEF]">高价值客户</h2>
+            <p class="text-[11px] text-[#848E9C]">近30天综合净贡献排行</p>
+          </div>
+          <!-- AB Toggle -->
+          <div class="flex gap-1">
+            <button id="hv-a-btn" onclick="switchHV('A')" class="bg-[#F0B90B] text-[#0B0E11] rounded-full px-3 py-1 text-xs font-semibold">版本 A</button>
+            <button id="hv-b-btn" onclick="switchHV('B')" class="bg-[#2B3139] text-[#848E9C] rounded-full px-3 py-1 text-xs">版本 B</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 版本A -->
+      <div id="hv-version-a">
+        <!-- 卡片 #1 王伟明 -->
+        <div class="bg-[#1E2329] rounded-xl border border-[#2E3440] p-4 mx-4 mb-2">
+          <div class="flex items-center gap-3 mb-2">
+            <span class="text-[13px] font-bold text-[#F0B90B] w-5 flex-shrink-0">#1</span>
+            <img src="https://i.pravatar.cc/40?u=wangweiming" class="w-10 h-10 rounded-full border-2 border-[#F0B90B]" />
+            <span class="flex-1 text-[14px] font-semibold text-[#EAECEF]">王伟明</span>
+            <span class="w-2 h-2 rounded-full bg-[#F6465D] inline-block flex-shrink-0"></span>
+          </div>
+          <div class="flex flex-wrap gap-1 mb-2">
+            <span class="bg-[#2D2010] text-[#F0B90B] text-[10px] px-2 py-0.5 rounded-full">合约强</span>
+            <span class="bg-[#2D2010] text-[#F0B90B] text-[10px] px-2 py-0.5 rounded-full">贡献Top5</span>
+          </div>
+          <div class="flex items-baseline gap-2 mb-1">
+            <span class="text-[11px] text-[#848E9C]">综合净贡献</span>
+            <span class="text-[20px] font-bold text-[#F8D33A]">+$284,320</span>
+            <span class="text-[12px] text-[#0ECB81]">▲ +12%</span>
+          </div>
+          <div class="flex items-center gap-2 mb-2">
+            <span class="text-[11px] text-[#848E9C]">资金沉淀</span>
+            <span class="text-[14px] text-[#EAECEF]">$12.4M</span>
+          </div>
+          <p class="text-[12px] text-[#848E9C] italic truncate">AI建议：近3日出金$2.1M，建议今日致电确认资产留存意向</p>
+        </div>
+
+        <!-- 卡片 #2 陈浩然 -->
+        <div class="bg-[#1E2329] rounded-xl border border-[#2E3440] p-4 mx-4 mb-2">
+          <div class="flex items-center gap-3 mb-2">
+            <span class="text-[13px] font-bold text-[#F0B90B] w-5 flex-shrink-0">#2</span>
+            <img src="https://i.pravatar.cc/40?u=chenhaoran" class="w-10 h-10 rounded-full border-2 border-[#F0B90B]" />
+            <span class="flex-1 text-[14px] font-semibold text-[#EAECEF]">陈浩然</span>
+            <span class="w-2 h-2 rounded-full bg-[#848E9C] inline-block flex-shrink-0"></span>
+          </div>
+          <div class="flex flex-wrap gap-1 mb-2">
+            <span class="bg-[#2C2E38] text-[#C0C6D1] text-[10px] px-2 py-0.5 rounded-full">高频交易·低资沉</span>
+          </div>
+          <div class="flex items-baseline gap-2 mb-1">
+            <span class="text-[11px] text-[#848E9C]">综合净贡献</span>
+            <span class="text-[20px] font-bold text-[#F8D33A]">+$176,540</span>
+            <span class="text-[12px] text-[#0ECB81]">▲ +5%</span>
+          </div>
+          <div class="flex items-center gap-2 mb-2">
+            <span class="text-[11px] text-[#848E9C]">资金沉淀</span>
+            <span class="text-[14px] text-[#EAECEF]">$8.9M</span>
+          </div>
+          <p class="text-[12px] text-[#848E9C] italic truncate">AI建议：高频合约手但资沉极低，留存风险高，建议询问理财意向</p>
+        </div>
+
+        <!-- 卡片 #3 张晓峰 -->
+        <div class="bg-[#1E2329] rounded-xl border border-[#2E3440] p-4 mx-4 mb-2">
+          <div class="flex items-center gap-3 mb-2">
+            <span class="text-[13px] font-bold text-[#F0B90B] w-5 flex-shrink-0">#3</span>
+            <img src="https://i.pravatar.cc/40?u=zhangxiaofeng" class="w-10 h-10 rounded-full border-2 border-[#F0B90B]" />
+            <span class="flex-1 text-[14px] font-semibold text-[#EAECEF]">张晓峰</span>
+            <span class="w-2 h-2 rounded-full bg-[#F0B90B] inline-block flex-shrink-0"></span>
+          </div>
+          <div class="flex flex-wrap gap-1 mb-2">
+            <span class="bg-[#2D2010] text-[#F0B90B] text-[10px] px-2 py-0.5 rounded-full">贡献Top10</span>
+            <span class="bg-[#2D2010] text-[#F0B90B] text-[10px] px-2 py-0.5 rounded-full">资沉Top20</span>
+          </div>
+          <div class="flex items-baseline gap-2 mb-1">
+            <span class="text-[11px] text-[#848E9C]">综合净贡献</span>
+            <span class="text-[20px] font-bold text-[#F8D33A]">+$143,200</span>
+            <span class="text-[12px] text-[#0ECB81]">▲ +8%</span>
+          </div>
+          <div class="flex items-center gap-2 mb-2">
+            <span class="text-[11px] text-[#848E9C]">资金沉淀</span>
+            <span class="text-[14px] text-[#EAECEF]">$22.1M</span>
+          </div>
+          <p class="text-[12px] text-[#848E9C] italic truncate">AI建议：资沉大但贡献释放不足，是本周重点开发对象</p>
+        </div>
+
+        <!-- 卡片 #4 刘思远 -->
+        <div class="bg-[#1E2329] rounded-xl border border-[#2E3440] p-4 mx-4 mb-2">
+          <div class="flex items-center gap-3 mb-2">
+            <span class="text-[13px] font-bold text-[#EAECEF] w-5 flex-shrink-0">#4</span>
+            <img src="https://i.pravatar.cc/40?u=liusiyuan" class="w-10 h-10 rounded-full" />
+            <span class="flex-1 text-[14px] font-semibold text-[#EAECEF]">刘思远</span>
+            <span class="w-2 h-2 rounded-full bg-[#848E9C] inline-block flex-shrink-0"></span>
+          </div>
+          <div class="flex flex-wrap gap-1 mb-2">
+            <span class="bg-[#2C2E38] text-[#C0C6D1] text-[10px] px-2 py-0.5 rounded-full">现货强</span>
+          </div>
+          <div class="flex items-baseline gap-2 mb-1">
+            <span class="text-[11px] text-[#848E9C]">综合净贡献</span>
+            <span class="text-[20px] font-bold text-[#F8D33A]">+$98,760</span>
+            <span class="text-[12px] text-[#848E9C]">⚪ 持平</span>
+          </div>
+          <div class="flex items-center gap-2 mb-2">
+            <span class="text-[11px] text-[#848E9C]">资金沉淀</span>
+            <span class="text-[14px] text-[#EAECEF]">$5.3M</span>
+          </div>
+          <p class="text-[12px] text-[#848E9C] italic truncate">AI建议：现货交易活跃，可尝试引导合约体验</p>
+        </div>
+
+        <!-- 卡片 #5 孙嘉琪 -->
+        <div class="bg-[#1E2329] rounded-xl border border-[#2E3440] p-4 mx-4 mb-2">
+          <div class="flex items-center gap-3 mb-2">
+            <span class="text-[13px] font-bold text-[#EAECEF] w-5 flex-shrink-0">#5</span>
+            <img src="https://i.pravatar.cc/40?u=sunjiaqi" class="w-10 h-10 rounded-full" />
+            <span class="flex-1 text-[14px] font-semibold text-[#EAECEF]">孙嘉琪</span>
+            <span class="w-2 h-2 rounded-full bg-[#F0B90B] inline-block flex-shrink-0"></span>
+          </div>
+          <div class="flex flex-wrap gap-1 mb-2">
+            <span class="bg-[#2C2E38] text-[#C0C6D1] text-[10px] px-2 py-0.5 rounded-full">合约强</span>
+            <span class="bg-[#2C2E38] text-[#C0C6D1] text-[10px] px-2 py-0.5 rounded-full">期货亏损</span>
+          </div>
+          <div class="flex items-baseline gap-2 mb-1">
+            <span class="text-[11px] text-[#848E9C]">综合净贡献</span>
+            <span class="text-[20px] font-bold text-[#F8D33A]">+$87,430</span>
+            <span class="text-[12px] text-[#F6465D]">▼ -3%</span>
+          </div>
+          <div class="flex items-center gap-2 mb-2">
+            <span class="text-[11px] text-[#848E9C]">资金沉淀</span>
+            <span class="text-[14px] text-[#EAECEF]">$18.7M</span>
+          </div>
+          <p class="text-[12px] text-[#848E9C] italic truncate">AI建议：期货有亏损，情绪需关注，本周致电慰问</p>
+        </div>
+      </div>
+
+      <!-- 版本B -->
+      <div id="hv-version-b" class="hidden">
+        <!-- 子Tab -->
+        <div class="flex gap-2 px-4 mb-3">
+          <button onclick="switchSubTab('综合')" id="sub-综合" class="text-xs px-3 py-1 rounded-full bg-[#F0B90B] text-[#0B0E11] font-semibold whitespace-nowrap">综合</button>
+          <button onclick="switchSubTab('现货')" id="sub-现货" class="text-xs px-3 py-1 rounded-full bg-[#2B3139] text-[#848E9C] whitespace-nowrap">现货</button>
+          <button onclick="switchSubTab('合约')" id="sub-合约" class="text-xs px-3 py-1 rounded-full bg-[#2B3139] text-[#848E9C] whitespace-nowrap">合约</button>
+        </div>
+
+        <!-- 综合内容（同版本A） -->
+        <div id="sub-content-综合">
+          <div class="bg-[#1E2329] rounded-xl border border-[#2E3440] p-4 mx-4 mb-2">
+            <div class="flex items-center gap-3 mb-2">
+              <span class="text-[13px] font-bold text-[#F0B90B] w-5 flex-shrink-0">#1</span>
+              <img src="https://i.pravatar.cc/40?u=wangweiming" class="w-10 h-10 rounded-full border-2 border-[#F0B90B]" />
+              <span class="flex-1 text-[14px] font-semibold text-[#EAECEF]">王伟明</span>
+              <span class="w-2 h-2 rounded-full bg-[#F6465D] inline-block flex-shrink-0"></span>
+            </div>
+            <div class="flex flex-wrap gap-1 mb-2">
+              <span class="bg-[#2D2010] text-[#F0B90B] text-[10px] px-2 py-0.5 rounded-full">合约强</span>
+              <span class="bg-[#2D2010] text-[#F0B90B] text-[10px] px-2 py-0.5 rounded-full">贡献Top5</span>
+            </div>
+            <div class="flex items-baseline gap-2 mb-1">
+              <span class="text-[11px] text-[#848E9C]">综合净贡献</span>
+              <span class="text-[20px] font-bold text-[#F8D33A]">+$284,320</span>
+              <span class="text-[12px] text-[#0ECB81]">▲ +12%</span>
+            </div>
+            <div class="flex items-center gap-2 mb-2">
+              <span class="text-[11px] text-[#848E9C]">资金沉淀</span>
+              <span class="text-[14px] text-[#EAECEF]">$12.4M</span>
+            </div>
+            <p class="text-[12px] text-[#848E9C] italic truncate">AI建议：近3日出金$2.1M，建议今日致电确认资产留存意向</p>
+          </div>
+          <div class="bg-[#1E2329] rounded-xl border border-[#2E3440] p-4 mx-4 mb-2">
+            <div class="flex items-center gap-3 mb-2">
+              <span class="text-[13px] font-bold text-[#F0B90B] w-5 flex-shrink-0">#2</span>
+              <img src="https://i.pravatar.cc/40?u=chenhaoran" class="w-10 h-10 rounded-full border-2 border-[#F0B90B]" />
+              <span class="flex-1 text-[14px] font-semibold text-[#EAECEF]">陈浩然</span>
+              <span class="w-2 h-2 rounded-full bg-[#848E9C] inline-block flex-shrink-0"></span>
+            </div>
+            <div class="flex flex-wrap gap-1 mb-2">
+              <span class="bg-[#2C2E38] text-[#C0C6D1] text-[10px] px-2 py-0.5 rounded-full">高频交易·低资沉</span>
+            </div>
+            <div class="flex items-baseline gap-2 mb-1">
+              <span class="text-[11px] text-[#848E9C]">综合净贡献</span>
+              <span class="text-[20px] font-bold text-[#F8D33A]">+$176,540</span>
+              <span class="text-[12px] text-[#0ECB81]">▲ +5%</span>
+            </div>
+            <div class="flex items-center gap-2 mb-2">
+              <span class="text-[11px] text-[#848E9C]">资金沉淀</span>
+              <span class="text-[14px] text-[#EAECEF]">$8.9M</span>
+            </div>
+            <p class="text-[12px] text-[#848E9C] italic truncate">AI建议：高频合约手但资沉极低，留存风险高，建议询问理财意向</p>
+          </div>
+          <div class="bg-[#1E2329] rounded-xl border border-[#2E3440] p-4 mx-4 mb-2">
+            <div class="flex items-center gap-3 mb-2">
+              <span class="text-[13px] font-bold text-[#F0B90B] w-5 flex-shrink-0">#3</span>
+              <img src="https://i.pravatar.cc/40?u=zhangxiaofeng" class="w-10 h-10 rounded-full border-2 border-[#F0B90B]" />
+              <span class="flex-1 text-[14px] font-semibold text-[#EAECEF]">张晓峰</span>
+              <span class="w-2 h-2 rounded-full bg-[#F0B90B] inline-block flex-shrink-0"></span>
+            </div>
+            <div class="flex flex-wrap gap-1 mb-2">
+              <span class="bg-[#2D2010] text-[#F0B90B] text-[10px] px-2 py-0.5 rounded-full">贡献Top10</span>
+              <span class="bg-[#2D2010] text-[#F0B90B] text-[10px] px-2 py-0.5 rounded-full">资沉Top20</span>
+            </div>
+            <div class="flex items-baseline gap-2 mb-1">
+              <span class="text-[11px] text-[#848E9C]">综合净贡献</span>
+              <span class="text-[20px] font-bold text-[#F8D33A]">+$143,200</span>
+              <span class="text-[12px] text-[#0ECB81]">▲ +8%</span>
+            </div>
+            <div class="flex items-center gap-2 mb-2">
+              <span class="text-[11px] text-[#848E9C]">资金沉淀</span>
+              <span class="text-[14px] text-[#EAECEF]">$22.1M</span>
+            </div>
+            <p class="text-[12px] text-[#848E9C] italic truncate">AI建议：资沉大但贡献释放不足，是本周重点开发对象</p>
+          </div>
+          <div class="bg-[#1E2329] rounded-xl border border-[#2E3440] p-4 mx-4 mb-2">
+            <div class="flex items-center gap-3 mb-2">
+              <span class="text-[13px] font-bold text-[#EAECEF] w-5 flex-shrink-0">#4</span>
+              <img src="https://i.pravatar.cc/40?u=liusiyuan" class="w-10 h-10 rounded-full" />
+              <span class="flex-1 text-[14px] font-semibold text-[#EAECEF]">刘思远</span>
+              <span class="w-2 h-2 rounded-full bg-[#848E9C] inline-block flex-shrink-0"></span>
+            </div>
+            <div class="flex flex-wrap gap-1 mb-2">
+              <span class="bg-[#2C2E38] text-[#C0C6D1] text-[10px] px-2 py-0.5 rounded-full">现货强</span>
+            </div>
+            <div class="flex items-baseline gap-2 mb-1">
+              <span class="text-[11px] text-[#848E9C]">综合净贡献</span>
+              <span class="text-[20px] font-bold text-[#F8D33A]">+$98,760</span>
+              <span class="text-[12px] text-[#848E9C]">⚪ 持平</span>
+            </div>
+            <div class="flex items-center gap-2 mb-2">
+              <span class="text-[11px] text-[#848E9C]">资金沉淀</span>
+              <span class="text-[14px] text-[#EAECEF]">$5.3M</span>
+            </div>
+            <p class="text-[12px] text-[#848E9C] italic truncate">AI建议：现货交易活跃，可尝试引导合约体验</p>
+          </div>
+          <div class="bg-[#1E2329] rounded-xl border border-[#2E3440] p-4 mx-4 mb-2">
+            <div class="flex items-center gap-3 mb-2">
+              <span class="text-[13px] font-bold text-[#EAECEF] w-5 flex-shrink-0">#5</span>
+              <img src="https://i.pravatar.cc/40?u=sunjiaqi" class="w-10 h-10 rounded-full" />
+              <span class="flex-1 text-[14px] font-semibold text-[#EAECEF]">孙嘉琪</span>
+              <span class="w-2 h-2 rounded-full bg-[#F0B90B] inline-block flex-shrink-0"></span>
+            </div>
+            <div class="flex flex-wrap gap-1 mb-2">
+              <span class="bg-[#2C2E38] text-[#C0C6D1] text-[10px] px-2 py-0.5 rounded-full">合约强</span>
+              <span class="bg-[#2C2E38] text-[#C0C6D1] text-[10px] px-2 py-0.5 rounded-full">期货亏损</span>
+            </div>
+            <div class="flex items-baseline gap-2 mb-1">
+              <span class="text-[11px] text-[#848E9C]">综合净贡献</span>
+              <span class="text-[20px] font-bold text-[#F8D33A]">+$87,430</span>
+              <span class="text-[12px] text-[#F6465D]">▼ -3%</span>
+            </div>
+            <div class="flex items-center gap-2 mb-2">
+              <span class="text-[11px] text-[#848E9C]">资金沉淀</span>
+              <span class="text-[14px] text-[#EAECEF]">$18.7M</span>
+            </div>
+            <p class="text-[12px] text-[#848E9C] italic truncate">AI建议：期货有亏损，情绪需关注，本周致电慰问</p>
+          </div>
+        </div>
+
+        <!-- 现货榜 -->
+        <div id="sub-content-现货" class="hidden">
+          <div class="bg-[#1E2329] rounded-xl border border-[#2E3440] p-4 mx-4 mb-2">
+            <div class="flex items-center gap-3 mb-2">
+              <span class="text-[13px] font-bold text-[#F0B90B] w-5 flex-shrink-0">#1</span>
+              <img src="https://i.pravatar.cc/40?u=linxiaoya" class="w-10 h-10 rounded-full border-2 border-[#F0B90B]" />
+              <span class="flex-1 text-[14px] font-semibold text-[#EAECEF]">林小雅</span>
+              <span class="w-2 h-2 rounded-full bg-[#848E9C] inline-block flex-shrink-0"></span>
+            </div>
+            <div class="flex flex-wrap gap-1 mb-2">
+              <span class="bg-[#2C2E38] text-[#C0C6D1] text-[10px] px-2 py-0.5 rounded-full">现货强</span>
+            </div>
+            <div class="flex items-baseline gap-2 mb-1">
+              <span class="text-[11px] text-[#848E9C]">现货净贡献</span>
+              <span class="text-[20px] font-bold text-[#F8D33A]">+$52,800</span>
+            </div>
+          </div>
+          <div class="bg-[#1E2329] rounded-xl border border-[#2E3440] p-4 mx-4 mb-2">
+            <div class="flex items-center gap-3 mb-2">
+              <span class="text-[13px] font-bold text-[#F0B90B] w-5 flex-shrink-0">#2</span>
+              <img src="https://i.pravatar.cc/40?u=zhaoyuhang" class="w-10 h-10 rounded-full border-2 border-[#F0B90B]" />
+              <span class="flex-1 text-[14px] font-semibold text-[#EAECEF]">赵宇航</span>
+              <span class="w-2 h-2 rounded-full bg-[#F0B90B] inline-block flex-shrink-0"></span>
+            </div>
+            <div class="flex flex-wrap gap-1 mb-2">
+              <span class="bg-[#2C2E38] text-[#C0C6D1] text-[10px] px-2 py-0.5 rounded-full">持续盈利</span>
+            </div>
+            <div class="flex items-baseline gap-2 mb-1">
+              <span class="text-[11px] text-[#848E9C]">现货净贡献</span>
+              <span class="text-[20px] font-bold text-[#F8D33A]">+$41,300</span>
+            </div>
+          </div>
+          <div class="bg-[#1E2329] rounded-xl border border-[#2E3440] p-4 mx-4 mb-2">
+            <div class="flex items-center gap-3 mb-2">
+              <span class="text-[13px] font-bold text-[#F0B90B] w-5 flex-shrink-0">#3</span>
+              <img src="https://i.pravatar.cc/40?u=qianduoduo" class="w-10 h-10 rounded-full border-2 border-[#F0B90B]" />
+              <span class="flex-1 text-[14px] font-semibold text-[#EAECEF]">钱多多</span>
+              <span class="w-2 h-2 rounded-full bg-[#848E9C] inline-block flex-shrink-0"></span>
+            </div>
+            <div class="flex flex-wrap gap-1 mb-2">
+              <span class="bg-[#2C2E38] text-[#C0C6D1] text-[10px] px-2 py-0.5 rounded-full">现货强</span>
+            </div>
+            <div class="flex items-baseline gap-2 mb-1">
+              <span class="text-[11px] text-[#848E9C]">现货净贡献</span>
+              <span class="text-[20px] font-bold text-[#F8D33A]">+$38,900</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 合约榜 -->
+        <div id="sub-content-合约" class="hidden">
+          <div class="bg-[#1E2329] rounded-xl border border-[#2E3440] p-4 mx-4 mb-2">
+            <div class="flex items-center gap-3 mb-2">
+              <span class="text-[13px] font-bold text-[#F0B90B] w-5 flex-shrink-0">#1</span>
+              <img src="https://i.pravatar.cc/40?u=wangweiming" class="w-10 h-10 rounded-full border-2 border-[#F0B90B]" />
+              <span class="flex-1 text-[14px] font-semibold text-[#EAECEF]">王伟明</span>
+              <span class="w-2 h-2 rounded-full bg-[#F6465D] inline-block flex-shrink-0"></span>
+            </div>
+            <div class="flex flex-wrap gap-1 mb-2">
+              <span class="bg-[#2C2E38] text-[#C0C6D1] text-[10px] px-2 py-0.5 rounded-full">合约强</span>
+            </div>
+            <div class="flex items-baseline gap-2 mb-1">
+              <span class="text-[11px] text-[#848E9C]">合约净贡献</span>
+              <span class="text-[20px] font-bold text-[#F8D33A]">+$241,200</span>
+            </div>
+          </div>
+          <div class="bg-[#1E2329] rounded-xl border border-[#2E3440] p-4 mx-4 mb-2">
+            <div class="flex items-center gap-3 mb-2">
+              <span class="text-[13px] font-bold text-[#F0B90B] w-5 flex-shrink-0">#2</span>
+              <img src="https://i.pravatar.cc/40?u=chenhaoran" class="w-10 h-10 rounded-full border-2 border-[#F0B90B]" />
+              <span class="flex-1 text-[14px] font-semibold text-[#EAECEF]">陈浩然</span>
+              <span class="w-2 h-2 rounded-full bg-[#848E9C] inline-block flex-shrink-0"></span>
+            </div>
+            <div class="flex flex-wrap gap-1 mb-2">
+              <span class="bg-[#2C2E38] text-[#C0C6D1] text-[10px] px-2 py-0.5 rounded-full">高频交易</span>
+            </div>
+            <div class="flex items-baseline gap-2 mb-1">
+              <span class="text-[11px] text-[#848E9C]">合约净贡献</span>
+              <span class="text-[20px] font-bold text-[#F8D33A]">+$159,700</span>
+            </div>
+          </div>
+          <div class="bg-[#1E2329] rounded-xl border border-[#2E3440] p-4 mx-4 mb-2">
+            <div class="flex items-center gap-3 mb-2">
+              <span class="text-[13px] font-bold text-[#F0B90B] w-5 flex-shrink-0">#3</span>
+              <img src="https://i.pravatar.cc/40?u=wujianguo" class="w-10 h-10 rounded-full border-2 border-[#F0B90B]" />
+              <span class="flex-1 text-[14px] font-semibold text-[#EAECEF]">吴建国</span>
+              <span class="w-2 h-2 rounded-full bg-[#F0B90B] inline-block flex-shrink-0"></span>
+            </div>
+            <div class="flex flex-wrap gap-1 mb-2">
+              <span class="bg-[#2C2E38] text-[#C0C6D1] text-[10px] px-2 py-0.5 rounded-full">首次充值</span>
+            </div>
+            <div class="flex items-baseline gap-2 mb-1">
+              <span class="text-[11px] text-[#848E9C]">合约净贡献</span>
+              <span class="text-[20px] font-bold text-[#F8D33A]">+$112,500</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ======== Section 2: 待开发客户榜单 ======== -->
+      <div class="px-4 pt-4 pb-2">
+        <h2 class="text-[15px] font-semibold text-[#EAECEF]">待开发客户</h2>
+        <p class="text-[11px] text-[#848E9C]">近90天日均资沉排行 · 资金利用率偏低</p>
+      </div>
+
+      <!-- 卡片 #1 吴建国 -->
+      <div class="bg-[#1E2329] rounded-xl border border-[#2E3440] p-4 mx-4 mb-2">
+        <div class="flex items-center gap-3 mb-2">
+          <span class="text-[13px] font-bold text-[#4DA6FF] w-5 flex-shrink-0">#1</span>
+          <img src="https://i.pravatar.cc/40?u=wujianguo" class="w-10 h-10 rounded-full border-2 border-[#4DA6FF]" />
+          <span class="flex-1 text-[14px] font-semibold text-[#EAECEF]">吴建国</span>
+          <span class="w-2 h-2 rounded-full bg-[#F0B90B] inline-block flex-shrink-0"></span>
+        </div>
+        <div class="flex flex-wrap gap-1 mb-2">
+          <span class="bg-[#2D2010] text-[#F0B90B] text-[10px] px-2 py-0.5 rounded-full">资沉Top5</span>
+          <span class="bg-[#2C2E38] text-[#C0C6D1] text-[10px] px-2 py-0.5 rounded-full">纯理财</span>
+        </div>
+        <div class="flex items-baseline gap-2 mb-1">
+          <span class="text-[11px] text-[#848E9C]">日均资沉</span>
+          <span class="text-[18px] font-bold text-[#F8D33A]">$31.2M</span>
+        </div>
+        <div class="flex items-center gap-2 mb-2">
+          <span class="text-[11px] text-[#848E9C]">资金利用率</span>
+          <div class="flex-1 h-1 rounded-full bg-[#2E3440]">
+            <div class="h-1 rounded-full bg-[#F0B90B]" style="width: 2.1%"></div>
+          </div>
+          <span class="text-[11px] text-[#F6465D] font-medium">2.1% 低</span>
+        </div>
+        <p class="text-[12px] text-[#848E9C] italic truncate">AI建议：$31M资沉几乎全在理财，转化合约潜力极大，建议邀约体验合约账户</p>
+      </div>
+
+      <!-- 卡片 #2 郑梦琪 -->
+      <div class="bg-[#1E2329] rounded-xl border border-[#2E3440] p-4 mx-4 mb-2">
+        <div class="flex items-center gap-3 mb-2">
+          <span class="text-[13px] font-bold text-[#4DA6FF] w-5 flex-shrink-0">#2</span>
+          <img src="https://i.pravatar.cc/40?u=zhengmengqi" class="w-10 h-10 rounded-full border-2 border-[#4DA6FF]" />
+          <span class="flex-1 text-[14px] font-semibold text-[#EAECEF]">郑梦琪</span>
+          <span class="w-2 h-2 rounded-full bg-[#F0B90B] inline-block flex-shrink-0"></span>
+        </div>
+        <div class="flex flex-wrap gap-1 mb-2">
+          <span class="bg-[#2D2010] text-[#F0B90B] text-[10px] px-2 py-0.5 rounded-full">资沉Top15</span>
+          <span class="bg-[#2C2E38] text-[#C0C6D1] text-[10px] px-2 py-0.5 rounded-full">持续盈利</span>
+        </div>
+        <div class="flex items-baseline gap-2 mb-1">
+          <span class="text-[11px] text-[#848E9C]">日均资沉</span>
+          <span class="text-[18px] font-bold text-[#F8D33A]">$19.8M</span>
+        </div>
+        <div class="flex items-center gap-2 mb-2">
+          <span class="text-[11px] text-[#848E9C]">资金利用率</span>
+          <div class="flex-1 h-1 rounded-full bg-[#2E3440]">
+            <div class="h-1 rounded-full bg-[#F0B90B]" style="width: 3.4%"></div>
+          </div>
+          <span class="text-[11px] text-[#F6465D] font-medium">3.4% 低</span>
+        </div>
+        <p class="text-[12px] text-[#848E9C] italic truncate">AI建议：近期有盈利，情绪正面，适合推介新产品</p>
+      </div>
+
+      <!-- 卡片 #3 周大鹏 -->
+      <div class="bg-[#1E2329] rounded-xl border border-[#2E3440] p-4 mx-4 mb-2">
+        <div class="flex items-center gap-3 mb-2">
+          <span class="text-[13px] font-bold text-[#4DA6FF] w-5 flex-shrink-0">#3</span>
+          <img src="https://i.pravatar.cc/40?u=zhoudapeng" class="w-10 h-10 rounded-full border-2 border-[#4DA6FF]" />
+          <span class="flex-1 text-[14px] font-semibold text-[#EAECEF]">周大鹏</span>
+          <span class="w-2 h-2 rounded-full bg-[#F0B90B] inline-block flex-shrink-0"></span>
+        </div>
+        <div class="flex flex-wrap gap-1 mb-2">
+          <span class="bg-[#2D2010] text-[#F0B90B] text-[10px] px-2 py-0.5 rounded-full">资沉Top20</span>
+          <span class="bg-[#2C2E38] text-[#C0C6D1] text-[10px] px-2 py-0.5 rounded-full">理财为主</span>
+        </div>
+        <div class="flex items-baseline gap-2 mb-1">
+          <span class="text-[11px] text-[#848E9C]">日均资沉</span>
+          <span class="text-[18px] font-bold text-[#F8D33A]">$15.6M</span>
+        </div>
+        <div class="flex items-center gap-2 mb-2">
+          <span class="text-[11px] text-[#848E9C]">资金利用率</span>
+          <div class="flex-1 h-1 rounded-full bg-[#2E3440]">
+            <div class="h-1 rounded-full bg-[#F0B90B]" style="width: 1.8%"></div>
+          </div>
+          <span class="text-[11px] text-[#F6465D] font-medium">1.8% 低</span>
+        </div>
+        <p class="text-[12px] text-[#848E9C] italic truncate">AI建议：连续90天资沉稳定但零合约，优先级最高的开发目标</p>
+      </div>
+
+      <!-- ======== Section 3: 今日行动 ======== -->
+      <div class="px-4 pt-4 pb-2">
+        <div class="flex items-center justify-between">
+          <div>
+            <h2 class="text-[15px] font-semibold text-[#EAECEF]">今日行动</h2>
+            <p class="text-[11px] text-[#848E9C]">系统推送 · 2026-03-28</p>
+          </div>
+          <div class="flex gap-1">
+            <button id="action-a-btn" onclick="switchAction('A')" class="bg-[#F0B90B] text-[#0B0E11] rounded-full px-3 py-1 text-xs font-semibold whitespace-nowrap">仅待处理</button>
+            <button id="action-b-btn" onclick="switchAction('B')" class="bg-[#2B3139] text-[#848E9C] rounded-full px-3 py-1 text-xs whitespace-nowrap">待处理+跟进中</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 版本A 今日行动 -->
+      <div id="action-version-a">
+        <!-- 事件1: 王伟明 大额出金预警 -->
+        <div class="bg-[#1E2329] rounded-xl border border-[#2E3440] p-4 mb-2 mx-4">
+          <div class="flex items-start gap-3">
+            <div class="w-8 h-8 rounded-lg bg-[#2D1B1E] flex items-center justify-center flex-shrink-0">
+              <i class="fa-solid fa-arrow-up-from-bracket text-[#F6465D] text-[13px]"></i>
+            </div>
+            <div class="flex-1 min-w-0">
+              <div class="flex items-center justify-between mb-1">
+                <span class="text-[14px] font-semibold text-[#EAECEF]">王伟明 <span class="font-normal text-[#848E9C]">· 大额出金预警</span></span>
+                <div class="flex items-center gap-1.5 flex-shrink-0 ml-2">
+                  <span class="bg-[#2D1B00] text-[#F0B90B] text-[10px] px-2 py-0.5 rounded-full">待处理</span>
+                </div>
+              </div>
+              <p class="text-[12px] text-[#848E9C] mb-1">$2.1M 出金 · 10分钟前</p>
+              <p class="text-[12px] text-[#F0B90B]">建议：致电确认资产留存意向</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- 事件2: 吴建国 首次合约充值 -->
+        <div class="bg-[#1E2329] rounded-xl border border-[#2E3440] p-4 mb-2 mx-4">
+          <div class="flex items-start gap-3">
+            <div class="w-8 h-8 rounded-lg bg-[#2D1B00] flex items-center justify-center flex-shrink-0">
+              <i class="fa-solid fa-circle-dollar-to-slot text-[#F0B90B] text-[13px]"></i>
+            </div>
+            <div class="flex-1 min-w-0">
+              <div class="flex items-center justify-between mb-1">
+                <span class="text-[14px] font-semibold text-[#EAECEF]">吴建国 <span class="font-normal text-[#848E9C]">· 首次合约充值</span></span>
+                <div class="flex items-center gap-1.5 flex-shrink-0 ml-2">
+                  <span class="bg-[#2D1B00] text-[#F0B90B] text-[10px] px-2 py-0.5 rounded-full">待处理</span>
+                </div>
+              </div>
+              <p class="text-[12px] text-[#848E9C] mb-1">$500K 充入合约账户 · 1小时前</p>
+              <p class="text-[12px] text-[#F0B90B]">建议：致电欢迎首充，引导熟悉合约功能</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- 事件3: 郑梦琪 本月盈利超阈值 -->
+        <div class="bg-[#1E2329] rounded-xl border border-[#2E3440] p-4 mb-2 mx-4">
+          <div class="flex items-start gap-3">
+            <div class="w-8 h-8 rounded-lg bg-[#0D2010] flex items-center justify-center flex-shrink-0">
+              <i class="fa-solid fa-chart-line text-[#0ECB81] text-[13px]"></i>
+            </div>
+            <div class="flex-1 min-w-0">
+              <div class="flex items-center justify-between mb-1">
+                <span class="text-[14px] font-semibold text-[#EAECEF]">郑梦琪 <span class="font-normal text-[#848E9C]">· 本月盈利超阈值</span></span>
+                <div class="flex items-center gap-1.5 flex-shrink-0 ml-2">
+                  <span class="bg-[#2D1B00] text-[#F0B90B] text-[10px] px-2 py-0.5 rounded-full">待处理</span>
+                </div>
+              </div>
+              <p class="text-[12px] text-[#848E9C] mb-1">盈利$82,000 · 3小时前</p>
+              <p class="text-[12px] text-[#F0B90B]">建议：发送祝贺消息并推介VIP活动</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 版本B 今日行动 -->
+      <div id="action-version-b" class="hidden">
+        <!-- 待处理组 -->
+        <button onclick="toggleGroup('pending')" class="flex items-center justify-between w-full px-4 py-3">
+          <span class="text-[13px] font-semibold text-[#EAECEF]">待处理 <span class="text-[#F0B90B]">3</span></span>
+          <i id="pending-icon" class="fa-solid fa-chevron-down text-[#848E9C] text-xs"></i>
+        </button>
+        <div id="pending-group">
+          <div class="bg-[#1E2329] rounded-xl border border-[#2E3440] p-4 mb-2 mx-4">
+            <div class="flex items-start gap-3">
+              <div class="w-8 h-8 rounded-lg bg-[#2D1B1E] flex items-center justify-center flex-shrink-0">
+                <i class="fa-solid fa-arrow-up-from-bracket text-[#F6465D] text-[13px]"></i>
+              </div>
+              <div class="flex-1 min-w-0">
+                <div class="flex items-center justify-between mb-1">
+                  <span class="text-[14px] font-semibold text-[#EAECEF]">王伟明 <span class="font-normal text-[#848E9C]">· 大额出金预警</span></span>
+                  <span class="bg-[#2D1B00] text-[#F0B90B] text-[10px] px-2 py-0.5 rounded-full flex-shrink-0 ml-2">待处理</span>
+                </div>
+                <p class="text-[12px] text-[#848E9C] mb-1">$2.1M 出金 · 10分钟前</p>
+                <p class="text-[12px] text-[#F0B90B]">建议：致电确认资产留存意向</p>
+              </div>
+            </div>
+          </div>
+          <div class="bg-[#1E2329] rounded-xl border border-[#2E3440] p-4 mb-2 mx-4">
+            <div class="flex items-start gap-3">
+              <div class="w-8 h-8 rounded-lg bg-[#2D1B00] flex items-center justify-center flex-shrink-0">
+                <i class="fa-solid fa-circle-dollar-to-slot text-[#F0B90B] text-[13px]"></i>
+              </div>
+              <div class="flex-1 min-w-0">
+                <div class="flex items-center justify-between mb-1">
+                  <span class="text-[14px] font-semibold text-[#EAECEF]">吴建国 <span class="font-normal text-[#848E9C]">· 首次合约充值</span></span>
+                  <span class="bg-[#2D1B00] text-[#F0B90B] text-[10px] px-2 py-0.5 rounded-full flex-shrink-0 ml-2">待处理</span>
+                </div>
+                <p class="text-[12px] text-[#848E9C] mb-1">$500K 充入合约账户 · 1小时前</p>
+                <p class="text-[12px] text-[#F0B90B]">建议：致电欢迎首充，引导熟悉合约功能</p>
+              </div>
+            </div>
+          </div>
+          <div class="bg-[#1E2329] rounded-xl border border-[#2E3440] p-4 mb-2 mx-4">
+            <div class="flex items-start gap-3">
+              <div class="w-8 h-8 rounded-lg bg-[#0D2010] flex items-center justify-center flex-shrink-0">
+                <i class="fa-solid fa-chart-line text-[#0ECB81] text-[13px]"></i>
+              </div>
+              <div class="flex-1 min-w-0">
+                <div class="flex items-center justify-between mb-1">
+                  <span class="text-[14px] font-semibold text-[#EAECEF]">郑梦琪 <span class="font-normal text-[#848E9C]">· 本月盈利超阈值</span></span>
+                  <span class="bg-[#2D1B00] text-[#F0B90B] text-[10px] px-2 py-0.5 rounded-full flex-shrink-0 ml-2">待处理</span>
+                </div>
+                <p class="text-[12px] text-[#848E9C] mb-1">盈利$82,000 · 3小时前</p>
+                <p class="text-[12px] text-[#F0B90B]">建议：发送祝贺消息并推介VIP活动</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 跟进中组 -->
+        <button onclick="toggleGroup('following')" class="flex items-center justify-between w-full px-4 py-3">
+          <span class="text-[13px] font-semibold text-[#EAECEF]">跟进中 <span class="text-[#4DA6FF]">2</span></span>
+          <i id="following-icon" class="fa-solid fa-chevron-right text-[#848E9C] text-xs"></i>
+        </button>
+        <div id="following-group" class="hidden">
+          <div class="bg-[#1E2329] rounded-xl border border-[#2E3440] p-4 mb-2 mx-4">
+            <div class="flex items-start gap-3">
+              <div class="w-8 h-8 rounded-lg bg-[#2D1B1E] flex items-center justify-center flex-shrink-0">
+                <i class="fa-solid fa-bomb text-[#F6465D] text-[13px]"></i>
+              </div>
+              <div class="flex-1 min-w-0">
+                <div class="flex items-center justify-between mb-1">
+                  <span class="text-[14px] font-semibold text-[#EAECEF]">陈浩然 <span class="font-normal text-[#848E9C]">· 大额爆仓警告</span></span>
+                  <span class="bg-[#0D1F2D] text-[#4DA6FF] text-[10px] px-2 py-0.5 rounded-full flex-shrink-0 ml-2">跟进中</span>
+                </div>
+                <p class="text-[12px] text-[#848E9C] mb-1">爆仓$340K · 昨天</p>
+                <p class="text-[12px] text-[#F0B90B]">建议：情绪安抚优先，了解后续操作意向</p>
+              </div>
+            </div>
+          </div>
+          <div class="bg-[#1E2329] rounded-xl border border-[#2E3440] p-4 mb-2 mx-4">
+            <div class="flex items-start gap-3">
+              <div class="w-8 h-8 rounded-lg bg-[#2D1B00] flex items-center justify-center flex-shrink-0">
+                <i class="fa-solid fa-arrow-trend-down text-[#F0B90B] text-[13px]"></i>
+              </div>
+              <div class="flex-1 min-w-0">
+                <div class="flex items-center justify-between mb-1">
+                  <span class="text-[14px] font-semibold text-[#EAECEF]">张晓峰 <span class="font-normal text-[#848E9C]">· 持续提现提醒</span></span>
+                  <span class="bg-[#0D1F2D] text-[#4DA6FF] text-[10px] px-2 py-0.5 rounded-full flex-shrink-0 ml-2">跟进中</span>
+                </div>
+                <p class="text-[12px] text-[#848E9C] mb-1">连续5天提现共$4.3M · 昨天</p>
+                <p class="text-[12px] text-[#F0B90B]">建议：跟进进展，询问是否可以挽留部分资产</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- 底部Tab栏 -->
+    <div class="fixed-bar bg-[#0B0E11] border-t border-[#2E3440] z-20">
+      <div class="flex items-center justify-around h-[56px]">
+        <a href="home.html" class="flex flex-col items-center gap-0.5">
+          <i class="fa-solid fa-house text-[#F0B90B] text-[18px]"></i>
+          <span class="text-[10px] text-[#F0B90B] font-medium">首页</span>
+        </a>
+        <a href="clients.html" class="flex flex-col items-center gap-0.5">
+          <i class="fa-solid fa-users text-[#848E9C] text-[18px]"></i>
+          <span class="text-[10px] text-[#848E9C]">客群</span>
+        </a>
+        <a href="events.html" class="flex flex-col items-center gap-0.5 relative">
+          <div class="relative">
+            <i class="fa-solid fa-bell text-[#848E9C] text-[18px]"></i>
+            <span class="absolute -top-1 -right-1 w-2 h-2 rounded-full bg-[#F6465D]"></span>
+          </div>
+          <span class="text-[10px] text-[#848E9C]">事件</span>
+        </a>
+        <a href="profile.html" class="flex flex-col items-center gap-0.5">
+          <i class="fa-solid fa-circle-user text-[#848E9C] text-[18px]"></i>
+          <span class="text-[10px] text-[#848E9C]">我的</span>
+        </a>
+      </div>
+      <!-- iOS 底部安全区 -->
+      <div class="h-[34px]"></div>
+    </div>
+  </div>
+
+  <script>
+    function switchHV(ver) {
+      document.getElementById('hv-version-a').classList.toggle('hidden', ver !== 'A');
+      document.getElementById('hv-version-b').classList.toggle('hidden', ver !== 'B');
+      document.getElementById('hv-a-btn').className = ver === 'A'
+        ? 'bg-[#F0B90B] text-[#0B0E11] rounded-full px-3 py-1 text-xs font-semibold'
+        : 'bg-[#2B3139] text-[#848E9C] rounded-full px-3 py-1 text-xs';
+      document.getElementById('hv-b-btn').className = ver === 'B'
+        ? 'bg-[#F0B90B] text-[#0B0E11] rounded-full px-3 py-1 text-xs font-semibold'
+        : 'bg-[#2B3139] text-[#848E9C] rounded-full px-3 py-1 text-xs';
+    }
+
+    function switchSubTab(tab) {
+      ['综合', '现货', '合约'].forEach(t => {
+        document.getElementById('sub-content-' + t).classList.toggle('hidden', t !== tab);
+        document.getElementById('sub-' + t).className = t === tab
+          ? 'text-xs px-3 py-1 rounded-full bg-[#F0B90B] text-[#0B0E11] font-semibold whitespace-nowrap'
+          : 'text-xs px-3 py-1 rounded-full bg-[#2B3139] text-[#848E9C] whitespace-nowrap';
+      });
+    }
+
+    function switchAction(ver) {
+      document.getElementById('action-version-a').classList.toggle('hidden', ver !== 'A');
+      document.getElementById('action-version-b').classList.toggle('hidden', ver !== 'B');
+      document.getElementById('action-a-btn').className = ver === 'A'
+        ? 'bg-[#F0B90B] text-[#0B0E11] rounded-full px-3 py-1 text-xs font-semibold whitespace-nowrap'
+        : 'bg-[#2B3139] text-[#848E9C] rounded-full px-3 py-1 text-xs whitespace-nowrap';
+      document.getElementById('action-b-btn').className = ver === 'B'
+        ? 'bg-[#F0B90B] text-[#0B0E11] rounded-full px-3 py-1 text-xs font-semibold whitespace-nowrap'
+        : 'bg-[#2B3139] text-[#848E9C] rounded-full px-3 py-1 text-xs whitespace-nowrap';
+    }
+
+    function toggleGroup(id) {
+      const el = document.getElementById(id + '-group');
+      const icon = document.getElementById(id + '-icon');
+      el.classList.toggle('hidden');
+      icon.className = el.classList.contains('hidden')
+        ? 'fa-solid fa-chevron-right text-[#848E9C] text-xs'
+        : 'fa-solid fa-chevron-down text-[#848E9C] text-xs';
+    }
+  </script>
+</body>
+</html>

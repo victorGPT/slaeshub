@@ -1,130 +1,156 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Sales Hub — Prototype</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Sales Hub</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <script src="https://cdn.tailwindcss.com"></script>
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,700;1,9..40,400&display=swap');
-
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-
-    body {
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      background: #08090b;
-      font-family: 'DM Sans', sans-serif;
-      overflow: hidden;
-    }
-
-    /* Subtle grid background */
-    body::before {
-      content: '';
-      position: fixed;
-      inset: 0;
-      background-image:
-        linear-gradient(rgba(240, 185, 11, 0.03) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(240, 185, 11, 0.03) 1px, transparent 1px);
-      background-size: 60px 60px;
-      pointer-events: none;
-    }
-
-    .page-title {
-      color: #EAECEF;
-      font-size: 14px;
-      font-weight: 500;
-      letter-spacing: 4px;
-      text-transform: uppercase;
-      margin-bottom: 24px;
-      opacity: 0.6;
-    }
-
-    .device-frame {
-      position: relative;
-      width: 393px;
-      height: 852px;
-      border-radius: 44px;
-      overflow: hidden;
-      border: 2px solid #2B3139;
-      box-shadow:
-        0 0 0 1px rgba(240, 185, 11, 0.08),
-        0 25px 80px rgba(0, 0, 0, 0.6),
-        0 0 120px rgba(240, 185, 11, 0.04);
-      background: #0B0E11;
-    }
-
-    /* Dynamic Island */
-    .dynamic-island {
-      position: absolute;
-      top: 10px;
-      left: 50%;
-      transform: translateX(-50%);
-      width: 126px;
-      height: 36px;
-      background: #000;
-      border-radius: 20px;
-      z-index: 100;
-    }
-
-    .device-frame iframe {
-      width: 100%;
-      height: 100%;
-      border: none;
-      background: #0B0E11;
-    }
-
-    .nav-pills {
-      display: flex;
-      gap: 8px;
-      margin-top: 20px;
-    }
-
-    .nav-pill {
-      padding: 8px 16px;
-      border-radius: 20px;
-      border: 1px solid #2B3139;
-      background: transparent;
-      color: #848E9C;
-      font-size: 13px;
-      font-family: 'DM Sans', sans-serif;
-      cursor: pointer;
-      transition: all 0.2s;
-    }
-
-    .nav-pill:hover, .nav-pill.active {
-      background: #F0B90B;
-      color: #0B0E11;
-      border-color: #F0B90B;
-      font-weight: 500;
-    }
+    body { font-family: 'PingFang SC', 'Helvetica Neue', sans-serif; background: #0B0E11; }
+    ::-webkit-scrollbar { display: none; }
+    html { background: #000; }
+    html, body { width: 393px !important; margin: 0 auto !important; overflow-x: hidden; }
   </style>
 </head>
-<body>
+<body class="bg-[#0B0E11] text-[#EAECEF] min-h-screen">
 
-  <p class="page-title">Sales Hub · Prototype</p>
-
-  <div class="device-frame">
-    <div class="dynamic-island"></div>
-    <iframe id="app-frame" src="clients.html"></iframe>
+  <!-- 状态栏 -->
+  <div class="h-[44px] flex items-center justify-between px-6">
+    <span class="text-[12px] font-semibold">9:41</span>
+    <div class="flex items-center gap-1.5">
+      <i class="fa-solid fa-signal text-[12px]"></i>
+      <i class="fa-solid fa-wifi text-[12px]"></i>
+      <i class="fa-solid fa-battery-full text-[13px]"></i>
+    </div>
   </div>
 
-  <div class="nav-pills">
-    <button class="nav-pill active" onclick="nav('clients.html', this)">客户列表</button>
-    <button class="nav-pill" onclick="nav('client-detail.html', this)">客户详情</button>
-    <button class="nav-pill" onclick="nav('events.html', this)">事件中心</button>
-    <button class="nav-pill" onclick="nav('event-thread.html', this)">事件线程</button>
-    <button class="nav-pill" onclick="nav('profile.html', this)">我的</button>
+  <!-- 顶部品牌区 -->
+  <div class="px-4 pt-4 pb-8 text-center">
+    <div class="w-12 h-12 rounded-2xl bg-[#F0B90B] flex items-center justify-center mx-auto mb-3">
+      <i class="fa-solid fa-chart-line text-[#0B0E11] text-[18px]"></i>
+    </div>
+    <h1 class="text-[22px] font-bold text-[#EAECEF]">Sales Hub</h1>
+    <p class="text-[12px] text-[#848E9C] mt-1">选择要体验的原型版本</p>
   </div>
 
-  <script>
-    function nav(page, el) {
-      document.getElementById('app-frame').src = page;
-      document.querySelectorAll('.nav-pill').forEach(p => p.classList.remove('active'));
-      el.classList.add('active');
-    }
-  </script>
+  <!-- 两个 App 入口 -->
+  <div class="px-4">
+
+    <!-- App A -->
+    <a href="home-a.html" class="block mb-4 active:opacity-70">
+      <div class="bg-[#1E2329] rounded-2xl border border-[#2E3440] p-5">
+        <div class="flex items-center gap-3 mb-4">
+          <div class="w-10 h-10 rounded-xl bg-[#2D2010] flex items-center justify-center flex-shrink-0">
+            <span class="text-[#F0B90B] text-[14px] font-bold">A</span>
+          </div>
+          <div>
+            <div class="text-[16px] font-bold text-[#EAECEF]">版本 A</div>
+            <div class="text-[11px] text-[#848E9C]">极简聚焦流</div>
+          </div>
+          <i class="fa-solid fa-chevron-right text-[#474D57] ml-auto"></i>
+        </div>
+        <div class="space-y-2">
+          <div class="flex items-start gap-2">
+            <i class="fa-solid fa-circle-dot text-[#F0B90B] text-[10px] mt-1 flex-shrink-0"></i>
+            <p class="text-[13px] text-[#EAECEF]">高价值榜单：<span class="text-[#848E9C]">仅综合视图，一屏看全</span></p>
+          </div>
+          <div class="flex items-start gap-2">
+            <i class="fa-solid fa-circle-dot text-[#F0B90B] text-[10px] mt-1 flex-shrink-0"></i>
+            <p class="text-[13px] text-[#EAECEF]">今日行动：<span class="text-[#848E9C]">仅显示待处理，无干扰</span></p>
+          </div>
+        </div>
+        <div class="mt-4 pt-4 border-t border-[#2E3440]">
+          <div class="bg-[#F0B90B] rounded-xl py-3 text-center">
+            <span class="text-[#0B0E11] text-[15px] font-bold">进入版本 A</span>
+          </div>
+        </div>
+      </div>
+    </a>
+
+    <!-- App B -->
+    <a href="home-b.html" class="block mb-6 active:opacity-70">
+      <div class="bg-[#1E2329] rounded-2xl border border-[#2E3440] p-5">
+        <div class="flex items-center gap-3 mb-4">
+          <div class="w-10 h-10 rounded-xl bg-[#0D1F2D] flex items-center justify-center flex-shrink-0">
+            <span class="text-[#4DA6FF] text-[14px] font-bold">B</span>
+          </div>
+          <div>
+            <div class="text-[16px] font-bold text-[#EAECEF]">版本 B</div>
+            <div class="text-[11px] text-[#848E9C]">多维分层流</div>
+          </div>
+          <i class="fa-solid fa-chevron-right text-[#474D57] ml-auto"></i>
+        </div>
+        <div class="space-y-2">
+          <div class="flex items-start gap-2">
+            <i class="fa-solid fa-circle-dot text-[#4DA6FF] text-[10px] mt-1 flex-shrink-0"></i>
+            <p class="text-[13px] text-[#EAECEF]">高价值榜单：<span class="text-[#848E9C]">综合 / 现货 / 合约 三维切换</span></p>
+          </div>
+          <div class="flex items-start gap-2">
+            <i class="fa-solid fa-circle-dot text-[#4DA6FF] text-[10px] mt-1 flex-shrink-0"></i>
+            <p class="text-[13px] text-[#EAECEF]">今日行动：<span class="text-[#848E9C]">待处理 + 跟进中 分组折叠</span></p>
+          </div>
+        </div>
+        <div class="mt-4 pt-4 border-t border-[#2E3440]">
+          <div class="bg-[#0D1F2D] border border-[#4DA6FF] rounded-xl py-3 text-center">
+            <span class="text-[#4DA6FF] text-[15px] font-bold">进入版本 B</span>
+          </div>
+        </div>
+      </div>
+    </a>
+
+    <!-- App C -->
+    <a href="home-c.html" class="block mb-4 active:opacity-70">
+      <div class="bg-[#1E2329] rounded-2xl border border-[#2E3440] p-5">
+        <div class="flex items-center gap-3 mb-4">
+          <div class="w-10 h-10 rounded-xl bg-[#0D2620] flex items-center justify-center flex-shrink-0">
+            <span class="text-[#0ECB81] text-[14px] font-bold">C</span>
+          </div>
+          <div>
+            <div class="text-[16px] font-bold text-[#EAECEF]">版本 C</div>
+            <div class="text-[11px] text-[#848E9C]">两行列表 · 高密度</div>
+          </div>
+          <i class="fa-solid fa-chevron-right text-[#474D57] ml-auto"></i>
+        </div>
+        <div class="space-y-2">
+          <div class="flex items-start gap-2">
+            <i class="fa-solid fa-circle-dot text-[#0ECB81] text-[10px] mt-1 flex-shrink-0"></i>
+            <p class="text-[13px] text-[#EAECEF]">榜单改列表：<span class="text-[#848E9C]">一屏可见 7 个客户（卡片版 3 个）</span></p>
+          </div>
+          <div class="flex items-start gap-2">
+            <i class="fa-solid fa-circle-dot text-[#0ECB81] text-[10px] mt-1 flex-shrink-0"></i>
+            <p class="text-[13px] text-[#EAECEF]">去掉头像/信号dot：<span class="text-[#848E9C]">名字+贡献+周环比+Tags+AI建议全保留</span></p>
+          </div>
+        </div>
+        <div class="mt-4 pt-4 border-t border-[#2E3440]">
+          <div class="bg-[#0D2620] border border-[#0ECB81] rounded-xl py-3 text-center">
+            <span class="text-[#0ECB81] text-[15px] font-bold">进入版本 C</span>
+          </div>
+        </div>
+      </div>
+    </a>
+
+    <!-- 其他页面（共用） -->
+    <p class="text-[10px] text-[#474D57] uppercase tracking-widest mb-3 px-1 font-semibold">其他页面（两版本共用）</p>
+    <div class="grid grid-cols-2 gap-2 mb-8">
+      <a href="clients.html" class="bg-[#1E2329] rounded-xl border border-[#2E3440] p-3 flex items-center gap-2 active:opacity-70">
+        <i class="fa-solid fa-users text-[#848E9C] text-[14px]"></i>
+        <span class="text-[13px] text-[#EAECEF]">客户列表</span>
+      </a>
+      <a href="client-detail.html" class="bg-[#1E2329] rounded-xl border border-[#2E3440] p-3 flex items-center gap-2 active:opacity-70">
+        <i class="fa-solid fa-user text-[#848E9C] text-[14px]"></i>
+        <span class="text-[13px] text-[#EAECEF]">客户详情</span>
+      </a>
+      <a href="events.html" class="bg-[#1E2329] rounded-xl border border-[#2E3440] p-3 flex items-center gap-2 active:opacity-70">
+        <i class="fa-solid fa-bell text-[#848E9C] text-[14px]"></i>
+        <span class="text-[13px] text-[#EAECEF]">事件中心</span>
+      </a>
+      <a href="event-thread.html" class="bg-[#1E2329] rounded-xl border border-[#2E3440] p-3 flex items-center gap-2 active:opacity-70">
+        <i class="fa-solid fa-triangle-exclamation text-[#848E9C] text-[14px]"></i>
+        <span class="text-[13px] text-[#EAECEF]">事件线程</span>
+      </a>
+    </div>
+  </div>
+
 </body>
 </html>

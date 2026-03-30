@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Sales Hub – 首页 (C)</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            'hub-bg':'#0B0E11','hub-card':'#1E2329','hub-card-hover':'#2B3139',
+            'hub-border':'#2E3440','hub-gold':'#F0B90B','hub-gold-text':'#F8D33A',
+            'hub-red':'#F6465D','hub-green':'#0ECB81','hub-blue':'#4DA6FF',
+            'hub-text':'#EAECEF','hub-muted':'#848E9C','hub-disabled':'#474D57',
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body { font-family: 'PingFang SC','Helvetica Neue',sans-serif; background:#0B0E11; }
+    ::-webkit-scrollbar { display:none; }
+    html { background:#000; }
+    html, body { width:393px !important; margin:0 auto !important; overflow-x:hidden; }
+    .fixed-bar { position:fixed; bottom:0; left:50%; transform:translateX(-50%); width:393px; }
+  </style>
+</head>
+<body class="bg-[#0B0E11] text-[#EAECEF]">
+<div class="w-full">
+  <!-- 状态栏 -->
+  <div class="h-[44px] bg-[#0B0E11] flex items-center justify-between px-6">
+    <span class="text-[12px] font-semibold">9:41</span>
+    <div class="flex items-center gap-1.5">
+      <i class="fa-solid fa-signal text-[12px]"></i>
+      <i class="fa-solid fa-wifi text-[12px]"></i>
+      <i class="fa-solid fa-battery-full text-[13px]"></i>
+    </div>
+  </div>
+  <!-- 顶部导航 -->
+  <div class="h-[52px] sticky top-0 z-10 bg-[#0B0E11] border-b border-[#2E3440] flex items-center justify-between px-4">
+    <div class="w-[60px]"></div>
+    <h1 class="text-[17px] font-bold text-[#EAECEF] tracking-wide">Sales Hub</h1>
+    <div class="flex items-center gap-4">
+      <i class="fa-solid fa-magnifying-glass text-[#848E9C] text-[16px]"></i>
+      <div class="relative">
+        <i class="fa-solid fa-bell text-[#848E9C] text-[16px]"></i>
+        <span class="absolute -top-1 -right-1 w-2 h-2 rounded-full bg-[#F6465D]"></span>
+      </div>
+    </div>
+  </div>
+  <!-- 顶部 Tab -->
+  <div class="flex border-b border-[#2E3440] bg-[#0B0E11] sticky top-[52px] z-10">
+    <button onclick="switchTab('high')" id="tab-high"
+      class="flex-1 py-3 text-[14px] font-semibold text-[#F0B90B] border-b-2 border-[#F0B90B]">高价值客户</button>
+    <button onclick="switchTab('develop')" id="tab-develop"
+      class="flex-1 py-3 text-[14px] text-[#848E9C]">高潜客户</button>
+  </div>
+  <!-- 内容区 -->
+  <div class="overflow-y-auto pb-[90px]" style="scrollbar-width:none;">
+    <div id="panel-high">
+      <div class="px-4 pt-3 pb-1"><p class="text-[11px] text-[#848E9C]">近90天综合净贡献排行 · 高密度列表</p></div>
+      <div class="mx-4 bg-[#1E2329] rounded-xl border border-[#2E3440] overflow-hidden mb-2">
+        <a href="client-detail.html" class="flex items-center px-4 py-3 border-b border-[#2E3440] active:bg-[#2B3139]">
+          <span class="text-[12px] font-bold w-6 flex-shrink-0" style="color:#F0B90B">#1</span>
+          <div class="flex-1 min-w-0">
+            <div class="flex items-center gap-1.5 mb-0.5 flex-wrap">
+              <span class="text-[14px] font-semibold text-[#EAECEF]">朱娜浩</span>
+              <span class="text-[11px] text-[#474D57]">41329612</span>
+              <span class="text-[13px] font-bold text-[#F8D33A]">$71.0K</span>
+              <span class="text-[11px] text-[#0ECB81] font-medium">▲22.3%</span>
+              <span class="bg-[#0D1F2D] text-[#4DA6FF] text-[10px] px-1.5 py-0.5 rounded-full">沉淀强</span>
+              
+            </div>
+            <p class="text-[11px] text-[#848E9C]">资沉 $4.4M · 效率 1.62%</p>
+          </div>
+        </a>
+        <a href="client-detail.html" class="flex items-center px-4 py-3 border-b border-[#2E3440] active:bg-[#2B3139]">
+          <span class="text-[12px] font-bold w-6 flex-shrink-0" style="color:#F0B90B">#2</span>
+          <div class="flex-1 min-w-0">
+            <div class="flex items-center gap-1.5 mb-0.5 flex-wrap">
+              <span class="text-[14px] font-semibold text-[#EAECEF]">梁磊超</span>
+              <span class="text-[11px] text-[#474D57]">32162965</span>
+              <span class="text-[13px] font-bold text-[#F8D33A]">$64.5K</span>
+              <span class="text-[11px] text-[#0ECB81] font-medium">▲6.6%</span>
+              <span class="bg-[#2D1B1E] text-[#F6465D] text-[10px] px-1.5 py-0.5 rounded-full">沉淀弱</span>
+              <span class="bg-[#2D1B1E] text-[#F6465D] text-[10px] px-1.5 py-0.5 rounded-full font-medium">事件×3</span>
+            
+            </div>
+            <p class="text-[11px] text-[#848E9C]">资沉 $1.3M · 效率 5.02%</p>
+          </div>
+        </a>
+        <a href="client-detail.html" class="flex items-center px-4 py-3 border-b border-[#2E3440] active:bg-[#2B3139]">
+          <span class="text-[12px] font-bold w-6 flex-shrink-0" style="color:#F0B90B">#3</span>
+          <div class="flex-1 min-w-0">
+            <div class="flex items-center gap-1.5 mb-0.5 flex-wrap">
+              <span class="text-[14px] font-semibold text-[#EAECEF]">唐琳秀</span>
+              <span class="text-[11px] text-[#474D57]">67062156</span>
+              <span class="text-[13px] font-bold text-[#F8D33A]">$60.0K</span>
+              <span class="text-[11px] text-[#F6465D] font-medium">▼8.5%</span>
+              <span class="bg-[#2D1B1E] text-[#F6465D] text-[10px] px-1.5 py-0.5 rounded-full">沉淀弱</span>
+              <span class="bg-[#2D1B1E] text-[#F6465D] text-[10px] px-1.5 py-0.5 rounded-full font-medium">事件×3</span>
+            <span class="bg-[#2D1B1E] text-[#F6465D] text-[10px] px-1.5 py-0.5 rounded-full">趋势下滑</span>
+            
+            </div>
+            <p class="text-[11px] text-[#848E9C]">资沉 $497K · 效率 12.07%</p>
+          </div>
+        </a>
+        <a href="client-detail.html" class="flex items-center px-4 py-3 border-b border-[#2E3440] active:bg-[#2B3139]">
+          <span class="text-[12px] font-bold w-6 flex-shrink-0" style="color:#848E9C">#4</span>
+          <div class="flex-1 min-w-0">
+            <div class="flex items-center gap-1.5 mb-0.5 flex-wrap">
+              <span class="text-[14px] font-semibold text-[#EAECEF]">谢冰阳</span>
+              <span class="text-[11px] text-[#474D57]">79645282</span>
+              <span class="text-[13px] font-bold text-[#F8D33A]">$59.6K</span>
+              <span class="text-[11px] text-[#F6465D] font-medium">▼13.5%</span>
+              <span class="bg-[#0D1F2D] text-[#4DA6FF] text-[10px] px-1.5 py-0.5 rounded-full">沉淀强</span>
+              <span class="bg-[#2D1B1E] text-[#F6465D] text-[10px] px-1.5 py-0.5 rounded-full">趋势下滑</span>
+            
+            </div>
+            <p class="text-[11px] text-[#848E9C]">资沉 $4.3M · 效率 1.39%</p>
+          </div>
+        </a>
+        <a href="client-detail.html" class="flex items-center px-4 py-3 border-b border-[#2E3440] active:bg-[#2B3139]">
+          <span class="text-[12px] font-bold w-6 flex-shrink-0" style="color:#848E9C">#5</span>
+          <div class="flex-1 min-w-0">
+            <div class="flex items-center gap-1.5 mb-0.5 flex-wrap">
+              <span class="text-[14px] font-semibold text-[#EAECEF]">郑伟娜</span>
+              <span class="text-[11px] text-[#474D57]">81200181</span>
+              <span class="text-[13px] font-bold text-[#F8D33A]">$57.9K</span>
+              <span class="text-[11px] text-[#F6465D] font-medium">▼7.5%</span>
+              <span class="bg-[#0D1F2D] text-[#4DA6FF] text-[10px] px-1.5 py-0.5 rounded-full">沉淀强</span>
+              <span class="bg-[#2D1B00] text-[#F0B90B] text-[10px] px-1.5 py-0.5 rounded-full">41天未联系</span>
+            
+            </div>
+            <p class="text-[11px] text-[#848E9C]">资沉 $1.7M · 效率 3.36%</p>
+          </div>
+        </a>
+        <a href="client-detail.html" class="flex items-center px-4 py-3 border-b border-[#2E3440] active:bg-[#2B3139]">
+          <span class="text-[12px] font-bold w-6 flex-shrink-0" style="color:#848E9C">#6</span>
+          <div class="flex-1 min-w-0">
+            <div class="flex items-center gap-1.5 mb-0.5 flex-wrap">
+              <span class="text-[14px] font-semibold text-[#EAECEF]">谢志伟</span>
+              <span class="text-[11px] text-[#474D57]">79782527</span>
+              <span class="text-[13px] font-bold text-[#F8D33A]">$57.1K</span>
+              <span class="text-[11px] text-[#0ECB81] font-medium">▲15.4%</span>
+              <span class="bg-[#0D1F2D] text-[#4DA6FF] text-[10px] px-1.5 py-0.5 rounded-full">沉淀强</span>
+              <span class="bg-[#2D1B1E] text-[#F6465D] text-[10px] px-1.5 py-0.5 rounded-full">50天未联系</span>
+            
+            </div>
+            <p class="text-[11px] text-[#848E9C]">资沉 $3.2M · 效率 1.79%</p>
+          </div>
+        </a>
+        <a href="client-detail.html" class="flex items-center px-4 py-3  active:bg-[#2B3139]">
+          <span class="text-[12px] font-bold w-6 flex-shrink-0" style="color:#848E9C">#7</span>
+          <div class="flex-1 min-w-0">
+            <div class="flex items-center gap-1.5 mb-0.5 flex-wrap">
+              <span class="text-[14px] font-semibold text-[#EAECEF]">刘英玲</span>
+              <span class="text-[11px] text-[#474D57]">36477373</span>
+              <span class="text-[13px] font-bold text-[#F8D33A]">$48.6K</span>
+              <span class="text-[11px] text-[#F6465D] font-medium">▼1.6%</span>
+              <span class="bg-[#0D1F2D] text-[#4DA6FF] text-[10px] px-1.5 py-0.5 rounded-full">沉淀强</span>
+              <span class="bg-[#2D1B1E] text-[#F6465D] text-[10px] px-1.5 py-0.5 rounded-full font-medium">事件×1</span>
+            <span class="bg-[#2D1B00] text-[#F0B90B] text-[10px] px-1.5 py-0.5 rounded-full">44天未联系</span>
+            
+            </div>
+            <p class="text-[11px] text-[#848E9C]">资沉 $1.8M · 效率 2.74%</p>
+          </div>
+        </a>
+      </div>
+        <a href="clients.html?tab=all" class="flex items-center justify-between px-4 py-3 mb-1">
+          <span class="text-[13px] text-[#848E9C]">查看全部高价值客户（共13人）</span>
+          <i class="fa-solid fa-chevron-right text-[#474D57] text-xs"></i>
+        </a>
+    </div>
+    <div id="panel-develop" class="hidden">
+      <div class="px-4 pt-3 pb-1"><p class="text-[11px] text-[#848E9C]">按机会缺口排序 · 变现空间最大优先</p></div>
+      <div class="mx-4 bg-[#1E2329] rounded-xl border border-[#2E3440] overflow-hidden mb-2">
+        <a href="client-detail.html" class="flex items-center px-4 py-3 border-b border-[#2E3440] active:bg-[#2B3139]">
+          <span class="text-[12px] font-bold text-[#4DA6FF] w-6 flex-shrink-0">#1</span>
+          <div class="flex-1 min-w-0">
+            <div class="flex items-center gap-1.5 mb-0.5 flex-wrap">
+              <span class="text-[14px] font-semibold text-[#EAECEF]">谢明涛</span>
+              <span class="text-[11px] text-[#474D57]">20779739</span>
+              <span class="text-[13px] font-bold text-[#F8D33A]">$4.0M</span>
+              <div class="flex items-center gap-1">
+                <div class="w-10 h-1 rounded-full bg-[#2E3440]">
+                  <div class="h-1 rounded-full bg-[#F0B90B]" style="width:39%"></div>
+                </div>
+                <span class="text-[10px] text-[#F6465D]">0.12%</span>
+              </div>
+              <span class="text-[10px] text-[#F0B90B]">缺口$7.3K</span>
+            </div>
+            <p class="text-[11px] text-[#F0B90B] truncate">推荐：衍生品 →</p>
+          </div>
+        </a>
+        <a href="client-detail.html" class="flex items-center px-4 py-3 border-b border-[#2E3440] active:bg-[#2B3139]">
+          <span class="text-[12px] font-bold text-[#4DA6FF] w-6 flex-shrink-0">#2</span>
+          <div class="flex-1 min-w-0">
+            <div class="flex items-center gap-1.5 mb-0.5 flex-wrap">
+              <span class="text-[14px] font-semibold text-[#EAECEF]">唐超明</span>
+              <span class="text-[11px] text-[#474D57]">71115319</span>
+              <span class="text-[13px] font-bold text-[#F8D33A]">$6.0M</span>
+              <div class="flex items-center gap-1">
+                <div class="w-10 h-1 rounded-full bg-[#2E3440]">
+                  <div class="h-1 rounded-full bg-[#F0B90B]" style="width:61%"></div>
+                </div>
+                <span class="text-[10px] text-[#F6465D]">0.18%</span>
+              </div>
+              <span class="text-[10px] text-[#F0B90B]">缺口$7.0K</span>
+            </div>
+            <p class="text-[11px] text-[#F0B90B] truncate">推荐：金融卡 →</p>
+          </div>
+        </a>
+        <a href="client-detail.html" class="flex items-center px-4 py-3 border-b border-[#2E3440] active:bg-[#2B3139]">
+          <span class="text-[12px] font-bold text-[#4DA6FF] w-6 flex-shrink-0">#3</span>
+          <div class="flex-1 min-w-0">
+            <div class="flex items-center gap-1.5 mb-0.5 flex-wrap">
+              <span class="text-[14px] font-semibold text-[#EAECEF]">马勇娜</span>
+              <span class="text-[11px] text-[#474D57]">63118906</span>
+              <span class="text-[13px] font-bold text-[#F8D33A]">$3.9M</span>
+              <div class="flex items-center gap-1">
+                <div class="w-10 h-1 rounded-full bg-[#2E3440]">
+                  <div class="h-1 rounded-full bg-[#F0B90B]" style="width:49%"></div>
+                </div>
+                <span class="text-[10px] text-[#F6465D]">0.15%</span>
+              </div>
+              <span class="text-[10px] text-[#F0B90B]">缺口$6.1K</span>
+            </div>
+            <p class="text-[11px] text-[#F0B90B] truncate">推荐：金融卡 →</p>
+          </div>
+        </a>
+        <a href="client-detail.html" class="flex items-center px-4 py-3 border-b border-[#2E3440] active:bg-[#2B3139]">
+          <span class="text-[12px] font-bold text-[#4DA6FF] w-6 flex-shrink-0">#4</span>
+          <div class="flex-1 min-w-0">
+            <div class="flex items-center gap-1.5 mb-0.5 flex-wrap">
+              <span class="text-[14px] font-semibold text-[#EAECEF]">马涛雅</span>
+              <span class="text-[11px] text-[#474D57]">54087376</span>
+              <span class="text-[13px] font-bold text-[#F8D33A]">$2.8M</span>
+              <div class="flex items-center gap-1">
+                <div class="w-10 h-1 rounded-full bg-[#2E3440]">
+                  <div class="h-1 rounded-full bg-[#F0B90B]" style="width:44%"></div>
+                </div>
+                <span class="text-[10px] text-[#F6465D]">0.13%</span>
+              </div>
+              <span class="text-[10px] text-[#F0B90B]">缺口$4.7K</span>
+            </div>
+            <p class="text-[11px] text-[#F0B90B] truncate">推荐：金融卡 →</p>
+          </div>
+        </a>
+        <a href="client-detail.html" class="flex items-center px-4 py-3  active:bg-[#2B3139]">
+          <span class="text-[12px] font-bold text-[#4DA6FF] w-6 flex-shrink-0">#5</span>
+          <div class="flex-1 min-w-0">
+            <div class="flex items-center gap-1.5 mb-0.5 flex-wrap">
+              <span class="text-[14px] font-semibold text-[#EAECEF]">黄勇阳</span>
+              <span class="text-[11px] text-[#474D57]">93568503</span>
+              <span class="text-[13px] font-bold text-[#F8D33A]">$2.1M</span>
+              <div class="flex items-center gap-1">
+                <div class="w-10 h-1 rounded-full bg-[#2E3440]">
+                  <div class="h-1 rounded-full bg-[#F0B90B]" style="width:43%"></div>
+                </div>
+                <span class="text-[10px] text-[#F6465D]">0.13%</span>
+              </div>
+              <span class="text-[10px] text-[#F0B90B]">缺口$3.5K</span>
+            </div>
+            <p class="text-[11px] text-[#F0B90B] truncate">推荐：金融卡 →</p>
+          </div>
+        </a>
+      </div>
+        <a href="clients.html?tab=develop" class="flex items-center justify-between px-4 py-3 mb-1">
+          <span class="text-[13px] text-[#848E9C]">查看全部高潜客户（共10人）</span>
+          <i class="fa-solid fa-chevron-right text-[#474D57] text-xs"></i>
+        </a>
+    </div>
+
+  </div>
+  <!-- 底部 Tab -->
+  <div class="fixed-bar bg-[#0B0E11] border-t border-[#2E3440] z-20">
+    <div class="flex items-center justify-around h-[56px]">
+      <a href="home-c.html" class="flex flex-col items-center gap-0.5">
+        <i class="fa-solid fa-house text-[#F0B90B] text-[18px]"></i>
+        <span class="text-[10px] text-[#F0B90B] font-medium">首页</span>
+      </a>
+      <a href="clients.html" class="flex flex-col items-center gap-0.5">
+        <i class="fa-solid fa-users text-[#848E9C] text-[18px]"></i>
+        <span class="text-[10px] text-[#848E9C]">客群</span>
+      </a>
+      <a href="events.html" class="flex flex-col items-center gap-0.5">
+        <div class="relative">
+          <i class="fa-solid fa-bell text-[#848E9C] text-[18px]"></i>
+          <span class="absolute -top-1 -right-1 w-2 h-2 rounded-full bg-[#F6465D]"></span>
+        </div>
+        <span class="text-[10px] text-[#848E9C]">事件</span>
+      </a>
+      <a href="profile.html" class="flex flex-col items-center gap-0.5">
+        <i class="fa-solid fa-circle-user text-[#848E9C] text-[18px]"></i>
+        <span class="text-[10px] text-[#848E9C]">我的</span>
+      </a>
+    </div>
+    <div class="h-[34px]"></div>
+  </div>
+</div>
+<script>
+  sessionStorage.setItem('homeVersion', 'c');
+  function switchTab(t) {
+    ['high','develop'].forEach(id => {
+      document.getElementById('panel-' + id).classList.toggle('hidden', id !== t);
+      document.getElementById('tab-' + id).className = id === t
+        ? 'flex-1 py-3 text-[14px] font-semibold text-[#F0B90B] border-b-2 border-[#F0B90B]'
+        : 'flex-1 py-3 text-[14px] text-[#848E9C]';
+    });
+  }
+  
+</script>
+</body>
+</html>

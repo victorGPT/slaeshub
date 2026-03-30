@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Sales Hub – 首页 (A)</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            'hub-bg':'#0B0E11','hub-card':'#1E2329','hub-card-hover':'#2B3139',
+            'hub-border':'#2E3440','hub-gold':'#F0B90B','hub-gold-text':'#F8D33A',
+            'hub-red':'#F6465D','hub-green':'#0ECB81','hub-blue':'#4DA6FF',
+            'hub-text':'#EAECEF','hub-muted':'#848E9C','hub-disabled':'#474D57',
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body { font-family: 'PingFang SC','Helvetica Neue',sans-serif; background:#0B0E11; }
+    ::-webkit-scrollbar { display:none; }
+    html { background:#000; }
+    html, body { width:393px !important; margin:0 auto !important; overflow-x:hidden; }
+    .fixed-bar { position:fixed; bottom:0; left:50%; transform:translateX(-50%); width:393px; }
+  </style>
+</head>
+<body class="bg-[#0B0E11] text-[#EAECEF]">
+<div class="w-full">
+  <!-- 状态栏 -->
+  <div class="h-[44px] bg-[#0B0E11] flex items-center justify-between px-6">
+    <span class="text-[12px] font-semibold">9:41</span>
+    <div class="flex items-center gap-1.5">
+      <i class="fa-solid fa-signal text-[12px]"></i>
+      <i class="fa-solid fa-wifi text-[12px]"></i>
+      <i class="fa-solid fa-battery-full text-[13px]"></i>
+    </div>
+  </div>
+  <!-- 顶部导航 -->
+  <div class="h-[52px] sticky top-0 z-10 bg-[#0B0E11] border-b border-[#2E3440] flex items-center justify-between px-4">
+    <div class="w-[60px]"></div>
+    <h1 class="text-[17px] font-bold text-[#EAECEF] tracking-wide">Sales Hub</h1>
+    <div class="flex items-center gap-4">
+      <i class="fa-solid fa-magnifying-glass text-[#848E9C] text-[16px]"></i>
+      <div class="relative">
+        <i class="fa-solid fa-bell text-[#848E9C] text-[16px]"></i>
+        <span class="absolute -top-1 -right-1 w-2 h-2 rounded-full bg-[#F6465D]"></span>
+      </div>
+    </div>
+  </div>
+  <!-- 顶部 Tab -->
+  <div class="flex border-b border-[#2E3440] bg-[#0B0E11] sticky top-[52px] z-10">
+    <button onclick="switchTab('high')" id="tab-high"
+      class="flex-1 py-3 text-[14px] font-semibold text-[#F0B90B] border-b-2 border-[#F0B90B]">高价值客户</button>
+    <button onclick="switchTab('develop')" id="tab-develop"
+      class="flex-1 py-3 text-[14px] text-[#848E9C]">高潜客户</button>
+  </div>
+  <!-- 内容区 -->
+  <div class="overflow-y-auto pb-[90px]" style="scrollbar-width:none;">
+    <div id="panel-high">
+      <div class="px-4 pt-3 pb-1"><p class="text-[11px] text-[#848E9C]">近90天综合净贡献排行 · 按 N90 降序</p></div>
+        <div class="bg-[#1E2329] rounded-xl border border-[#2E3440] p-4 mx-4 mb-2">
+          <div class="flex items-center gap-3 mb-2">
+            <span class="text-[13px] font-bold w-6 flex-shrink-0" style="color:#F0B90B">#1</span>
+            <img src="https://ui-avatars.com/api/?name=%E6%9C%B1%E5%A8%9C%E6%B5%A9&background=2B3139&color=EAECEF&size=40&font-size=0.4&bold=true" class="w-10 h-10 rounded-full border-2 border-[#F0B90B] flex-shrink-0" />
+            <span class="flex-1 text-[14px] font-semibold text-[#EAECEF]">朱娜浩</span>
+            <span class="text-[11px] text-[#474D57]">41329612</span>
+          </div>
+          <div class="flex flex-wrap gap-1 mb-2">
+            <span class="bg-[#0D1F2D] text-[#4DA6FF] text-[10px] px-1.5 py-0.5 rounded-full">沉淀强</span>
+            
+            
+          </div>
+          <div class="flex items-baseline gap-2 mb-1">
+            <span class="text-[11px] text-[#848E9C]">综合净贡献</span>
+            <span class="text-[20px] font-bold text-[#F8D33A]">$71.0K</span>
+            <span class="text-[11px] text-[#0ECB81] font-medium">▲22.3%</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <span class="text-[11px] text-[#848E9C]">资沉</span>
+            <span class="text-[14px] text-[#EAECEF]">$4.4M</span>
+            <span class="text-[11px] text-[#848E9C]">效率</span>
+            <span class="text-[11px] text-[#EAECEF]">1.62%</span>
+          </div>
+        </div>
+        <div class="bg-[#1E2329] rounded-xl border border-[#2E3440] p-4 mx-4 mb-2">
+          <div class="flex items-center gap-3 mb-2">
+            <span class="text-[13px] font-bold w-6 flex-shrink-0" style="color:#F0B90B">#2</span>
+            <img src="https://ui-avatars.com/api/?name=%E6%A2%81%E7%A3%8A%E8%B6%85&background=2B3139&color=EAECEF&size=40&font-size=0.4&bold=true" class="w-10 h-10 rounded-full border-2 border-[#F0B90B] flex-shrink-0" />
+            <span class="flex-1 text-[14px] font-semibold text-[#EAECEF]">梁磊超</span>
+            <span class="text-[11px] text-[#474D57]">32162965</span>
+          </div>
+          <div class="flex flex-wrap gap-1 mb-2">
+            <span class="bg-[#2D1B1E] text-[#F6465D] text-[10px] px-1.5 py-0.5 rounded-full">沉淀弱</span>
+            
+            <span class="bg-[#2D1B1E] text-[#F6465D] text-[10px] px-1.5 py-0.5 rounded-full font-medium">事件×3</span>
+            
+          </div>
+          <div class="flex items-baseline gap-2 mb-1">
+            <span class="text-[11px] text-[#848E9C]">综合净贡献</span>
+            <span class="text-[20px] font-bold text-[#F8D33A]">$64.5K</span>
+            <span class="text-[11px] text-[#0ECB81] font-medium">▲6.6%</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <span class="text-[11px] text-[#848E9C]">资沉</span>
+            <span class="text-[14px] text-[#EAECEF]">$1.3M</span>
+            <span class="text-[11px] text-[#848E9C]">效率</span>
+            <span class="text-[11px] text-[#EAECEF]">5.02%</span>
+          </div>
+        </div>
+        <div class="bg-[#1E2329] rounded-xl border border-[#2E3440] p-4 mx-4 mb-2">
+          <div class="flex items-center gap-3 mb-2">
+            <span class="text-[13px] font-bold w-6 flex-shrink-0" style="color:#F0B90B">#3</span>
+            <img src="https://ui-avatars.com/api/?name=%E5%94%90%E7%90%B3%E7%A7%80&background=2B3139&color=EAECEF&size=40&font-size=0.4&bold=true" class="w-10 h-10 rounded-full border-2 border-[#F0B90B] flex-shrink-0" />
+            <span class="flex-1 text-[14px] font-semibold text-[#EAECEF]">唐琳秀</span>
+            <span class="text-[11px] text-[#474D57]">67062156</span>
+          </div>
+          <div class="flex flex-wrap gap-1 mb-2">
+            <span class="bg-[#2D1B1E] text-[#F6465D] text-[10px] px-1.5 py-0.5 rounded-full">沉淀弱</span>
+            
+            <span class="bg-[#2D1B1E] text-[#F6465D] text-[10px] px-1.5 py-0.5 rounded-full font-medium">事件×3</span>
+            <span class="bg-[#2D1B1E] text-[#F6465D] text-[10px] px-1.5 py-0.5 rounded-full">趋势下滑</span>
+            
+          </div>
+          <div class="flex items-baseline gap-2 mb-1">
+            <span class="text-[11px] text-[#848E9C]">综合净贡献</span>
+            <span class="text-[20px] font-bold text-[#F8D33A]">$60.0K</span>
+            <span class="text-[11px] text-[#F6465D] font-medium">▼8.5%</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <span class="text-[11px] text-[#848E9C]">资沉</span>
+            <span class="text-[14px] text-[#EAECEF]">$497K</span>
+            <span class="text-[11px] text-[#848E9C]">效率</span>
+            <span class="text-[11px] text-[#EAECEF]">12.07%</span>
+          </div>
+        </div>
+        <div class="bg-[#1E2329] rounded-xl border border-[#2E3440] p-4 mx-4 mb-2">
+          <div class="flex items-center gap-3 mb-2">
+            <span class="text-[13px] font-bold w-6 flex-shrink-0" style="color:#848E9C">#4</span>
+            <img src="https://ui-avatars.com/api/?name=%E8%B0%A2%E5%86%B0%E9%98%B3&background=2B3139&color=EAECEF&size=40&font-size=0.4&bold=true" class="w-10 h-10 rounded-full  flex-shrink-0" />
+            <span class="flex-1 text-[14px] font-semibold text-[#EAECEF]">谢冰阳</span>
+            <span class="text-[11px] text-[#474D57]">79645282</span>
+          </div>
+          <div class="flex flex-wrap gap-1 mb-2">
+            <span class="bg-[#0D1F2D] text-[#4DA6FF] text-[10px] px-1.5 py-0.5 rounded-full">沉淀强</span>
+            
+            <span class="bg-[#2D1B1E] text-[#F6465D] text-[10px] px-1.5 py-0.5 rounded-full">趋势下滑</span>
+            
+          </div>
+          <div class="flex items-baseline gap-2 mb-1">
+            <span class="text-[11px] text-[#848E9C]">综合净贡献</span>
+            <span class="text-[20px] font-bold text-[#F8D33A]">$59.6K</span>
+            <span class="text-[11px] text-[#F6465D] font-medium">▼13.5%</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <span class="text-[11px] text-[#848E9C]">资沉</span>
+            <span class="text-[14px] text-[#EAECEF]">$4.3M</span>
+            <span class="text-[11px] text-[#848E9C]">效率</span>
+            <span class="text-[11px] text-[#EAECEF]">1.39%</span>
+          </div>
+        </div>
+        <div class="bg-[#1E2329] rounded-xl border border-[#2E3440] p-4 mx-4 mb-2">
+          <div class="flex items-center gap-3 mb-2">
+            <span class="text-[13px] font-bold w-6 flex-shrink-0" style="color:#848E9C">#5</span>
+            <img src="https://ui-avatars.com/api/?name=%E9%83%91%E4%BC%9F%E5%A8%9C&background=2B3139&color=EAECEF&size=40&font-size=0.4&bold=true" class="w-10 h-10 rounded-full  flex-shrink-0" />
+            <span class="flex-1 text-[14px] font-semibold text-[#EAECEF]">郑伟娜</span>
+            <span class="text-[11px] text-[#474D57]">81200181</span>
+          </div>
+          <div class="flex flex-wrap gap-1 mb-2">
+            <span class="bg-[#0D1F2D] text-[#4DA6FF] text-[10px] px-1.5 py-0.5 rounded-full">沉淀强</span>
+            
+            <span class="bg-[#2D1B00] text-[#F0B90B] text-[10px] px-1.5 py-0.5 rounded-full">41天未联系</span>
+            
+          </div>
+          <div class="flex items-baseline gap-2 mb-1">
+            <span class="text-[11px] text-[#848E9C]">综合净贡献</span>
+            <span class="text-[20px] font-bold text-[#F8D33A]">$57.9K</span>
+            <span class="text-[11px] text-[#F6465D] font-medium">▼7.5%</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <span class="text-[11px] text-[#848E9C]">资沉</span>
+            <span class="text-[14px] text-[#EAECEF]">$1.7M</span>
+            <span class="text-[11px] text-[#848E9C]">效率</span>
+            <span class="text-[11px] text-[#EAECEF]">3.36%</span>
+          </div>
+        </div>
+        <a href="clients.html?tab=all" class="flex items-center justify-between px-4 py-3 mb-1">
+          <span class="text-[13px] text-[#848E9C]">查看全部高价值客户（共13人）</span>
+          <i class="fa-solid fa-chevron-right text-[#474D57] text-xs"></i>
+        </a>
+    </div>
+    <div id="panel-develop" class="hidden">
+      <div class="px-4 pt-3 pb-1"><p class="text-[11px] text-[#848E9C]">按机会缺口排序 · F90×(T_E−E90)</p></div>
+        <div class="bg-[#1E2329] rounded-xl border border-[#2E3440] p-4 mx-4 mb-2">
+          <div class="flex items-center gap-3 mb-2">
+            <span class="text-[13px] font-bold text-[#4DA6FF] w-6 flex-shrink-0">#1</span>
+            <img src="https://ui-avatars.com/api/?name=%E8%B0%A2%E6%98%8E%E6%B6%9B&background=2B3139&color=EAECEF&size=40&font-size=0.4&bold=true" class="w-10 h-10 rounded-full border-2 border-[#4DA6FF] flex-shrink-0" />
+            <span class="flex-1 text-[14px] font-semibold text-[#EAECEF]">谢明涛</span>
+            <span class="text-[11px] text-[#474D57]">20779739</span>
+          </div>
+          <div class="flex items-baseline gap-2 mb-1">
+            <span class="text-[11px] text-[#848E9C]">日均资沉</span>
+            <span class="text-[18px] font-bold text-[#F8D33A]">$4.0M</span>
+          </div>
+          <div class="flex items-center gap-2 mb-1">
+            <span class="text-[11px] text-[#848E9C]">效率</span>
+            <div class="flex-1 h-1 rounded-full bg-[#2E3440]">
+              <div class="h-1 rounded-full bg-[#F0B90B]" style="width:39%"></div>
+            </div>
+            <span class="text-[10px] text-[#F6465D]">0.12%</span>
+          </div>
+          <div class="flex items-center gap-2 mb-2">
+            <span class="text-[11px] text-[#848E9C]">机会缺口</span>
+            <span class="text-[13px] font-semibold text-[#F0B90B]">$7.3K</span>
+            <span class="text-[10px] text-[#848E9C]">（按变现均线估算）</span>
+          </div>
+          <p class="text-[12px] text-[#F0B90B] truncate">推荐方向：衍生品 →</p>
+        </div>
+        <div class="bg-[#1E2329] rounded-xl border border-[#2E3440] p-4 mx-4 mb-2">
+          <div class="flex items-center gap-3 mb-2">
+            <span class="text-[13px] font-bold text-[#4DA6FF] w-6 flex-shrink-0">#2</span>
+            <img src="https://ui-avatars.com/api/?name=%E5%94%90%E8%B6%85%E6%98%8E&background=2B3139&color=EAECEF&size=40&font-size=0.4&bold=true" class="w-10 h-10 rounded-full border-2 border-[#4DA6FF] flex-shrink-0" />
+            <span class="flex-1 text-[14px] font-semibold text-[#EAECEF]">唐超明</span>
+            <span class="text-[11px] text-[#474D57]">71115319</span>
+          </div>
+          <div class="flex items-baseline gap-2 mb-1">
+            <span class="text-[11px] text-[#848E9C]">日均资沉</span>
+            <span class="text-[18px] font-bold text-[#F8D33A]">$6.0M</span>
+          </div>
+          <div class="flex items-center gap-2 mb-1">
+            <span class="text-[11px] text-[#848E9C]">效率</span>
+            <div class="flex-1 h-1 rounded-full bg-[#2E3440]">
+              <div class="h-1 rounded-full bg-[#F0B90B]" style="width:61%"></div>
+            </div>
+            <span class="text-[10px] text-[#F6465D]">0.18%</span>
+          </div>
+          <div class="flex items-center gap-2 mb-2">
+            <span class="text-[11px] text-[#848E9C]">机会缺口</span>
+            <span class="text-[13px] font-semibold text-[#F0B90B]">$7.0K</span>
+            <span class="text-[10px] text-[#848E9C]">（按变现均线估算）</span>
+          </div>
+          <p class="text-[12px] text-[#F0B90B] truncate">推荐方向：金融卡 →</p>
+        </div>
+        <div class="bg-[#1E2329] rounded-xl border border-[#2E3440] p-4 mx-4 mb-2">
+          <div class="flex items-center gap-3 mb-2">
+            <span class="text-[13px] font-bold text-[#4DA6FF] w-6 flex-shrink-0">#3</span>
+            <img src="https://ui-avatars.com/api/?name=%E9%A9%AC%E5%8B%87%E5%A8%9C&background=2B3139&color=EAECEF&size=40&font-size=0.4&bold=true" class="w-10 h-10 rounded-full border-2 border-[#4DA6FF] flex-shrink-0" />
+            <span class="flex-1 text-[14px] font-semibold text-[#EAECEF]">马勇娜</span>
+            <span class="text-[11px] text-[#474D57]">63118906</span>
+          </div>
+          <div class="flex items-baseline gap-2 mb-1">
+            <span class="text-[11px] text-[#848E9C]">日均资沉</span>
+            <span class="text-[18px] font-bold text-[#F8D33A]">$3.9M</span>
+          </div>
+          <div class="flex items-center gap-2 mb-1">
+            <span class="text-[11px] text-[#848E9C]">效率</span>
+            <div class="flex-1 h-1 rounded-full bg-[#2E3440]">
+              <div class="h-1 rounded-full bg-[#F0B90B]" style="width:49%"></div>
+            </div>
+            <span class="text-[10px] text-[#F6465D]">0.15%</span>
+          </div>
+          <div class="flex items-center gap-2 mb-2">
+            <span class="text-[11px] text-[#848E9C]">机会缺口</span>
+            <span class="text-[13px] font-semibold text-[#F0B90B]">$6.1K</span>
+            <span class="text-[10px] text-[#848E9C]">（按变现均线估算）</span>
+          </div>
+          <p class="text-[12px] text-[#F0B90B] truncate">推荐方向：金融卡 →</p>
+        </div>
+        <a href="clients.html?tab=develop" class="flex items-center justify-between px-4 py-3 mb-1">
+          <span class="text-[13px] text-[#848E9C]">查看全部高潜客户（共10人）</span>
+          <i class="fa-solid fa-chevron-right text-[#474D57] text-xs"></i>
+        </a>
+    </div>
+
+  </div>
+  <!-- 底部 Tab -->
+  <div class="fixed-bar bg-[#0B0E11] border-t border-[#2E3440] z-20">
+    <div class="flex items-center justify-around h-[56px]">
+      <a href="home-a.html" class="flex flex-col items-center gap-0.5">
+        <i class="fa-solid fa-house text-[#F0B90B] text-[18px]"></i>
+        <span class="text-[10px] text-[#F0B90B] font-medium">首页</span>
+      </a>
+      <a href="clients.html" class="flex flex-col items-center gap-0.5">
+        <i class="fa-solid fa-users text-[#848E9C] text-[18px]"></i>
+        <span class="text-[10px] text-[#848E9C]">客群</span>
+      </a>
+      <a href="events.html" class="flex flex-col items-center gap-0.5">
+        <div class="relative">
+          <i class="fa-solid fa-bell text-[#848E9C] text-[18px]"></i>
+          <span class="absolute -top-1 -right-1 w-2 h-2 rounded-full bg-[#F6465D]"></span>
+        </div>
+        <span class="text-[10px] text-[#848E9C]">事件</span>
+      </a>
+      <a href="profile.html" class="flex flex-col items-center gap-0.5">
+        <i class="fa-solid fa-circle-user text-[#848E9C] text-[18px]"></i>
+        <span class="text-[10px] text-[#848E9C]">我的</span>
+      </a>
+    </div>
+    <div class="h-[34px]"></div>
+  </div>
+</div>
+<script>
+  sessionStorage.setItem('homeVersion', 'a');
+  function switchTab(t) {
+    ['high','develop'].forEach(id => {
+      document.getElementById('panel-' + id).classList.toggle('hidden', id !== t);
+      document.getElementById('tab-' + id).className = id === t
+        ? 'flex-1 py-3 text-[14px] font-semibold text-[#F0B90B] border-b-2 border-[#F0B90B]'
+        : 'flex-1 py-3 text-[14px] text-[#848E9C]';
+    });
+  }
+  
+</script>
+</body>
+</html>
