@@ -406,9 +406,10 @@
   });
 
   assetsHtml += '<div class="mx-4 mt-3 bg-[#1E2329] rounded-xl border border-[#2E3440] p-3">'
-    + '<div class="text-[13px] font-semibold text-[#EAECEF] mb-2">资金分布</div>'
-    + '<div class="text-[11px] text-[#848E9C] mb-0.5">总计</div>'
-    + '<div class="text-[18px] font-bold text-[#EAECEF] mb-3">' + c.depositDisplay + '</div>';
+    + '<div class="flex items-center gap-2 mb-3">'
+    + '<span class="text-[13px] font-semibold text-[#EAECEF]">资金分布</span>'
+    + '<span class="text-[16px] font-bold text-[#F0B90B]">' + c.depositDisplay + '</span>'
+    + '</div>';
   ddItems.forEach(function(item, idx) {
     var barColor = idx < 2 ? '#F0B90B' : '#4DA6FF';
     assetsHtml += '<div class="mb-2 last:mb-0">'
@@ -575,19 +576,18 @@
   ];
   var pnlMax = Math.max.apply(null, pnlItems.map(function(i) { return Math.abs(i.data.value); }).concat([1]));
 
-  assetsHtml += '<div class="mx-4 mt-3 mb-4 bg-[#1E2329] rounded-xl border border-[#2E3440] p-3">'
-    + '<div class="text-[13px] font-semibold text-[#EAECEF] mb-2">交易盈亏</div>';
-  assetsHtml += '<div class="flex items-end gap-4 mb-3">'
-    + '<div>'
-    + '<div class="text-[10px] text-[#848E9C] mb-0.5">近7天</div>'
-    + '<div class="text-[20px] font-bold" style="color:' + pnl.total7d.color + '">' + pnl.total7d.display + '</div>'
+  // 7日交易盈亏 (collapsible, like 利润贡献)
+  assetsHtml += '<div class="mx-4 mt-3 mb-4">'
+    + '<div id="pnl-toggle" class="flex items-center justify-between bg-[#1E2329] rounded-xl border border-[#2E3440] p-3 cursor-pointer">'
+    + '<div class="flex items-center gap-2">'
+    + '<span class="text-[13px] font-semibold text-[#EAECEF]">7日交易盈亏</span>'
+    + '<span class="text-[16px] font-bold" style="color:' + pnl.total7d.color + '">' + pnl.total7d.display + '</span>'
+    + '<span class="text-[11px] text-[#848E9C]">8周均</span>'
+    + '<span class="text-[12px] font-medium" style="color:' + pnl.weeklyAvg8w.color + '">' + pnl.weeklyAvg8w.display + '</span>'
     + '</div>'
-    + '<div class="mb-0.5">'
-    + '<div class="text-[10px] text-[#848E9C] mb-0.5">8周周均</div>'
-    + '<div class="text-[13px] font-semibold" style="color:' + pnl.weeklyAvg8w.color + '">' + pnl.weeklyAvg8w.display + '</div>'
-    + '</div>'
+    + '<i id="pnl-arrow" class="fa-solid fa-chevron-down text-[10px] text-[#474D57] transition-transform"></i>'
     + '</div>';
-  assetsHtml += '<div class="border-t border-[#2E3440] pt-2 space-y-2">';
+  assetsHtml += '<div id="pnl-detail" class="hidden bg-[#1E2329] rounded-b-xl border border-t-0 border-[#2E3440] px-3 pb-3 pt-2 space-y-2">';
   pnlItems.forEach(function(item) {
     var d = item.data;
     var barW = pnlMax > 0 ? Math.round(Math.abs(d.value) / pnlMax * 100) : 0;
@@ -657,6 +657,27 @@
         ncToggle.classList.add('rounded-xl');
         ncToggle.classList.remove('rounded-t-xl');
         ncArrow.style.transform = '';
+      }
+    });
+  }
+
+  // === INTERACTIVE: PnL toggle ===
+  var pnlToggle = document.getElementById('pnl-toggle');
+  var pnlDetail = document.getElementById('pnl-detail');
+  var pnlArrow = document.getElementById('pnl-arrow');
+  if (pnlToggle && pnlDetail) {
+    pnlToggle.addEventListener('click', function() {
+      var isHidden = pnlDetail.classList.contains('hidden');
+      if (isHidden) {
+        pnlDetail.classList.remove('hidden');
+        pnlToggle.classList.remove('rounded-xl');
+        pnlToggle.classList.add('rounded-t-xl');
+        pnlArrow.style.transform = 'rotate(180deg)';
+      } else {
+        pnlDetail.classList.add('hidden');
+        pnlToggle.classList.add('rounded-xl');
+        pnlToggle.classList.remove('rounded-t-xl');
+        pnlArrow.style.transform = '';
       }
     });
   }
