@@ -91,15 +91,12 @@
 
   // Helper: get status label
   function getStatusLabel(c) {
-    if (!c) return { label: '未知', arrow: '' };
+    if (!c) return { label: '未知', color: '#848E9C' };
     var rate = c.adjustedTrendRate;
-    var r2 = c.rSquared;
-    if (r2 < 0.5) return { label: '波动不定', arrow: '↕' };
-    if (rate <= -0.04) return { label: '快速流失', arrow: '↘' };
-    if (rate <= -0.02) return { label: '缓慢流失', arrow: '↘' };
-    if (rate >= 0.04) return { label: '快速增长', arrow: '↗' };
-    if (rate >= 0.02) return { label: '缓慢增长', arrow: '↗' };
-    return { label: '稳定', arrow: '→' };
+    var pct = Math.abs(rate * 100).toFixed(1);
+    if (rate <= -0.01) return { label: '流失 ' + pct + '%', color: '#F6465D' };
+    if (rate >= 0.01) return { label: '增长 ' + pct + '%', color: '#0ECB81' };
+    return { label: '稳定', color: '#848E9C' };
   }
 
   // Urgency dot emoji
@@ -135,7 +132,7 @@
   html +=   '<div class="flex items-center justify-between mb-2">';
   html +=     '<div class="text-[14px] text-[#EAECEF]">';
   html +=       '资沉 <span class="font-semibold text-[#F0B90B]">' + depositDisplay + '</span>';
-  html +=       ' · <span class="text-[#848E9C]">' + sl.arrow + sl.label + '</span>';
+  html +=       ' · <span style="color:' + sl.color + '">' + sl.label + '</span>';
   html +=     '</div>';
   html +=   '</div>';
   html +=   '<a href="client-detail.html?uid=' + (client ? client.uid : '') + '" class="text-[13px] text-[#4DA6FF] font-medium">';

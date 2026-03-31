@@ -105,6 +105,18 @@
   var badge = c.statusBadge;
   var trendColor = c.adjustedTrendRate > 0 ? '#0ECB81' : (c.adjustedTrendRate < 0 ? '#F6465D' : '#848E9C');
 
+  // Trend label: 流失/增长/稳定 + percentage
+  var rate = c.adjustedTrendRate;
+  var pct = Math.abs(rate * 100).toFixed(1);
+  var trendLabel;
+  if (rate <= -0.01) {
+    trendLabel = '流失 ' + pct + '%';
+  } else if (rate >= 0.01) {
+    trendLabel = '增长 ' + pct + '%';
+  } else {
+    trendLabel = '稳定';
+  }
+
   // Build depositDist items array from flat data
   var dd = c.depositDist;
   var ddTotal = dd.savings + dd.futuresMargin + dd.spotWallet + dd.card + dd.cloud;
@@ -250,10 +262,10 @@
     + '<div class="text-[10px] text-[#848E9C] mb-0.5">近期趋势</div>'
     + '<div class="text-[15px] font-bold" style="color:' + trendColor + '">' + c.trendDisplay + '</div>'
     + '</div>'
-    // 趋势稳定度
+    // 趋势状态
     + '<div>'
-    + '<div class="text-[10px] text-[#848E9C] mb-0.5">趋势稳定度</div>'
-    + '<div class="text-[13px] font-semibold text-[#EAECEF]">' + (c.trendConfidence || '-') + '</div>'
+    + '<div class="text-[10px] text-[#848E9C] mb-0.5">趋势</div>'
+    + '<div class="text-[13px] font-semibold" style="color:' + trendColor + '">' + trendLabel + '</div>'
     + '</div>'
     + '</div>';
   html += '</div>';

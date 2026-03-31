@@ -314,12 +314,9 @@
   // ---------- Search (preserved from original) ----------
   function getStatusLabel(c) {
     var rate = c.adjustedTrendRate;
-    var r2 = c.rSquared;
-    if (r2 < 0.5) return { label: '波动不定', bg: 'rgba(132,142,156,0.15)', color: '#848E9C' };
-    if (rate <= -0.04) return { label: '快速流失', bg: 'rgba(246,70,93,0.15)', color: '#F6465D' };
-    if (rate <= -0.02) return { label: '缓慢流失', bg: 'rgba(240,160,48,0.15)', color: '#F0A030' };
-    if (rate >= 0.04) return { label: '快速增长', bg: 'rgba(14,203,129,0.15)', color: '#0ECB81' };
-    if (rate >= 0.02) return { label: '缓慢增长', bg: 'rgba(14,203,129,0.10)', color: '#0ECB81' };
+    var pct = Math.abs(rate * 100).toFixed(1);
+    if (rate <= -0.01) return { label: '流失 ' + pct + '%', bg: 'rgba(246,70,93,0.15)', color: '#F6465D' };
+    if (rate >= 0.01) return { label: '增长 ' + pct + '%', bg: 'rgba(14,203,129,0.15)', color: '#0ECB81' };
     return { label: '稳定', bg: 'rgba(132,142,156,0.15)', color: '#848E9C' };
   }
 
