@@ -105,8 +105,28 @@
     return { label: '稳定', bg: 'rgba(132,142,156,0.15)', color: '#848E9C' };
   }
 
+  function getLastContactHours(uid) {
+    var evts = D.eventsByClientUid[uid];
+    if (!evts || evts.length === 0) return 999;
+    var min = Infinity;
+    evts.forEach(function(e) { if (e.age_hours < min) min = e.age_hours; });
+    return min;
+  }
+
+  function lastContactLabel(hours) {
+    if (hours >= 999) return '7天+';
+    if (hours < 24) return '今天';
+    if (hours < 48) return '1天前';
+    if (hours < 72) return '2天前';
+    if (hours < 168) return Math.floor(hours / 24) + '天前';
+    return '7天+';
+  }
+
   function rowHTML(c) {
     var s = getStatusLabel(c);
+    var h = getLastContactHours(c.uid);
+    var lbl = lastContactLabel(h);
+    var lblColor = (h >= 168 || h >= 999) ? '#F6465D' : '#848E9C';
     return '<a href="client-detail.html?uid=' + c.uid + '" class="flex items-center px-4 py-3 border-b border-[#2E3440] active:bg-[#2B3139]">'
       + '<div class="flex-1 min-w-0">'
       +   '<div class="flex items-center gap-2">'
@@ -117,6 +137,7 @@
       + '<div class="flex items-center gap-3 flex-shrink-0 ml-2">'
       +   '<span class="text-[14px] font-bold text-[#EAECEF]">' + c.depositDisplay + '</span>'
       +   '<span class="text-[10px] px-1.5 py-0.5 rounded-full" style="background:' + s.bg + ';color:' + s.color + '">' + s.label + '</span>'
+      +   '<span class="text-[10px] text-right" style="color:' + lblColor + ';min-width:32px">' + lbl + '</span>'
       + '</div>'
       + '</a>';
   }
@@ -126,7 +147,9 @@
     var filtered = D.clients.filter(function(c) {
       return !query || c.name.toLowerCase().includes(query) || c.uid.includes(query);
     });
-    filtered.sort(function(a, b) { return b.fMean - a.fMean; });
+    filtered.sort(function(a, b) {
+      return getLastContactHours(b.uid) - getLastContactHours(a.uid);
+    });
 
     document.getElementById('client-list').innerHTML = filtered.length
       ? filtered.map(function(c) { return rowHTML(c); }).join('')

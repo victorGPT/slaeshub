@@ -111,9 +111,22 @@
     '已忽略': { bg: 'rgba(132,142,156,0.15)', text: '#848E9C' }
   };
 
-  // All events sorted by urgency
+  function parseTimeAgo(s) {
+    if (!s) return 9999;
+    var m = s.match(/(\d+)/);
+    var n = m ? parseInt(m[1], 10) : 9999;
+    if (s.indexOf('分钟') !== -1) return n / 60;
+    if (s.indexOf('小时') !== -1) return n;
+    if (s.indexOf('天') !== -1) return n * 24;
+    if (s.indexOf('周') !== -1) return n * 168;
+    return 9999;
+  }
+
+  // All events sorted by time (newest first)
   var allEvents = D.events.slice().sort(function(a, b) {
-    return (URGENCY_ORDER[a.urgency] || 9) - (URGENCY_ORDER[b.urgency] || 9);
+    var aH = (typeof a.age_hours === 'number') ? a.age_hours : parseTimeAgo(a.time_ago);
+    var bH = (typeof b.age_hours === 'number') ? b.age_hours : parseTimeAgo(b.time_ago);
+    return aH - bH;
   });
 
   var currentFilter = '全部';
