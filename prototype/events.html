@@ -34,6 +34,8 @@
     html { background: #000; }
     html, body { width: 393px !important; margin: 0 auto !important; overflow-x: hidden; }
     .fixed-bar { position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); width: 393px; }
+    .filter-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
+    .filter-scroll::-webkit-scrollbar { display: none; }
   </style>
 </head>
 <body class="bg-[#0B0E11] text-[#EAECEF]">
@@ -56,79 +58,20 @@
     <div class="w-[60px]"></div>
   </div>
 
-  <!-- Upgrade Banner -->
-  <div class="mx-4 mt-6 mb-6 flex flex-col items-center text-center py-8">
-    <div class="w-16 h-16 rounded-2xl bg-[#1E2329] border border-[#2E3440] flex items-center justify-center mb-4">
-      <i class="fa-solid fa-arrow-up-from-bracket text-[#F0B90B] text-[24px]"></i>
-    </div>
-    <p class="text-[15px] font-semibold text-[#EAECEF] mb-1">事件系统升级中</p>
-    <p class="text-[12px] text-[#848E9C]">正在对齐资沉框架，以下为示例事件</p>
+  <!-- Filter Pills -->
+  <div class="filter-scroll px-4 py-3 flex gap-2" id="filter-bar">
+    <button data-filter="全部" class="filter-pill active flex-shrink-0 px-3 py-1.5 rounded-full text-[12px] font-medium whitespace-nowrap transition-colors">全部</button>
+    <button data-filter="待处理" class="filter-pill flex-shrink-0 px-3 py-1.5 rounded-full text-[12px] font-medium whitespace-nowrap transition-colors">待处理</button>
+    <button data-filter="跟进中" class="filter-pill flex-shrink-0 px-3 py-1.5 rounded-full text-[12px] font-medium whitespace-nowrap transition-colors">跟进中</button>
+    <button data-filter="已完成" class="filter-pill flex-shrink-0 px-3 py-1.5 rounded-full text-[12px] font-medium whitespace-nowrap transition-colors">已完成</button>
+    <button data-filter="已忽略" class="filter-pill flex-shrink-0 px-3 py-1.5 rounded-full text-[12px] font-medium whitespace-nowrap transition-colors">已忽略</button>
   </div>
 
-  <!-- Static Event Cards -->
-  <div class="px-4 pb-[100px] space-y-3">
+  <!-- Stats Summary -->
+  <div id="stats-bar" class="px-4 py-2 flex items-center gap-1 text-[11px] text-[#848E9C]"></div>
 
-    <!-- Event 1: Churn Warning (red) -->
-    <a href="event-thread.html" class="block bg-[#1E2329] rounded-xl border border-[#2E3440] p-4 active:bg-[#2B3139]">
-      <div class="flex items-start gap-3">
-        <div class="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 bg-[#2D1519]">
-          <i class="fa-solid fa-arrow-trend-down text-[16px] text-[#F6465D]"></i>
-        </div>
-        <div class="flex-1 min-w-0">
-          <div class="flex items-center justify-between mb-1">
-            <div class="flex items-center gap-2">
-              <span class="text-[10px] px-2 py-0.5 rounded-full bg-[#2D1519] text-[#F6465D]">资沉流失预警</span>
-              <span class="text-[14px] font-semibold text-[#EAECEF]">张伟</span>
-            </div>
-            <span class="text-[11px] text-[#474D57] flex-shrink-0">2小时前</span>
-          </div>
-          <p class="text-[12px] text-[#848E9C] truncate">近7天资沉下降 15%</p>
-        </div>
-        <i class="fa-solid fa-chevron-right text-[#848E9C] text-[12px] flex-shrink-0 mt-3"></i>
-      </div>
-    </a>
-
-    <!-- Event 2: Maturity Reminder (gold) -->
-    <div class="block bg-[#1E2329] rounded-xl border border-[#2E3440] p-4">
-      <div class="flex items-start gap-3">
-        <div class="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 bg-[#2D1B00]">
-          <i class="fa-solid fa-clock text-[16px] text-[#F0B90B]"></i>
-        </div>
-        <div class="flex-1 min-w-0">
-          <div class="flex items-center justify-between mb-1">
-            <div class="flex items-center gap-2">
-              <span class="text-[10px] px-2 py-0.5 rounded-full bg-[#2D1B00] text-[#F0B90B]">理财到期提醒</span>
-              <span class="text-[14px] font-semibold text-[#EAECEF]">李芳</span>
-            </div>
-            <span class="text-[11px] text-[#474D57] flex-shrink-0">5小时前</span>
-          </div>
-          <p class="text-[12px] text-[#848E9C] truncate">500万理财即将到期</p>
-        </div>
-        <i class="fa-solid fa-chevron-right text-[#848E9C] text-[12px] flex-shrink-0 mt-3"></i>
-      </div>
-    </div>
-
-    <!-- Event 3: Growth Notification (green) -->
-    <div class="block bg-[#1E2329] rounded-xl border border-[#2E3440] p-4">
-      <div class="flex items-start gap-3">
-        <div class="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 bg-[#0D2620]">
-          <i class="fa-solid fa-arrow-trend-up text-[16px] text-[#0ECB81]"></i>
-        </div>
-        <div class="flex-1 min-w-0">
-          <div class="flex items-center justify-between mb-1">
-            <div class="flex items-center gap-2">
-              <span class="text-[10px] px-2 py-0.5 rounded-full bg-[#0D2620] text-[#0ECB81]">资沉增长通知</span>
-              <span class="text-[14px] font-semibold text-[#EAECEF]">王强</span>
-            </div>
-            <span class="text-[11px] text-[#474D57] flex-shrink-0">1天前</span>
-          </div>
-          <p class="text-[12px] text-[#848E9C] truncate">近7天资沉增长 23%</p>
-        </div>
-        <i class="fa-solid fa-chevron-right text-[#848E9C] text-[12px] flex-shrink-0 mt-3"></i>
-      </div>
-    </div>
-
-  </div>
+  <!-- Event List -->
+  <div id="event-list" class="pb-[100px]"></div>
 
 </div>
 
@@ -154,6 +97,113 @@
   </div>
   <div class="h-[34px]"></div>
 </div>
+
+<script src="mock-data.js"></script>
+<script>
+(function() {
+  var D = window.PROTOTYPE_DATA;
+
+  var URGENCY_ORDER = { critical: 0, warning: 1, info: 2 };
+  var TASK_COLORS = {
+    '待处理': { bg: 'rgba(246,70,93,0.15)', text: '#F6465D' },
+    '跟进中': { bg: 'rgba(77,166,255,0.15)', text: '#4DA6FF' },
+    '已完成': { bg: 'rgba(14,203,129,0.15)', text: '#0ECB81' },
+    '已忽略': { bg: 'rgba(132,142,156,0.15)', text: '#848E9C' }
+  };
+
+  // All events sorted by urgency
+  var allEvents = D.events.slice().sort(function(a, b) {
+    return (URGENCY_ORDER[a.urgency] || 9) - (URGENCY_ORDER[b.urgency] || 9);
+  });
+
+  var currentFilter = '全部';
+
+  function filterEvents(state) {
+    if (state === '全部') return allEvents;
+    return allEvents.filter(function(e) { return e.task_state === state; });
+  }
+
+  function renderStats(filtered) {
+    var total = filtered.length;
+    var pending = 0;
+    var inProgress = 0;
+    filtered.forEach(function(e) {
+      if (e.task_state === '待处理') pending++;
+      if (e.task_state === '跟进中') inProgress++;
+    });
+
+    document.getElementById('stats-bar').innerHTML =
+      '共 ' + total + ' 个事件 · '
+      + '<span class="text-[#F6465D]">' + pending + ' 待处理</span> · '
+      + '<span class="text-[#4DA6FF]">' + inProgress + ' 跟进中</span>';
+  }
+
+  function renderEventList(filtered) {
+    var container = document.getElementById('event-list');
+
+    if (filtered.length === 0) {
+      container.innerHTML =
+        '<div class="flex flex-col items-center justify-center py-20 text-[#848E9C]">'
+        + '<i class="fa-solid fa-inbox text-[40px] mb-3 text-[#474D57]"></i>'
+        + '<span class="text-[14px]">没有符合条件的事件</span>'
+        + '</div>';
+      return;
+    }
+
+    container.innerHTML = filtered.map(function(evt) {
+      var tc = TASK_COLORS[evt.task_state] || TASK_COLORS['已忽略'];
+      return '<a href="event-thread.html?id=' + evt.id + '" class="block px-4 py-3 border-b border-[#2E3440] active:bg-[#2B3139]">'
+        + '<div class="flex items-center gap-2 mb-1">'
+        +   '<span class="w-2 h-2 rounded-full flex-shrink-0" style="background:' + evt.color + '"></span>'
+        +   '<span class="text-[13px] font-medium text-[#EAECEF]">' + evt.client_name + '</span>'
+        +   '<span class="text-[12px] text-[#848E9C]">&middot;</span>'
+        +   '<span class="text-[12px] text-[#848E9C]">' + evt.type + '</span>'
+        +   (evt.sub_type ? '<span class="text-[10px] px-1.5 py-0.5 rounded bg-[#2B3139] text-[#848E9C]">' + evt.sub_type + '</span>' : '')
+        + '</div>'
+        + '<div class="flex items-center justify-between">'
+        +   '<div class="flex items-center gap-2">'
+        +     '<span class="text-[14px] font-bold" style="color:' + evt.color + '">' + evt.amount_display + '</span>'
+        +     '<span class="text-[10px] px-1.5 py-0.5 rounded-full" style="background:' + tc.bg + ';color:' + tc.text + '">' + evt.task_state + '</span>'
+        +   '</div>'
+        +   '<span class="text-[10px] text-[#848E9C]">' + evt.time_ago + '</span>'
+        + '</div>'
+        + '</a>';
+    }).join('');
+  }
+
+  function updatePillStyles() {
+    var pills = document.querySelectorAll('.filter-pill');
+    pills.forEach(function(pill) {
+      var isActive = pill.getAttribute('data-filter') === currentFilter;
+      if (isActive) {
+        pill.style.background = '#F0B90B';
+        pill.style.color = '#0B0E11';
+      } else {
+        pill.style.background = '#1E2329';
+        pill.style.color = '#848E9C';
+      }
+    });
+  }
+
+  function render() {
+    var filtered = filterEvents(currentFilter);
+    updatePillStyles();
+    renderStats(filtered);
+    renderEventList(filtered);
+  }
+
+  // Bind filter pill clicks
+  document.getElementById('filter-bar').addEventListener('click', function(e) {
+    var pill = e.target.closest('.filter-pill');
+    if (!pill) return;
+    currentFilter = pill.getAttribute('data-filter');
+    render();
+  });
+
+  // Initial render
+  render();
+})();
+</script>
 
 </body>
 </html>

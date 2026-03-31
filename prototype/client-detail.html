@@ -39,7 +39,7 @@
 <body class="bg-[#0B0E11] text-[#EAECEF]">
 <div class="w-full">
 
-  <!-- 1. iOS Status Bar (44px) -->
+  <!-- iOS Status Bar (44px) -->
   <div class="h-[44px] bg-[#0B0E11] flex items-center justify-between px-6 flex-shrink-0">
     <span class="text-[12px] font-semibold text-[#EAECEF]">9:41</span>
     <div class="flex items-center gap-1.5 text-[#EAECEF]">
@@ -49,7 +49,7 @@
     </div>
   </div>
 
-  <!-- 2. Top Nav (52px sticky) -->
+  <!-- Top Nav (52px sticky) -->
   <div class="h-[52px] sticky top-0 z-20 bg-[#0B0E11] border-b border-[#2E3440] flex items-center justify-between px-4">
     <button onclick="history.back()" class="w-8 h-8 flex items-center justify-center">
       <i class="fa-solid fa-chevron-left text-[16px] text-[#EAECEF]"></i>
@@ -63,7 +63,7 @@
 
 </div>
 
-<!-- Bottom Tab Bar -->
+<!-- Bottom Tab Bar (all gray, sub-page) -->
 <div class="fixed-bar bg-[#0B0E11] border-t border-[#2E3440] z-30">
   <div class="flex items-center justify-around h-[56px]">
     <a href="home.html" class="flex flex-col items-center gap-0.5">
@@ -100,43 +100,61 @@
   }
 
   // --- Helpers ---
-  function formatWan(val) {
-    var wan = val / 10000;
-    if (wan >= 10000) return '$ ' + (wan / 10000).toFixed(2) + ' 亿';
-    if (wan >= 1) return '$ ' + Math.round(wan).toLocaleString() + ' 万';
-    return '$ ' + wan.toFixed(1) + ' 万';
-  }
-
   function esc(s) { return String(s).replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
 
   var badge = c.statusBadge;
-  var thisWeekDisplay = c.thisWeekDisplay || '';
   var trendColor = c.adjustedTrendRate > 0 ? '#0ECB81' : (c.adjustedTrendRate < 0 ? '#F6465D' : '#848E9C');
-  var platformTrendDisplay = D.platformTrendDisplay || ((D.platformTrend > 0 ? '+' : '') + (D.platformTrend * 100).toFixed(1) + '%');
 
-  // All 6 business lines
-  var allBizLines = ['合约', '杠杆', '理财', '金融卡', '云算力', 'Mini合约'];
-  var bizSet = {};
-  c.bizLines.forEach(function(b) { bizSet[b] = true; });
+  // Build depositDist items array from flat data
+  var dd = c.depositDist;
+  var ddTotal = dd.savings + dd.futuresMargin + dd.spotWallet + dd.card + dd.cloud;
+  var ddItems = [
+    { name: '理财', value: dd.savings, display: dd.savingsDisplay },
+    { name: '合约保证金', value: dd.futuresMargin, display: dd.futuresMarginDisplay },
+    { name: '现货钱包', value: dd.spotWallet, display: dd.spotWalletDisplay },
+    { name: '金融卡', value: dd.card, display: dd.cardDisplay },
+    { name: '云算力', value: dd.cloud, display: dd.cloudDisplay }
+  ].sort(function(a, b) { return b.value - a.value; });
+  ddItems.forEach(function(item) {
+    item.pct = ddTotal > 0 ? Math.round(item.value / ddTotal * 100) : 0;
+  });
 
-  // Status-dependent events
-  function getEvents() {
-    if (c.status === '流失') {
-      return [
-        { color: '#F6465D', text: '资沉流失预警 \u00b7 近7天持续出金', time: '2天前' },
-        { color: '#F0B90B', text: '理财到期提醒 \u00b7 500万即将到期', time: '5天前' }
-      ];
-    } else if (c.status === '增长') {
-      return [
-        { color: '#0ECB81', text: '资沉增长 \u00b7 近7天持续入金', time: '1天前' },
-        { color: '#4DA6FF', text: '新业务线开通 \u00b7 开通云算力服务', time: '4天前' }
-      ];
-    }
-    return [
-      { color: '#848E9C', text: '定期回访提醒 \u00b7 距上次联系已14天', time: '3天前' },
-      { color: '#F0B90B', text: '合约到期提醒 \u00b7 杠杆仓位需确认', time: '7天前' }
-    ];
-  }
+  // Build netContribution items array
+  var nc = c.netContribution;
+  var ncItems = [
+    { name: '合约', value: nc.futures, isRevenue: true },
+    { name: '杠杆', value: nc.leverage, isRevenue: true },
+    { name: 'Mini合约', value: nc.mini, isRevenue: true },
+    { name: '金融卡', value: nc.card, isRevenue: true },
+    { name: '云算力', value: nc.cloud, isRevenue: true },
+    { name: '理财利息', value: nc.savingsInterest, isRevenue: false },
+    { name: '返佣', value: nc.rebate, isRevenue: false }
+  ];
+  var ncMax = Math.max.apply(null, ncItems.map(function(i) { return Math.abs(i.value); }));
+
+  // Build clientPnl items array
+  var pnl = c.clientPnl;
+  var pnlItems = [
+    { name: '双仓合约', data: pnl.futures7d },
+    { name: '超级杠杆', data: pnl.leverage7d },
+    { name: 'Mini合约', data: pnl.mini7d },
+    { name: '现货', data: pnl.spot7d, showWarning: true }
+  ];
+  var pnlMax = Math.max.apply(null, pnlItems.map(function(i) { return Math.abs(i.data.value); }).concat([1]));
+
+  // Events from eventsByClientUid
+  var events = (D.eventsByClientUid && D.eventsByClientUid[uid]) || [];
+  events = events.slice(0, 3);
+
+  // Welfare
+  var wf = c.welfare;
+  var activationRate = wf.sent > 0 ? Math.round(wf.activated / wf.sent * 100) : 0;
+
+  // Load BD notes & tags from localStorage
+  var noteKey = 'bd_note_' + c.uid;
+  var tagKey = 'bd_tags_' + c.uid;
+  var savedNote = localStorage.getItem(noteKey) || '';
+  var savedTags = JSON.parse(localStorage.getItem(tagKey) || '[]');
 
   // Status-dependent follow-up records
   function getFollowups() {
@@ -160,161 +178,276 @@
     ];
   }
 
-  // Load BD notes & tags from localStorage
-  var noteKey = 'bd_note_' + c.uid;
-  var tagKey = 'bd_tags_' + c.uid;
-  var savedNote = localStorage.getItem(noteKey) || '';
-  var savedTags = JSON.parse(localStorage.getItem(tagKey) || '["偏好短线","英文沟通"]');
-
-  var events = getEvents();
   var followups = getFollowups();
 
   // --- Build HTML ---
   var html = '';
 
-  // 3. Client Header Card
-  html += '<div class="mx-4 mt-3 bg-[#1E2329] rounded-xl border border-[#2E3440] p-4">'
-    +   '<div class="flex items-center gap-3 mb-3">'
-    +     '<img src="https://ui-avatars.com/api/?name=' + encodeURIComponent(c.name) + '&background=2B3139&color=EAECEF&size=48&font-size=0.4&bold=true" '
-    +       'class="w-12 h-12 rounded-full border-2 border-[#F0B90B]" alt="avatar" />'
-    +     '<div class="flex-1">'
-    +       '<div class="text-[18px] font-bold text-[#EAECEF]">' + esc(c.name) + '</div>'
-    +       '<div class="text-[12px] text-[#848E9C]">UID: ' + c.uid + '</div>'
-    +     '</div>'
-    +     '<span class="text-[11px] px-2.5 py-1 rounded-full" style="background:' + badge.bg + ';color:' + badge.text + '">' + c.status + '</span>'
-    +   '</div>'
-    +   '<div class="flex flex-wrap gap-1.5">'
-    +     '<span class="text-[10px] px-2 py-0.5 rounded-full bg-[#2B3139] text-[#848E9C]">\uD83D\uDD12 重点客户</span>';
-
+  // =============================================
+  // Block A: Client Identity
+  // =============================================
+  html += '<div class="mx-4 mt-3 bg-[#1E2329] rounded-xl border border-[#2E3440] p-4">';
+  // Avatar row
+  html += '<div class="flex items-center gap-3 mb-3">'
+    + '<img src="https://ui-avatars.com/api/?name=' + encodeURIComponent(c.name)
+    + '&background=2B3139&color=EAECEF&size=48&font-size=0.4&bold=true" '
+    + 'class="w-12 h-12 rounded-full border-2 border-[#F0B90B]" alt="avatar" />'
+    + '<div class="flex-1">'
+    + '<div class="text-[18px] font-bold text-[#EAECEF]">' + esc(c.name) + '</div>'
+    + '<div class="text-[12px] text-[#848E9C]">UID: ' + c.uid + '</div>'
+    + '</div>'
+    + '<span class="text-[11px] px-2.5 py-1 rounded-full" style="background:' + badge.bg + ';color:' + badge.text + '">' + c.status + '</span>'
+    + '</div>';
+  // System tags
+  html += '<div class="flex flex-wrap gap-1.5 mb-2">'
+    + '<span class="text-[10px] px-2 py-0.5 rounded-full bg-[#2B3139] text-[#848E9C]">\uD83D\uDD12 重点客户</span>';
   if (c.status === '流失') {
     html += '<span class="text-[10px] px-2 py-0.5 rounded-full bg-[rgba(246,70,93,0.15)] text-[#F6465D]">流失风险</span>';
   }
   if (c.status === '增长') {
     html += '<span class="text-[10px] px-2 py-0.5 rounded-full bg-[rgba(14,203,129,0.15)] text-[#0ECB81]">资沉增长中</span>';
   }
+  if (c.status === '稳定') {
+    html += '<span class="text-[10px] px-2 py-0.5 rounded-full bg-[rgba(132,142,156,0.15)] text-[#848E9C]">稳定</span>';
+  }
+  html += '</div>';
+  // BD tags
+  html += '<div id="bd-tags-container" class="flex flex-wrap gap-1.5">';
+  savedTags.forEach(function(tag) {
+    html += '<span class="bd-tag text-[10px] px-2 py-0.5 rounded-full bg-[#0D1F2D] text-[#4DA6FF] cursor-pointer" data-tag="' + esc(tag) + '">'
+      + esc(tag) + ' <i class="fa-solid fa-xmark text-[8px] ml-0.5 opacity-60"></i></span>';
+  });
+  html += '<span id="add-tag-btn" class="text-[10px] px-2 py-0.5 rounded-full border border-dashed border-[#474D57] text-[#474D57] cursor-pointer">+ 添加标签</span>';
+  html += '</div>';
+  html += '</div>';
 
-  html += '<span class="text-[10px] px-2 py-0.5 rounded-full bg-[#0D1F2D] text-[#4DA6FF]">BD 标签</span>'
-    +     '<span class="text-[10px] px-2 py-0.5 rounded-full border border-dashed border-[#474D57] text-[#474D57]">+ 添加标签</span>'
-    +   '</div>'
+  // =============================================
+  // Block B: BD Notes
+  // =============================================
+  html += '<div class="mx-4 mt-3 bg-[#1E2329] rounded-xl border border-[#2E3440] p-4">'
+    + '<div class="text-[12px] text-[#848E9C] mb-2">BD 备注</div>'
+    + '<textarea id="bd-note" class="w-full bg-[#2B3139] text-[#EAECEF] text-[13px] rounded-lg p-3 border border-[#2E3440] outline-none resize-none min-h-[80px] placeholder-[#474D57]" placeholder="添加备注...">' + esc(savedNote) + '</textarea>'
     + '</div>';
 
-  // 4. Core Metrics Grid (2x2+)
-  html += '<div class="mx-4 mt-3 bg-[#1E2329] rounded-xl border border-[#2E3440] p-4">'
-    +   '<div class="grid grid-cols-2 gap-4">'
-    // Hero: 当前资沉 spans both cols
-    +     '<div class="col-span-2">'
-    +       '<div class="text-[11px] text-[#848E9C] mb-0.5">当前资沉 (8周均)</div>'
-    +       '<div class="text-[28px] font-bold text-[#EAECEF]">' + c.depositDisplay + '</div>'
-    +     '</div>'
+  // =============================================
+  // Block C: Deposit Metrics (Hero)
+  // =============================================
+  html += '<div class="mx-4 mt-3 bg-[#1E2329] rounded-xl border border-[#2E3440] p-4">';
+  // Hero number
+  html += '<div class="mb-1">'
+    + '<div class="text-[11px] text-[#848E9C] mb-0.5">当前资沉 (8周均)</div>'
+    + '<div class="text-[28px] font-bold text-[#EAECEF] leading-tight">' + c.depositDisplay + '</div>'
+    + '</div>';
+  // Sub metrics grid
+  html += '<div class="grid grid-cols-3 gap-3 mt-3 pt-3 border-t border-[#2E3440]">'
     // 本周均值
-    +     '<div>'
-    +       '<div class="text-[11px] text-[#848E9C] mb-0.5">本周均值</div>'
-    +       '<div class="text-[16px] font-semibold text-[#EAECEF]">' + thisWeekDisplay + '</div>'
-    +     '</div>'
+    + '<div>'
+    + '<div class="text-[10px] text-[#848E9C] mb-0.5">本周均值</div>'
+    + '<div class="text-[15px] font-semibold text-[#EAECEF]">' + (c.thisWeekDisplay || '-') + '</div>'
+    + '</div>'
     // 近期趋势
-    +     '<div>'
-    +       '<div class="text-[11px] text-[#848E9C] mb-0.5">近期趋势</div>'
-    +       '<div class="text-[16px] font-bold" style="color:' + trendColor + '">' + c.trendDisplay + '</div>'
-    +     '</div>'
+    + '<div>'
+    + '<div class="text-[10px] text-[#848E9C] mb-0.5">近期趋势</div>'
+    + '<div class="text-[15px] font-bold" style="color:' + trendColor + '">' + c.trendDisplay + '</div>'
+    + '</div>'
     // 趋势稳定度
-    +     '<div>'
-    +       '<div class="text-[11px] text-[#848E9C] mb-0.5">趋势稳定度</div>'
-    +       '<div class="text-[16px] font-semibold text-[#EAECEF]">' + (c.trendConfidence || '') + '</div>'
-    +     '</div>'
-    +   '</div>'
+    + '<div>'
+    + '<div class="text-[10px] text-[#848E9C] mb-0.5">趋势稳定度</div>'
+    + '<div class="text-[13px] font-semibold text-[#EAECEF]">' + (c.trendConfidence || '-') + '</div>'
+    + '</div>'
     + '</div>';
+  html += '</div>';
 
-  // 5. 原因分析 + 建议动作
+  // =============================================
+  // Block D: Deposit Distribution (默认展开)
+  // =============================================
+  html += '<div class="mx-4 mt-3">'
+    + '<div class="text-[14px] font-semibold text-[#EAECEF] mb-2">资金分布</div>'
+    + '<div class="bg-[#1E2329] rounded-xl border border-[#2E3440] p-4">';
+  // Total
+  html += '<div class="text-[11px] text-[#848E9C] mb-1">总计</div>'
+    + '<div class="text-[20px] font-bold text-[#EAECEF] mb-3">' + c.depositDisplay + '</div>';
+  // Per-line bars
+  ddItems.forEach(function(item, idx) {
+    var barColor = idx < 2 ? '#F0B90B' : '#4DA6FF';
+    html += '<div class="mb-2.5 last:mb-0">'
+      + '<div class="flex items-center justify-between mb-1">'
+      + '<span class="text-[12px] text-[#EAECEF]">' + item.name + '</span>'
+      + '<span class="text-[12px] text-[#848E9C]">' + item.display + ' <span class="text-[10px]">' + item.pct + '%</span></span>'
+      + '</div>'
+      + '<div class="w-full h-[6px] rounded-full bg-[#2B3139]">'
+      + '<div class="h-full rounded-full" style="width:' + Math.max(item.pct, 1) + '%;background:' + barColor + '"></div>'
+      + '</div>'
+      + '</div>';
+  });
+  html += '</div></div>';
+
+  // =============================================
+  // Block E: Net Contribution (默认折叠)
+  // =============================================
+  var ncWowColor = nc.wow >= 0 ? '#0ECB81' : '#F6465D';
+  html += '<div class="mx-4 mt-3">'
+    + '<div id="nc-toggle" class="flex items-center justify-between bg-[#1E2329] rounded-xl border border-[#2E3440] p-4 cursor-pointer">'
+    + '<div class="flex items-center gap-2">'
+    + '<span class="text-[14px] font-semibold text-[#EAECEF]">综合净贡献</span>'
+    + '<span class="text-[16px] font-bold text-[#F0B90B]">' + nc.totalDisplay + '</span>'
+    + '</div>'
+    + '<i id="nc-arrow" class="fa-solid fa-chevron-down text-[12px] text-[#848E9C] transition-transform"></i>'
+    + '</div>';
+  // Collapsible detail
+  html += '<div id="nc-detail" class="hidden bg-[#1E2329] rounded-b-xl border border-t-0 border-[#2E3440] px-4 pb-4">';
+  // Week-over-week
+  html += '<div class="flex items-center gap-2 mb-3">'
+    + '<span class="text-[11px] text-[#848E9C]">周环比</span>'
+    + '<span class="text-[13px] font-semibold" style="color:' + ncWowColor + '">' + nc.wowDisplay + '</span>'
+    + '</div>';
+  // Module breakdown
+  ncItems.forEach(function(item) {
+    var color = item.isRevenue ? '#0ECB81' : '#F6465D';
+    var sign = item.value >= 0 ? '+' : '';
+    var displayVal = sign + (Math.abs(item.value) >= 10000 ? (item.value / 10000).toFixed(1) + '万' : Math.round(item.value));
+    var barW = ncMax > 0 ? Math.round(Math.abs(item.value) / ncMax * 100) : 0;
+    html += '<div class="flex items-center gap-2 mb-2">'
+      + '<span class="w-[56px] text-[11px] text-[#848E9C] flex-shrink-0">' + item.name + '</span>'
+      + '<div class="flex-1 h-[5px] rounded-full bg-[#2B3139]">'
+      + '<div class="h-full rounded-full" style="width:' + Math.max(barW, 2) + '%;background:' + color + '"></div>'
+      + '</div>'
+      + '<span class="text-[11px] font-medium w-[52px] text-right flex-shrink-0" style="color:' + color + '">$ ' + displayVal + '</span>'
+      + '</div>';
+  });
+  html += '</div></div>';
+
+  // =============================================
+  // Block F: Client P&L
+  // =============================================
+  html += '<div class="mx-4 mt-3">'
+    + '<div class="text-[14px] font-semibold text-[#EAECEF] mb-2">客户近期盈亏</div>'
+    + '<div class="bg-[#1E2329] rounded-xl border border-[#2E3440] p-4">';
+  // Two numbers side by side
+  html += '<div class="flex items-end gap-4 mb-4">'
+    + '<div>'
+    + '<div class="text-[10px] text-[#848E9C] mb-0.5">近7天</div>'
+    + '<div class="text-[22px] font-bold" style="color:' + pnl.total7d.color + '">' + pnl.total7d.display + '</div>'
+    + '</div>'
+    + '<div class="mb-1">'
+    + '<div class="text-[10px] text-[#848E9C] mb-0.5">8周周均</div>'
+    + '<div class="text-[14px] font-semibold" style="color:' + pnl.weeklyAvg8w.color + '">' + pnl.weeklyAvg8w.display + '</div>'
+    + '</div>'
+    + '</div>';
+  // Per-business breakdown
+  html += '<div class="border-t border-[#2E3440] pt-3 space-y-2.5">';
+  pnlItems.forEach(function(item) {
+    var d = item.data;
+    var barW = pnlMax > 0 ? Math.round(Math.abs(d.value) / pnlMax * 100) : 0;
+    var warningTag = item.showWarning ? ' <span class="text-[9px] text-[#F0B90B] bg-[rgba(240,185,11,0.1)] px-1 py-0.5 rounded ml-1">\u26A0\uFE0F\u5F85\u786E\u8BA4</span>' : '';
+    html += '<div>'
+      + '<div class="flex items-center justify-between mb-1">'
+      + '<span class="text-[12px] text-[#EAECEF]">' + item.name + warningTag + '</span>'
+      + '<span class="text-[12px] font-medium" style="color:' + d.color + '">' + d.display + '</span>'
+      + '</div>'
+      + '<div class="w-full h-[5px] rounded-full bg-[#2B3139]">'
+      + '<div class="h-full rounded-full" style="width:' + Math.max(barW, 2) + '%;background:' + d.color + '"></div>'
+      + '</div>'
+      + '</div>';
+  });
+  html += '</div>';
+  html += '</div></div>';
+
+  // =============================================
+  // Block G: Welfare Fund
+  // =============================================
+  html += '<div class="mx-4 mt-3">'
+    + '<div class="text-[14px] font-semibold text-[#EAECEF] mb-2">福利金 <span class="text-[11px] text-[#F0B90B]">\u26A0\uFE0F</span></div>'
+    + '<div class="bg-[#1E2329] rounded-xl border border-[#2E3440] p-4">';
+  // 4 metrics in 2x2 grid
+  html += '<div class="grid grid-cols-2 gap-3 mb-3">'
+    + '<div>'
+    + '<div class="text-[10px] text-[#848E9C] mb-0.5">总额度</div>'
+    + '<div class="text-[15px] font-semibold text-[#EAECEF]">' + wf.budgetDisplay + '</div>'
+    + '</div>'
+    + '<div>'
+    + '<div class="text-[10px] text-[#848E9C] mb-0.5">已发放</div>'
+    + '<div class="text-[15px] font-semibold text-[#EAECEF]">' + wf.sentDisplay + '</div>'
+    + '</div>'
+    + '<div>'
+    + '<div class="text-[10px] text-[#848E9C] mb-0.5">已激活 <span class="text-[#0ECB81]">(' + activationRate + '%)</span></div>'
+    + '<div class="text-[15px] font-semibold text-[#0ECB81]">' + wf.activatedDisplay + '</div>'
+    + '</div>'
+    + '<div>'
+    + '<div class="text-[10px] text-[#848E9C] mb-0.5">剩余</div>'
+    + '<div class="text-[15px] font-semibold text-[#EAECEF]">' + wf.remainingDisplay + '</div>'
+    + '</div>'
+    + '</div>';
+  // Button
+  html += '<button class="w-full h-[36px] rounded-lg bg-[#F0B90B] text-[#0B0E11] text-[13px] font-bold">'
+    + '发放福利金'
+    + '</button>';
+  html += '</div></div>';
+
+  // =============================================
+  // Block H: Reason + Action
+  // =============================================
   html += '<div class="mx-4 mt-3 bg-[#1E2329] rounded-xl border border-[#2E3440] p-4">'
-    +   '<div class="mb-3">'
-    +     '<div class="text-[11px] text-[#848E9C] mb-1">原因分析</div>'
-    +     '<div class="text-[14px] text-[#EAECEF]">' + c.reasonTag + '</div>'
-    +   '</div>'
-    +   '<div class="border-t border-[#2E3440] pt-3">'
-    +     '<div class="text-[11px] text-[#848E9C] mb-1">建议动作</div>'
-    +     '<div class="text-[14px] text-[#F0B90B]">\u2192 ' + c.suggestedAction + '</div>'
-    +   '</div>'
+    + '<div class="mb-3">'
+    + '<div class="text-[11px] text-[#848E9C] mb-1">原因分析</div>'
+    + '<div class="text-[14px] text-[#EAECEF]">' + c.reasonTag + '</div>'
+    + '</div>'
+    + '<div class="border-t border-[#2E3440] pt-3">'
+    + '<div class="text-[11px] text-[#848E9C] mb-1">建议动作</div>'
+    + '<div class="text-[14px] text-[#F0B90B] font-medium">\u2192 ' + c.suggestedAction + '</div>'
+    + '</div>'
     + '</div>';
 
-  // 6. 业务参与情况
-  var bizRowsHTML = allBizLines.map(function(line) {
-    var active = !!bizSet[line];
-    return '<div class="flex items-center gap-2">'
-      + '<span class="w-[60px] text-[12px] ' + (active ? 'text-[#EAECEF]' : 'text-[#474D57]') + '">' + line + '</span>'
-      + '<div class="flex-1 h-[6px] rounded-full ' + (active ? 'bg-[#F0B90B]' : 'bg-[#2B3139]') + '"></div>'
-      + '<span class="text-[11px] ' + (active ? 'text-[#0ECB81]' : 'text-[#474D57]') + '">' + (active ? '已参与' : '未参与') + '</span>'
-      + '</div>';
-  }).join('');
-
+  // =============================================
+  // Block I: Recent Events
+  // =============================================
   html += '<div class="mx-4 mt-3">'
-    +   '<div class="flex items-center justify-between mb-2">'
-    +     '<div class="text-[14px] font-semibold text-[#EAECEF]">业务参与情况</div>'
-    +     '<span class="text-[11px] text-[#848E9C]">' + c.bizCount + '/6 条业务</span>'
-    +   '</div>'
-    +   '<div class="bg-[#1E2329] rounded-xl border border-[#2E3440] p-4 space-y-3">'
-    +     bizRowsHTML
-    +   '</div>'
-    + '</div>';
+    + '<div class="text-[14px] font-semibold text-[#EAECEF] mb-2">最近事件</div>'
+    + '<div class="bg-[#1E2329] rounded-xl border border-[#2E3440] p-4 space-y-3">';
+  if (events.length === 0) {
+    html += '<div class="text-[12px] text-[#474D57] text-center py-2">暂无事件</div>';
+  } else {
+    events.forEach(function(ev) {
+      var stateColor = ev.task_state === '待处理' ? '#F0B90B' : (ev.task_state === '已完成' ? '#0ECB81' : '#848E9C');
+      html += '<a href="event-thread.html?id=' + ev.id + '" class="flex items-start gap-2 block">'
+        + '<span class="w-2 h-2 rounded-full flex-shrink-0 mt-1.5" style="background:' + ev.color + '"></span>'
+        + '<div class="flex-1 min-w-0">'
+        + '<div class="flex items-center gap-1.5">'
+        + '<span class="text-[12px] text-[#EAECEF]">' + ev.type + (ev.sub_type ? ' \u00b7 ' + ev.sub_type : '') + '</span>'
+        + '<span class="text-[10px] px-1.5 py-0.5 rounded-full" style="background:rgba(255,255,255,0.06);color:' + stateColor + '">' + ev.task_state + '</span>'
+        + '</div>'
+        + '<div class="flex items-center gap-2 mt-0.5">'
+        + '<span class="text-[11px] font-medium" style="color:' + ev.color + '">' + ev.amount_display + '</span>'
+        + '<span class="text-[10px] text-[#474D57]">' + ev.time_ago + '</span>'
+        + '</div>'
+        + '</div>'
+        + '<i class="fa-solid fa-chevron-right text-[10px] text-[#474D57] mt-1.5"></i>'
+        + '</a>';
+    });
+  }
+  html += '</div></div>';
 
-  // 7. 最近事件
-  var eventsHTML = events.map(function(ev) {
-    return '<div class="flex items-center gap-2">'
-      + '<span class="w-2 h-2 rounded-full flex-shrink-0" style="background:' + ev.color + '"></span>'
-      + '<span class="text-[12px] text-[#EAECEF] flex-1">' + ev.text + '</span>'
-      + '<span class="text-[10px] text-[#848E9C] flex-shrink-0">' + ev.time + '</span>'
-      + '</div>';
-  }).join('');
-
-  html += '<div class="mx-4 mt-3">'
-    +   '<div class="text-[14px] font-semibold text-[#EAECEF] mb-2">最近事件</div>'
-    +   '<div class="bg-[#1E2329] rounded-xl border border-[#2E3440] p-4 space-y-3">'
-    +     eventsHTML
-    +   '</div>'
-    + '</div>';
-
-  // 8. BD 标签管理
-  var tagsHTML = savedTags.map(function(tag) {
-    return '<span class="bd-tag text-[11px] px-2.5 py-1 rounded-full bg-[#0D1F2D] text-[#4DA6FF] cursor-pointer" data-tag="' + esc(tag) + '">' + esc(tag) + '</span>';
-  }).join('');
-
-  html += '<div class="mx-4 mt-3">'
-    +   '<div class="text-[14px] font-semibold text-[#EAECEF] mb-2">BD 标签</div>'
-    +   '<div class="bg-[#1E2329] rounded-xl border border-[#2E3440] p-4">'
-    +     '<div id="bd-tags-container" class="flex flex-wrap gap-1.5">'
-    +       tagsHTML
-    +       '<span id="add-tag-btn" class="text-[11px] px-2.5 py-1 rounded-full border border-dashed border-[#474D57] text-[#474D57] cursor-pointer">+ 添加</span>'
-    +     '</div>'
-    +   '</div>'
-    + '</div>';
-
-  // 9. BD 备注
-  html += '<div class="mx-4 mt-3">'
-    +   '<div class="text-[14px] font-semibold text-[#EAECEF] mb-2">BD 备注</div>'
-    +   '<div class="bg-[#1E2329] rounded-xl border border-[#2E3440] p-4">'
-    +     '<textarea id="bd-note" class="w-full bg-[#2B3139] text-[#EAECEF] text-[13px] rounded-lg p-3 border border-[#2E3440] outline-none resize-none min-h-[100px] placeholder-[#474D57]" placeholder="添加备注...">' + esc(savedNote) + '</textarea>'
-    +   '</div>'
-    + '</div>';
-
-  // 10. 跟进记录
-  var followupHTML = followups.map(function(f) {
-    return '<div>'
-      + '<div class="text-[11px] text-[#848E9C]">' + f.date + ' \u00b7 ' + f.bd + '</div>'
-      + '<div class="text-[13px] text-[#EAECEF]">' + f.text + '</div>'
-      + '</div>';
-  }).join('');
-
+  // =============================================
+  // Block J: Follow-up Records
+  // =============================================
   html += '<div class="mx-4 mt-3 mb-6">'
-    +   '<div class="flex items-center justify-between mb-2">'
-    +     '<div class="text-[14px] font-semibold text-[#EAECEF]">跟进记录</div>'
-    +     '<span class="text-[11px] text-[#F0B90B] cursor-pointer">+ 添加记录</span>'
-    +   '</div>'
-    +   '<div class="bg-[#1E2329] rounded-xl border border-[#2E3440] p-4">'
-    +     '<div class="border-l-2 border-[#2E3440] pl-3 space-y-4">'
-    +       followupHTML
-    +     '</div>'
-    +   '</div>'
-    + '</div>';
+    + '<div class="flex items-center justify-between mb-2">'
+    + '<div class="text-[14px] font-semibold text-[#EAECEF]">跟进记录</div>'
+    + '<span class="text-[11px] text-[#F0B90B] cursor-pointer">+ 添加记录</span>'
+    + '</div>'
+    + '<div class="bg-[#1E2329] rounded-xl border border-[#2E3440] p-4">'
+    + '<div class="border-l-2 border-[#2E3440] pl-3 space-y-4">';
+  followups.forEach(function(f) {
+    var isSystem = f.bd === '系统';
+    html += '<div class="relative">'
+      + '<div class="absolute -left-[17px] top-[6px] w-2 h-2 rounded-full ' + (isSystem ? 'bg-[#474D57]' : 'bg-[#4DA6FF]') + '"></div>'
+      + '<div class="text-[11px] text-[#848E9C]">' + f.date + ' \u00b7 ' + f.bd + '</div>'
+      + '<div class="text-[13px] text-[#EAECEF] mt-0.5">' + f.text + '</div>'
+      + '</div>';
+  });
+  html += '</div></div></div>';
 
+  // Inject HTML
   document.getElementById('page-content').innerHTML = html;
 
   // --- Interactive: BD notes auto-save ---
@@ -325,24 +458,40 @@
     });
   }
 
-  // --- Interactive: BD tag add (simple prompt) ---
-  document.getElementById('add-tag-btn').addEventListener('click', function() {
-    var newTag = prompt('输入新标签:');
-    if (!newTag || !newTag.trim()) return;
-    newTag = newTag.trim();
-    savedTags.push(newTag);
-    localStorage.setItem(tagKey, JSON.stringify(savedTags));
-    renderTags();
-  });
+  // --- Interactive: Net contribution toggle ---
+  var ncToggle = document.getElementById('nc-toggle');
+  var ncDetail = document.getElementById('nc-detail');
+  var ncArrow = document.getElementById('nc-arrow');
+  if (ncToggle && ncDetail) {
+    ncToggle.addEventListener('click', function() {
+      var isHidden = ncDetail.classList.contains('hidden');
+      if (isHidden) {
+        ncDetail.classList.remove('hidden');
+        ncToggle.classList.remove('rounded-xl');
+        ncToggle.classList.add('rounded-t-xl');
+        ncArrow.style.transform = 'rotate(180deg)';
+      } else {
+        ncDetail.classList.add('hidden');
+        ncToggle.classList.add('rounded-xl');
+        ncToggle.classList.remove('rounded-t-xl');
+        ncArrow.style.transform = '';
+      }
+    });
+  }
 
+  // --- Interactive: BD tag management ---
   function renderTags() {
     var container = document.getElementById('bd-tags-container');
     var inner = savedTags.map(function(tag) {
-      return '<span class="bd-tag text-[11px] px-2.5 py-1 rounded-full bg-[#0D1F2D] text-[#4DA6FF] cursor-pointer" data-tag="' + esc(tag) + '">' + esc(tag) + '</span>';
+      return '<span class="bd-tag text-[10px] px-2 py-0.5 rounded-full bg-[#0D1F2D] text-[#4DA6FF] cursor-pointer" data-tag="' + esc(tag) + '">'
+        + esc(tag) + ' <i class="fa-solid fa-xmark text-[8px] ml-0.5 opacity-60"></i></span>';
     }).join('');
-    inner += '<span id="add-tag-btn" class="text-[11px] px-2.5 py-1 rounded-full border border-dashed border-[#474D57] text-[#474D57] cursor-pointer">+ 添加</span>';
+    inner += '<span id="add-tag-btn" class="text-[10px] px-2 py-0.5 rounded-full border border-dashed border-[#474D57] text-[#474D57] cursor-pointer">+ 添加标签</span>';
     container.innerHTML = inner;
-    // Re-bind add button
+    bindTagEvents();
+  }
+
+  function bindTagEvents() {
     document.getElementById('add-tag-btn').addEventListener('click', function() {
       var newTag = prompt('输入新标签:');
       if (!newTag || !newTag.trim()) return;
@@ -351,8 +500,7 @@
       localStorage.setItem(tagKey, JSON.stringify(savedTags));
       renderTags();
     });
-    // Bind tag click to remove
-    container.querySelectorAll('.bd-tag').forEach(function(el) {
+    document.querySelectorAll('.bd-tag').forEach(function(el) {
       el.addEventListener('click', function() {
         var tag = el.getAttribute('data-tag');
         savedTags = savedTags.filter(function(t) { return t !== tag; });
@@ -362,15 +510,8 @@
     });
   }
 
-  // Initial bind for tag removal on existing tags
-  document.querySelectorAll('.bd-tag').forEach(function(el) {
-    el.addEventListener('click', function() {
-      var tag = el.getAttribute('data-tag');
-      savedTags = savedTags.filter(function(t) { return t !== tag; });
-      localStorage.setItem(tagKey, JSON.stringify(savedTags));
-      renderTags();
-    });
-  });
+  // Initial bind
+  bindTagEvents();
 
 })();
 </script>

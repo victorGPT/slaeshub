@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-  <title>Sales Hub -- 全部客户</title>
+  <title>Sales Hub -- 客户</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
@@ -51,7 +51,7 @@
 
   <!-- Top Nav -->
   <div class="h-[52px] sticky top-0 z-20 bg-[#0B0E11] border-b border-[#2E3440] flex items-center justify-center px-4">
-    <h1 class="text-[17px] font-bold text-[#EAECEF] tracking-wide">全部客户</h1>
+    <h1 class="text-[17px] font-bold text-[#EAECEF] tracking-wide">客户</h1>
   </div>
 
   <!-- Search Bar -->
@@ -63,21 +63,8 @@
     </div>
   </div>
 
-  <!-- Status Filter Pills -->
-  <div class="flex gap-2 px-4 pb-3" id="filter-bar">
-    <button data-status="全部" class="filter-pill text-[12px] px-3 py-1.5 rounded-full font-semibold bg-[#F0B90B] text-[#0B0E11]">全部</button>
-    <button data-status="流失" class="filter-pill text-[12px] px-3 py-1.5 rounded-full bg-[#1E2329] text-[#848E9C] border border-[#2E3440]">流失</button>
-    <button data-status="增长" class="filter-pill text-[12px] px-3 py-1.5 rounded-full bg-[#1E2329] text-[#848E9C] border border-[#2E3440]">增长</button>
-    <button data-status="稳定" class="filter-pill text-[12px] px-3 py-1.5 rounded-full bg-[#1E2329] text-[#848E9C] border border-[#2E3440]">稳定</button>
-  </div>
-
-  <!-- Client Count -->
-  <div class="px-4 pb-2">
-    <span id="client-count" class="text-[11px] text-[#848E9C]"></span>
-  </div>
-
-  <!-- Card List -->
-  <div id="card-list" class="overflow-y-auto pb-[100px]" style="scrollbar-width:none;"></div>
+  <!-- Client List -->
+  <div id="client-list" class="overflow-y-auto pb-[100px]" style="scrollbar-width:none;"></div>
 
 </div>
 
@@ -109,77 +96,48 @@
 (function() {
   var D = window.PROTOTYPE_DATA;
   var searchInput = document.getElementById('search-input');
-  var currentStatusFilter = '全部';
 
-  function getTrendColor(adjustedTrendRate) {
-    if (adjustedTrendRate > 0) return '#0ECB81';
-    if (adjustedTrendRate < 0) return '#F6465D';
-    return '#848E9C';
+  function getStatusLabel(c) {
+    var rate = c.adjustedTrendRate;
+    var r2 = c.rSquared;
+    if (r2 < 0.5) return { label: '波动不定', bg: 'rgba(132,142,156,0.15)', color: '#848E9C' };
+    if (rate <= -0.04) return { label: '快速流失', bg: 'rgba(246,70,93,0.15)', color: '#F6465D' };
+    if (rate <= -0.02) return { label: '缓慢流失', bg: 'rgba(240,160,48,0.15)', color: '#F0A030' };
+    if (rate >= 0.04) return { label: '快速增长', bg: 'rgba(14,203,129,0.15)', color: '#0ECB81' };
+    if (rate >= 0.02) return { label: '缓慢增长', bg: 'rgba(14,203,129,0.10)', color: '#0ECB81' };
+    return { label: '稳定', bg: 'rgba(132,142,156,0.15)', color: '#848E9C' };
   }
 
-  function cardHTML(c, rank) {
-    var color = getTrendColor(c.adjustedTrendRate);
-    var confidencePart = c.trendConfidence
-      ? '<span class="text-[10px] text-[#848E9C]">\u00b7 ' + c.trendConfidence + '</span>'
-      : '';
-
-    return '<a href="' + c.detailHref + '" class="block bg-[#1E2329] rounded-xl border border-[#2E3440] p-4 mx-4 mb-2 active:bg-[#2B3139]">'
-      + '<div class="flex items-center justify-between mb-2">'
+  function rowHTML(c) {
+    var s = getStatusLabel(c);
+    return '<a href="client-detail.html?uid=' + c.uid + '" class="flex items-center px-4 py-3 border-b border-[#2E3440] active:bg-[#2B3139]">'
+      + '<div class="flex-1 min-w-0">'
       +   '<div class="flex items-center gap-2">'
-      +     '<span class="text-[13px] font-bold w-6 text-[#F0B90B]">#' + rank + '</span>'
-      +     '<span class="text-[14px] font-semibold text-[#EAECEF]">' + c.name + '</span>'
+      +     '<span class="text-[13px] font-medium text-[#EAECEF] truncate">' + c.name + '</span>'
+      +     '<span class="text-[11px] text-[#474D57]">' + c.uid + '</span>'
       +   '</div>'
-      +   '<span class="text-[18px] font-bold text-[#EAECEF]">' + c.depositDisplay + '</span>'
       + '</div>'
-      + '<div class="flex items-center gap-2 mb-2">'
-      +   '<span class="text-[10px] px-2 py-0.5 rounded-full" style="background:' + c.statusBadge.bg + ';color:' + c.statusBadge.text + '">' + c.status + '</span>'
-      +   '<span class="text-[11px]" style="color:' + color + '">' + c.trendDisplay + '</span>'
-      +   confidencePart
+      + '<div class="flex items-center gap-3 flex-shrink-0 ml-2">'
+      +   '<span class="text-[14px] font-bold text-[#EAECEF]">' + c.depositDisplay + '</span>'
+      +   '<span class="text-[10px] px-1.5 py-0.5 rounded-full" style="background:' + s.bg + ';color:' + s.color + '">' + s.label + '</span>'
       + '</div>'
-      + '<div class="text-[11px] text-[#848E9C] mb-1">' + c.reasonTag + '</div>'
-      + '<div class="text-[11px] text-[#F0B90B]">\u2192 ' + c.suggestedAction + '</div>'
       + '</a>';
   }
 
-  function filterClients() {
+  function renderList() {
     var query = searchInput.value.toLowerCase();
-
     var filtered = D.clients.filter(function(c) {
-      var matchesSearch = !query || c.name.toLowerCase().includes(query) || c.uid.includes(query);
-      var matchesStatus = currentStatusFilter === '全部' || c.status === currentStatusFilter;
-      return matchesSearch && matchesStatus;
+      return !query || c.name.toLowerCase().includes(query) || c.uid.includes(query);
     });
-
     filtered.sort(function(a, b) { return b.fMean - a.fMean; });
 
-    document.getElementById('client-count').textContent =
-      '共 ' + filtered.length + ' 位客户' + (currentStatusFilter !== '全部' ? ' (' + currentStatusFilter + ')' : '');
-
-    document.getElementById('card-list').innerHTML = filtered.length
-      ? filtered.map(function(c, i) { return cardHTML(c, i + 1); }).join('')
-      : '<div class="mx-4 py-8 text-center text-[#848E9C] text-[13px]">未找到匹配的客户</div>';
+    document.getElementById('client-list').innerHTML = filtered.length
+      ? filtered.map(function(c) { return rowHTML(c); }).join('')
+      : '<div class="py-8 text-center text-[#848E9C] text-[13px]">未找到匹配的客户</div>';
   }
 
-  // Filter pill click
-  document.getElementById('filter-bar').addEventListener('click', function(e) {
-    var btn = e.target.closest('.filter-pill');
-    if (!btn) return;
-    currentStatusFilter = btn.getAttribute('data-status');
-    document.querySelectorAll('.filter-pill').forEach(function(p) {
-      if (p.getAttribute('data-status') === currentStatusFilter) {
-        p.className = 'filter-pill text-[12px] px-3 py-1.5 rounded-full font-semibold bg-[#F0B90B] text-[#0B0E11]';
-      } else {
-        p.className = 'filter-pill text-[12px] px-3 py-1.5 rounded-full bg-[#1E2329] text-[#848E9C] border border-[#2E3440]';
-      }
-    });
-    filterClients();
-  });
-
-  // Search input
-  searchInput.addEventListener('input', filterClients);
-
-  // Initial render
-  filterClients();
+  searchInput.addEventListener('input', renderList);
+  renderList();
 })();
 </script>
 
