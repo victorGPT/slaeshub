@@ -33,10 +33,6 @@
     ::-webkit-scrollbar { display: none; }
     html { background: #000; }
     html, body { width: 393px !important; margin: 0 auto !important; overflow-x: hidden; }
-    .state-btn { transition: all 0.15s ease; }
-    .state-btn.active { transform: scale(1.02); }
-    .timeline-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; margin-top: 5px; }
-    .timeline-line { width: 2px; background: #2E3440; flex-shrink: 0; }
   </style>
 </head>
 <body class="bg-[#0B0E11] text-[#EAECEF]">
@@ -52,7 +48,7 @@
     </div>
   </div>
 
-  <!-- A. Top Nav with Back -->
+  <!-- Top Nav with Back -->
   <div class="h-[52px] sticky top-0 z-20 bg-[#0B0E11] border-b border-[#2E3440] flex items-center justify-between px-4">
     <a onclick="history.back()" class="w-8 h-8 flex items-center justify-center text-[#EAECEF] cursor-pointer">
       <i class="fa-solid fa-chevron-left text-[16px]"></i>
@@ -88,7 +84,12 @@
   var client = D.clientsById[evt.client_uid] || null;
   var isRisk = (evt.type === '风控触发');
 
-  // Helper: get status label from client trend data
+  // Check if already processed
+  var processedKey = 'processed_events';
+  var processed = JSON.parse(sessionStorage.getItem(processedKey) || '[]');
+  var isProcessed = processed.indexOf(evt.id) !== -1;
+
+  // Helper: get status label
   function getStatusLabel(c) {
     if (!c) return { label: '未知', arrow: '' };
     var rate = c.adjustedTrendRate;
@@ -101,19 +102,6 @@
     return { label: '稳定', arrow: '→' };
   }
 
-  // Load BD tags from localStorage
-  var tagKey = client ? ('bd_tags_' + client.uid) : '';
-  var bdTags = [];
-  try {
-    bdTags = JSON.parse(localStorage.getItem(tagKey) || '["偏好短线","英文沟通"]');
-  } catch(e) {
-    bdTags = ['偏好短线', '英文沟通'];
-  }
-
-  // Load task state from sessionStorage
-  var stateKey = 'task_state_' + evt.id;
-  var currentState = sessionStorage.getItem(stateKey) || evt.task_state || '待处理';
-
   // Urgency dot emoji
   var urgencyDot = { critical: '🔴', warning: '🟡', info: '🟢' };
   var dot = urgencyDot[evt.urgency] || '⚪';
@@ -123,10 +111,9 @@
   var welfareRemaining = client && client.welfare ? client.welfare.remainingDisplay : '—';
 
   // ─── Build HTML ───
-
   var html = '';
 
-  // ═══ Block A: Event Header ═══
+  // ═══ Event Header ═══
   html += '<div class="pt-4 pb-3">';
   html +=   '<div class="flex items-center gap-2 mb-1">';
   html +=     '<span class="text-[16px]">' + dot + '</span>';
@@ -141,11 +128,9 @@
     html += '</div>';
   }
   html += '</div>';
-
-  // Divider
   html += '<div class="border-t border-[#2E3440]"></div>';
 
-  // ═══ Block B: Client Summary ═══
+  // ═══ Client Summary ═══
   html += '<div class="bg-[#1E2329] rounded-xl border border-[#2E3440] p-4 mt-4">';
   html +=   '<div class="flex items-center justify-between mb-2">';
   html +=     '<div class="text-[14px] text-[#EAECEF]">';
@@ -153,28 +138,22 @@
   html +=       ' · <span class="text-[#848E9C]">' + sl.arrow + sl.label + '</span>';
   html +=     '</div>';
   html +=   '</div>';
-  html +=   '<div class="text-[13px] text-[#848E9C] mb-1.5">';
-  html +=     'BD标签: ' + bdTags.map(function(t) {
-                return '<span class="text-[#EAECEF]">' + t + '</span>';
-              }).join(' · ');
-  html +=   '</div>';
-  html +=   '<div class="text-[13px] text-[#848E9C] mb-2.5">上次跟进: 3天前</div>';
   html +=   '<a href="client-detail.html?uid=' + (client ? client.uid : '') + '" class="text-[13px] text-[#4DA6FF] font-medium">';
   html +=     '→ 查看完整资料';
   html +=   '</a>';
   html += '</div>';
 
-  // ═══ Block C: Action Area (3-in-1) ═══
+  // ═══ Action Area ═══
   html += '<div class="bg-[#1E2329] rounded-xl border border-[#2E3440] mt-3 overflow-hidden">';
 
-  // C1: Action suggestion (always shown)
+  // Action suggestion
   html +=   '<div class="p-4 border-b border-[#2E3440]">';
   html +=     '<div class="text-[13px] text-[#848E9C] mb-1">行动建议</div>';
   html +=     '<div class="text-[14px] text-[#EAECEF] font-medium">→ ' + evt.action + '</div>';
   html +=   '</div>';
 
   if (isRisk) {
-    // C2-risk: Copy info block for risk_control events
+    // Risk: copy info block
     html += '<div class="p-4">';
     html +=   '<div class="text-[13px] text-[#848E9C] mb-2">一键复制</div>';
     html +=   '<div class="text-[13px] text-[#EAECEF] space-y-1 mb-3 font-mono">';
@@ -183,23 +162,22 @@
     html +=     '<div>触发时间: ' + evt.time_ago + '</div>';
     html +=     '<div>客户资沉: ' + depositDisplay + '</div>';
     html +=   '</div>';
-    html +=   '<button onclick="copyRiskInfo()" id="btn-copy-risk" class="w-full py-2.5 rounded-lg text-[13px] font-semibold bg-[#F6465D]/15 text-[#F6465D] border border-[#F6465D]/30 active:opacity-70">';
+    html +=   '<button onclick="copyRiskInfo()" id="btn-copy" class="w-full py-2.5 rounded-lg text-[13px] font-semibold bg-[#F6465D]/15 text-[#F6465D] border border-[#F6465D]/30 active:opacity-70">';
     html +=     '复制信息发给研发';
     html +=   '</button>';
     html += '</div>';
   } else {
-    // C2: Script template
+    // Script template
     if (evt.script) {
       html += '<div class="p-4 border-b border-[#2E3440]">';
       html +=   '<div class="text-[13px] text-[#848E9C] mb-1">话术模板</div>';
       html +=   '<div class="text-[13px] text-[#EAECEF] leading-relaxed mb-3">"' + evt.script + '"</div>';
-      html +=   '<button onclick="copyScript()" id="btn-copy-script" class="w-full py-2.5 rounded-lg text-[13px] font-semibold bg-[#F0B90B]/15 text-[#F0B90B] border border-[#F0B90B]/30 active:opacity-70">';
+      html +=   '<button onclick="copyScript()" id="btn-copy" class="w-full py-2.5 rounded-lg text-[13px] font-semibold bg-[#F0B90B]/15 text-[#F0B90B] border border-[#F0B90B]/30 active:opacity-70">';
       html +=     '复制话术';
       html +=   '</button>';
       html += '</div>';
     }
-
-    // C3: Welfare
+    // Welfare
     html += '<div class="p-4">';
     html +=   '<div class="flex items-center justify-between mb-3">';
     html +=     '<div class="text-[13px] text-[#848E9C]">福利金</div>';
@@ -213,120 +191,33 @@
 
   html += '</div>';
 
-  // ═══ Block D: Task State ═══
-  html += '<div class="mt-4">';
-  html +=   '<div class="text-[13px] text-[#848E9C] mb-2">任务状态</div>';
-  html +=   '<div class="flex gap-2" id="state-buttons">';
-
-  var states = [
-    { label: '待处理', color: '#F6465D' },
-    { label: '跟进中', color: '#4DA6FF' },
-    { label: '已完成', color: '#0ECB81' },
-    { label: '已忽略', color: '#848E9C' }
-  ];
-
-  states.forEach(function(s) {
-    var isActive = (s.label === currentState);
-    if (isActive) {
-      html += '<button onclick="setTaskState(this, \'' + s.label + '\')" '
-        + 'class="state-btn active flex-1 py-2.5 rounded-lg text-[13px] font-semibold border" '
-        + 'style="background:' + hexToRgba(s.color, 0.15) + ';color:' + s.color + ';border-color:' + hexToRgba(s.color, 0.3) + '">'
-        + s.label + '</button>';
-    } else {
-      html += '<button onclick="setTaskState(this, \'' + s.label + '\')" '
-        + 'class="state-btn flex-1 py-2.5 rounded-lg text-[13px] bg-[#2B3139] text-[#848E9C] border border-transparent">'
-        + s.label + '</button>';
-    }
-  });
-
-  html +=   '</div>';
-  html += '</div>';
-
-  // ═══ Block E: Follow-up Records ═══
-  var followups = getFollowups(evt.type);
-
-  html += '<div class="mt-4 mb-4">';
-  html +=   '<div class="flex items-center justify-between mb-3">';
-  html +=     '<span class="text-[14px] font-semibold text-[#EAECEF]">跟进记录</span>';
-  html +=     '<span class="text-[13px] text-[#4DA6FF] cursor-pointer">+ 添加记录</span>';
-  html +=   '</div>';
-
-  // Timeline
-  followups.forEach(function(f, i) {
-    var isLast = (i === followups.length - 1);
-    html += '<div class="flex gap-3">';
-    html +=   '<div class="flex flex-col items-center">';
-    html +=     '<div class="timeline-dot" style="background:' + f.dotColor + '"></div>';
-    if (!isLast) {
-      html +=   '<div class="timeline-line flex-1 my-1"></div>';
-    }
-    html +=   '</div>';
-    html +=   '<div class="pb-4 min-w-0 flex-1">';
-    html +=     '<div class="flex items-center justify-between mb-0.5">';
-    html +=       '<span class="text-[13px] font-medium text-[#EAECEF]">' + f.title + '</span>';
-    html +=       '<span class="text-[11px] text-[#474D57]">' + f.time + '</span>';
-    html +=     '</div>';
-    html +=     '<div class="text-[12px] text-[#848E9C] leading-relaxed">' + f.detail + '</div>';
+  // ═══ Mark as Processed Button ═══
+  if (isProcessed) {
+    html += '<div class="mt-6 mb-4">';
+    html +=   '<div class="w-full py-3.5 rounded-xl text-center text-[15px] font-semibold bg-[#0ECB81]/10 text-[#0ECB81] border border-[#0ECB81]/20">';
+    html +=     '<i class="fa-solid fa-circle-check mr-2"></i>已处理';
     html +=   '</div>';
     html += '</div>';
-  });
-
-  html += '</div>';
+  } else {
+    html += '<div class="mt-6 mb-4">';
+    html +=   '<button onclick="markProcessed()" id="btn-done" class="w-full py-3.5 rounded-xl text-[15px] font-semibold bg-[#0ECB81] text-[#0B0E11] active:opacity-80">';
+    html +=     '<i class="fa-solid fa-check mr-2"></i>标记已处理';
+    html +=   '</button>';
+    html += '</div>';
+  }
 
   document.getElementById('page-content').innerHTML = html;
 
-  // ─── Helper: hex to rgba ───
-  function hexToRgba(hex, alpha) {
-    var r = parseInt(hex.slice(1,3), 16);
-    var g = parseInt(hex.slice(3,5), 16);
-    var b = parseInt(hex.slice(5,7), 16);
-    return 'rgba(' + r + ',' + g + ',' + b + ',' + alpha + ')';
-  }
-
-  // ─── Follow-up records by event type ───
-  function getFollowups(type) {
-    if (type === '风控触发') {
-      return [
-        { title: '联系研发排查', time: '03-30 14:20', detail: '已将客户信息发送至研发团队，等待排查结果。', dotColor: '#F6465D' },
-        { title: '研发回复', time: '03-30 16:45', detail: '风控规则误触发，已提交解除申请。', dotColor: '#4DA6FF' },
-        { title: '通知客户', time: '03-31 09:10', detail: '已电话告知客户限制将在24小时内解除，客户表示理解。', dotColor: '#0ECB81' }
-      ];
-    }
-    if (type === '大额出金') {
-      return [
-        { title: '电话回访', time: '03-29 10:30', detail: '尝试联系客户了解出金原因，未接听。', dotColor: '#F6465D' },
-        { title: '电话回访', time: '03-30 14:00', detail: '客户接听，表示资金临时周转需要，计划月底回流。', dotColor: '#4DA6FF' },
-        { title: '跟进确认', time: '03-31 09:00', detail: '发送权益说明，提醒续存优惠活动。', dotColor: '#0ECB81' }
-      ];
-    }
-    if (type === '大额入金') {
-      return [
-        { title: '推荐产品', time: '03-29 11:00', detail: '向客户推荐理财产品及合约交易方案。', dotColor: '#0ECB81' },
-        { title: '客户反馈', time: '03-30 15:30', detail: '客户对理财产品感兴趣，要求发送详细资料。', dotColor: '#4DA6FF' },
-        { title: '发送资料', time: '03-31 08:30', detail: '已发送产品说明书及历史收益数据。', dotColor: '#F0B90B' }
-      ];
-    }
-    // 理财到期 or other
-    return [
-      { title: '到期提醒', time: '03-29 09:00', detail: '系统自动发送理财到期提醒通知。', dotColor: '#F0B90B' },
-      { title: '电话回访', time: '03-30 10:15', detail: '联系客户确认续存意向，客户考虑中。', dotColor: '#4DA6FF' },
-      { title: '推荐续存', time: '03-31 09:30', detail: '推送续存权益方案，年化提升至 X%。', dotColor: '#0ECB81' }
-    ];
-  }
-
   // ─── Global functions ───
 
-  // Copy script to clipboard
   window.copyScript = function() {
-    var text = evt.script;
-    navigator.clipboard.writeText(text).then(function() {
-      var btn = document.getElementById('btn-copy-script');
+    navigator.clipboard.writeText(evt.script).then(function() {
+      var btn = document.getElementById('btn-copy');
       btn.textContent = '已复制 ✓';
       setTimeout(function() { btn.textContent = '复制话术'; }, 1500);
     });
   };
 
-  // Copy risk info to clipboard
   window.copyRiskInfo = function() {
     var uid = client ? client.uid : evt.client_uid;
     var text = '客户 UID: ' + uid
@@ -335,36 +226,22 @@
       + '\n客户资沉: ' + depositDisplay
       + '\n请协助排查，谢谢。';
     navigator.clipboard.writeText(text).then(function() {
-      var btn = document.getElementById('btn-copy-risk');
+      var btn = document.getElementById('btn-copy');
       btn.textContent = '已复制 ✓';
       setTimeout(function() { btn.textContent = '复制信息发给研发'; }, 1500);
     });
   };
 
-  // Task state toggle
-  var stateColors = {
-    '待处理': '#F6465D',
-    '跟进中': '#4DA6FF',
-    '已完成': '#0ECB81',
-    '已忽略': '#848E9C'
-  };
-
-  window.setTaskState = function(el, state) {
-    // Reset all buttons
-    document.querySelectorAll('#state-buttons .state-btn').forEach(function(btn) {
-      btn.className = 'state-btn flex-1 py-2.5 rounded-lg text-[13px] bg-[#2B3139] text-[#848E9C] border border-transparent';
-      btn.style.background = '';
-      btn.style.color = '';
-      btn.style.borderColor = '';
-    });
-    // Activate clicked
-    var c = stateColors[state];
-    el.style.background = hexToRgba(c, 0.15);
-    el.style.color = c;
-    el.style.borderColor = hexToRgba(c, 0.3);
-    el.className = 'state-btn active flex-1 py-2.5 rounded-lg text-[13px] font-semibold border';
-    // Persist to sessionStorage
-    sessionStorage.setItem(stateKey, state);
+  window.markProcessed = function() {
+    var list = JSON.parse(sessionStorage.getItem(processedKey) || '[]');
+    if (list.indexOf(evt.id) === -1) list.push(evt.id);
+    sessionStorage.setItem(processedKey, JSON.stringify(list));
+    // Visual feedback then go back
+    var btn = document.getElementById('btn-done');
+    btn.innerHTML = '<i class="fa-solid fa-circle-check mr-2"></i>已处理';
+    btn.className = 'w-full py-3.5 rounded-xl text-[15px] font-semibold bg-[#0ECB81]/10 text-[#0ECB81] border border-[#0ECB81]/20';
+    btn.disabled = true;
+    setTimeout(function() { history.back(); }, 600);
   };
 
 })();

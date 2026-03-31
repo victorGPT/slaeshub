@@ -126,22 +126,28 @@
   var clientMap = {};
   D.clients.forEach(function(c) { clientMap[c.uid] = c; });
 
-  // Filter: watchlist + active states, sort by urgency
+  // Read processed events from sessionStorage (written by event-thread.html)
+  var processedList = JSON.parse(sessionStorage.getItem('processed_events') || '[]');
+  var processedSet = {};
+  processedList.forEach(function(id) { processedSet[id] = true; });
+
+  // Filter: watchlist + active states + not processed, sort by urgency
   var activeEvents = D.events.filter(function(e) {
     return watchlistSet[e.client_uid] &&
-           (e.task_state === '待处理' || e.task_state === '跟进中');
+           (e.task_state === '待处理' || e.task_state === '跟进中') &&
+           !processedSet[e.id];
   }).sort(function(a, b) {
     return (URGENCY_ORDER[a.urgency] || 9) - (URGENCY_ORDER[b.urgency] || 9);
   });
 
-  // Count all handled events today (已完成 + 已忽略, watchlist only)
+  // Count handled: mock data handled + sessionStorage processed
   var handledCount = D.events.filter(function(e) {
     return watchlistSet[e.client_uid] &&
-           (e.task_state === '已完成' || e.task_state === '已忽略');
+           (e.task_state === '已完成' || e.task_state === '已忽略' || processedSet[e.id]);
   }).length;
 
   var totalEvents = activeEvents.length + handledCount;
-  var pendingCount = activeEvents.filter(function(e) { return e.task_state === '待处理'; }).length;
+  var pendingCount = activeEvents.length;
   var ongoingCount = activeEvents.filter(function(e) { return e.task_state === '跟进中'; }).length;
 
   // ---------- 2. Summary Row ----------
