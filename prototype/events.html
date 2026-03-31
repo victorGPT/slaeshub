@@ -103,6 +103,11 @@
 (function() {
   var D = window.PROTOTYPE_DATA;
 
+  // Read processed events from sessionStorage (written by event-thread.html)
+  var processedList = JSON.parse(sessionStorage.getItem('processed_events') || '[]');
+  var processedSet = {};
+  processedList.forEach(function(id) { processedSet[id] = true; });
+
   var URGENCY_ORDER = { critical: 0, warning: 1, info: 2 };
   var TASK_COLORS = {
     '待处理': { bg: 'rgba(246,70,93,0.15)', text: '#F6465D' },
@@ -122,8 +127,13 @@
     return 9999;
   }
 
-  // All events sorted by time (newest first)
-  var allEvents = D.events.slice().sort(function(a, b) {
+  // All events sorted by time (newest first), with processed overrides
+  var allEvents = D.events.slice().map(function(e) {
+    if (processedSet[e.id] && e.task_state === '待处理') {
+      return Object.assign({}, e, { task_state: '已完成' });
+    }
+    return e;
+  }).sort(function(a, b) {
     var aH = (typeof a.age_hours === 'number') ? a.age_hours : parseTimeAgo(a.time_ago);
     var bH = (typeof b.age_hours === 'number') ? b.age_hours : parseTimeAgo(b.time_ago);
     return aH - bH;

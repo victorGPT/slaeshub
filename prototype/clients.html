@@ -63,6 +63,9 @@
     </div>
   </div>
 
+  <!-- Sort Info -->
+  <div id="sort-info" class="px-4 pb-2 text-[11px] text-[#848E9C]"></div>
+
   <!-- Client List -->
   <div id="client-list" class="overflow-y-auto pb-[100px]" style="scrollbar-width:none;"></div>
 
@@ -114,12 +117,12 @@
   }
 
   function lastContactLabel(hours) {
-    if (hours >= 999) return '7天+';
-    if (hours < 24) return '今天';
-    if (hours < 48) return '1天前';
-    if (hours < 72) return '2天前';
-    if (hours < 168) return Math.floor(hours / 24) + '天前';
-    return '7天+';
+    if (hours >= 999) return '7天未联系';
+    if (hours < 24) return '今天联系';
+    if (hours < 48) return '1天前联系';
+    if (hours < 72) return '2天前联系';
+    if (hours < 168) return Math.floor(hours / 24) + '天前联系';
+    return '7天未联系';
   }
 
   function rowHTML(c) {
@@ -150,6 +153,9 @@
     filtered.sort(function(a, b) {
       return getLastContactHours(b.uid) - getLastContactHours(a.uid);
     });
+
+    document.getElementById('sort-info').textContent =
+      '按最近联系时间排序 · 共 ' + filtered.length + ' 位客户';
 
     document.getElementById('client-list').innerHTML = filtered.length
       ? filtered.map(function(c) { return rowHTML(c); }).join('')
