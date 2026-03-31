@@ -103,18 +103,41 @@
   function esc(s) { return String(s).replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
 
   var badge = c.statusBadge;
-  var trendColor = c.adjustedTrendRate > 0 ? '#0ECB81' : (c.adjustedTrendRate < 0 ? '#F6465D' : '#848E9C');
 
-  // Trend label: 流失/增长/稳定 + percentage
-  var rate = c.adjustedTrendRate;
-  var pct = Math.abs(rate * 100).toFixed(1);
-  var trendLabel;
-  if (rate <= -0.01) {
-    trendLabel = '流失 ' + pct + '%';
-  } else if (rate >= 0.01) {
-    trendLabel = '增长 ' + pct + '%';
-  } else {
-    trendLabel = '稳定';
+  // --- Seeded random for consistent flow data ---
+  function seededRandom(seed) {
+    var x = Math.sin(seed) * 10000;
+    return x - Math.floor(x);
+  }
+
+  // Generate 7 weeks of inflow/outflow from deposit deltas (W2–W8)
+  var flowWeeks = [];
+  var seedBase = parseInt(c.uid, 10) || 1;
+  for (var i = 1; i < c.weeks.length; i++) {
+    var delta = c.weeks[i] - c.weeks[i - 1];
+    var r = seededRandom(seedBase + i);
+    var inflow, outflow;
+    if (delta > 0) {
+      inflow = delta * (1.2 + r * 0.6);
+      outflow = inflow - delta;
+    } else if (delta < 0) {
+      outflow = Math.abs(delta) * (1.2 + r * 0.6);
+      inflow = outflow - Math.abs(delta);
+    } else {
+      inflow = c.fMean * (0.01 + r * 0.04);
+      outflow = inflow * (0.95 + seededRandom(seedBase + i + 100) * 0.1);
+    }
+    flowWeeks.push({ inflow: Math.round(inflow), outflow: Math.round(outflow) });
+  }
+
+  var thisWeekFlow = flowWeeks[flowWeeks.length - 1];
+  var avgInflow = Math.round(flowWeeks.reduce(function(s, w) { return s + w.inflow; }, 0) / flowWeeks.length);
+  var avgOutflow = Math.round(flowWeeks.reduce(function(s, w) { return s + w.outflow; }, 0) / flowWeeks.length);
+
+  function fmtFlow(v) {
+    if (v >= 10000) return '$' + (v / 10000).toFixed(0) + '万';
+    if (v >= 1000) return '$' + (v / 1000).toFixed(1) + '千';
+    return '$' + v;
   }
 
   // Build depositDist items array from flat data
@@ -242,33 +265,81 @@
     + '</div>';
 
   // =============================================
-  // Block C: Deposit Metrics (Hero)
+  // Block C: Deposit + Flow (two-layer)
   // =============================================
   html += '<div class="mx-4 mt-3 bg-[#1E2329] rounded-xl border border-[#2E3440] p-4">';
-  // Hero number
-  html += '<div class="mb-1">'
-    + '<div class="text-[11px] text-[#848E9C] mb-0.5">当前资沉 (8周均)</div>'
-    + '<div class="text-[28px] font-bold text-[#EAECEF] leading-tight">' + c.depositDisplay + '</div>'
+
+  // Row 1: 资沉 hero number + vs 8周均
+  html += '<div class="flex items-baseline gap-2 mb-3">'
+    + '<span class="text-[12px] text-[#848E9C]">资沉</span>'
+    + '<span class="text-[28px] font-bold text-[#EAECEF] leading-tight">' + (c.thisWeekDisplay || '-') + '</span>'
+    + '<span class="text-[12px] text-[#848E9C]">vs 8周均 ' + c.depositDisplay + '</span>'
     + '</div>';
-  // Sub metrics grid
-  html += '<div class="grid grid-cols-3 gap-3 mt-3 pt-3 border-t border-[#2E3440]">'
-    // 本周均值
-    + '<div>'
-    + '<div class="text-[10px] text-[#848E9C] mb-0.5">本周均值</div>'
-    + '<div class="text-[15px] font-semibold text-[#EAECEF]">' + (c.thisWeekDisplay || '-') + '</div>'
-    + '</div>'
-    // 近期趋势
-    + '<div>'
-    + '<div class="text-[10px] text-[#848E9C] mb-0.5">近期趋势</div>'
-    + '<div class="text-[15px] font-bold" style="color:' + trendColor + '">' + c.trendDisplay + '</div>'
-    + '</div>'
-    // 趋势状态
-    + '<div>'
-    + '<div class="text-[10px] text-[#848E9C] mb-0.5">趋势</div>'
-    + '<div class="text-[13px] font-semibold" style="color:' + trendColor + '">' + trendLabel + '</div>'
-    + '</div>'
+
+  // Row 2: 本周流入/流出
+  html += '<div class="flex items-center gap-3 mb-1">'
+    + '<span class="text-[11px] text-[#848E9C]">本周</span>'
+    + '<span class="text-[13px] font-semibold text-[#0ECB81]">流入 ' + fmtFlow(thisWeekFlow.inflow) + '</span>'
+    + '<span class="text-[13px] font-semibold text-[#F6465D]">流出 ' + fmtFlow(thisWeekFlow.outflow) + '</span>'
     + '</div>';
+
+  // Row 3: anomaly alert (only when flow > 2x average)
+  var outflowRatio = avgOutflow > 0 ? thisWeekFlow.outflow / avgOutflow : 0;
+  var inflowRatio = avgInflow > 0 ? thisWeekFlow.inflow / avgInflow : 0;
+  if (outflowRatio > 2) {
+    html += '<div class="text-[12px] text-[#F6465D] mb-1">'
+      + '▼ 流出是均值的 ' + outflowRatio.toFixed(1) + ' 倍'
+      + '</div>';
+  } else if (inflowRatio > 2) {
+    html += '<div class="text-[12px] text-[#0ECB81] mb-1">'
+      + '▲ 流入是均值的 ' + inflowRatio.toFixed(1) + ' 倍'
+      + '</div>';
+  }
+
+  // Row 4: expand toggle
+  html += '<div id="flow-toggle" class="flex items-center justify-center gap-1 pt-2 border-t border-[#2E3440] cursor-pointer">'
+    + '<span class="text-[12px] text-[#848E9C]">查看资沉流动</span>'
+    + '<i id="flow-arrow" class="fa-solid fa-chevron-down text-[10px] text-[#848E9C] transition-transform"></i>'
+    + '</div>';
+
+  // Layer 2: expandable bar chart
+  html += '<div id="flow-detail" style="max-height:0;overflow:hidden;transition:max-height 0.3s ease">';
+
+  // Build bar chart
+  var maxFlow = Math.max.apply(null, flowWeeks.map(function(w) { return Math.max(w.inflow, w.outflow); }).concat([1]));
+  var maxBarH = 80;
+
+  html += '<div class="pt-4 pb-2">';
+  // Inflow bars (top half)
+  html += '<div class="flex items-end justify-center gap-[8px]" style="height:' + maxBarH + 'px">';
+  flowWeeks.forEach(function(w) {
+    var h = maxFlow > 0 ? Math.round(w.inflow / maxFlow * maxBarH) : 0;
+    html += '<div style="width:28px;height:' + Math.max(h, 2) + 'px;background:#0ECB81;border-radius:2px 2px 0 0"></div>';
+  });
   html += '</div>';
+
+  // Zero axis
+  html += '<div style="height:1px;background:#2E3440;margin:0"></div>';
+
+  // Outflow bars (bottom half, grow downward)
+  html += '<div class="flex items-start justify-center gap-[8px]" style="height:' + maxBarH + 'px">';
+  flowWeeks.forEach(function(w) {
+    var h = maxFlow > 0 ? Math.round(w.outflow / maxFlow * maxBarH) : 0;
+    html += '<div style="width:28px;height:' + Math.max(h, 2) + 'px;background:#F6465D;border-radius:0 0 2px 2px"></div>';
+  });
+  html += '</div>';
+
+  // X-axis labels
+  html += '<div class="flex items-start justify-center gap-[8px] mt-1">';
+  for (var wi = 0; wi < flowWeeks.length; wi++) {
+    html += '<div style="width:28px" class="text-center text-[10px] text-[#848E9C]">W' + (wi + 2) + '</div>';
+  }
+  html += '</div>';
+  html += '</div>'; // close pt-4 pb-2
+
+  html += '</div>'; // close flow-detail
+
+  html += '</div>'; // close Block C card
 
   // =============================================
   // Block D: Deposit Distribution (默认展开)
@@ -455,6 +526,23 @@
   if (noteEl) {
     noteEl.addEventListener('input', function() {
       localStorage.setItem(noteKey, noteEl.value);
+    });
+  }
+
+  // --- Interactive: Flow chart toggle (Block C) ---
+  var flowToggle = document.getElementById('flow-toggle');
+  var flowDetail = document.getElementById('flow-detail');
+  var flowArrow = document.getElementById('flow-arrow');
+  if (flowToggle && flowDetail) {
+    flowToggle.addEventListener('click', function() {
+      var isCollapsed = flowDetail.style.maxHeight === '0px' || flowDetail.style.maxHeight === '0';
+      if (isCollapsed) {
+        flowDetail.style.maxHeight = flowDetail.scrollHeight + 'px';
+        flowArrow.style.transform = 'rotate(180deg)';
+      } else {
+        flowDetail.style.maxHeight = '0px';
+        flowArrow.style.transform = '';
+      }
     });
   }
 
