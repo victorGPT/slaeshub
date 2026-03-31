@@ -64,37 +64,46 @@
       <div class="w-8"></div>
     </div>
 
-    <!-- Module 1: Client Identity -->
-    <div id="header-identity" class="px-4 pt-3 pb-2">
-      <div class="flex items-center gap-3">
-        <img id="avatar-img" src="" class="w-10 h-10 rounded-full border-2 border-[#F0B90B]" alt="avatar" />
-        <div class="flex-1 min-w-0">
-          <div class="flex items-center gap-2">
-            <span id="client-name" class="text-[16px] font-bold text-[#EAECEF] truncate"></span>
-            <span id="status-badge" class="text-[10px] px-2 py-0.5 rounded-full flex-shrink-0"></span>
-          </div>
-          <div class="flex items-center gap-2 mt-0.5">
-            <span id="client-uid" class="text-[11px] text-[#848E9C]"></span>
-            <span id="from-badge" class="text-[10px] px-2 py-0.5 rounded-full hidden"></span>
-          </div>
+    <!-- Unified Header Card -->
+    <div class="mx-3 mt-2 mb-2 bg-[#1E2329] rounded-2xl border border-[#2E3440] overflow-hidden">
+      <!-- Row 1: Identity -->
+      <div class="flex items-center gap-3 px-4 pt-3 pb-2">
+        <img id="avatar-img" src="" class="w-9 h-9 rounded-full border-[1.5px] border-[#F0B90B]/60" alt="avatar" />
+        <div class="flex-1 min-w-0 flex items-center gap-2">
+          <span id="client-name" class="text-[15px] font-bold text-[#EAECEF] truncate"></span>
+          <span id="status-badge" class="text-[10px] px-1.5 py-[1px] rounded flex-shrink-0 font-medium"></span>
+        </div>
+        <span id="from-badge" class="text-[9px] px-1.5 py-[1px] rounded hidden flex-shrink-0"></span>
+      </div>
+
+      <!-- Row 2: Deposit Hero + Comparison -->
+      <div class="px-4 pb-1">
+        <div class="flex items-baseline gap-2">
+          <span class="text-[11px] text-[#848E9C]">资沉</span>
+          <span id="deposit-hero" class="text-[26px] font-bold text-[#EAECEF] tracking-tight leading-none"></span>
+          <span id="deposit-vs" class="text-[10px] text-[#474D57]"></span>
         </div>
       </div>
-    </div>
 
-    <!-- Module 2: Deposit Core Metrics -->
-    <div id="header-deposit" class="px-4 pb-2">
-      <div class="flex items-baseline gap-2">
-        <span class="text-[24px] font-bold text-[#EAECEF] leading-tight" id="deposit-hero"></span>
-        <span class="text-[11px] text-[#848E9C]" id="deposit-vs"></span>
+      <!-- Row 3: Flow Ticker -->
+      <div class="px-4 pb-2">
+        <div class="flex items-center gap-1 text-[12px]">
+          <span class="text-[10px] text-[#474D57] mr-1">本周</span>
+          <i class="fa-solid fa-arrow-up text-[8px] text-[#0ECB81]"></i>
+          <span id="flow-in" class="text-[#0ECB81] font-semibold tabular-nums"></span>
+          <span class="text-[#2E3440] mx-1">|</span>
+          <i class="fa-solid fa-arrow-down text-[8px] text-[#F6465D]"></i>
+          <span id="flow-out" class="text-[#F6465D] font-semibold tabular-nums"></span>
+          <span id="flow-anomaly" class="ml-1 text-[9px] font-bold px-1 py-[1px] rounded hidden"></span>
+        </div>
       </div>
-      <div class="flex items-center gap-3 mt-1" id="flow-summary"></div>
-      <div id="flow-anomaly"></div>
-    </div>
 
-    <!-- Module 3: Overview Judgment -->
-    <div id="header-overview" class="px-4 pb-2 flex items-center gap-3">
-      <span id="overview-status" class="text-[11px] px-2 py-0.5 rounded-full flex-shrink-0"></span>
-      <input id="memo-input" type="text" class="flex-1 bg-[#1E2329] text-[#EAECEF] text-[11px] rounded-lg px-2 py-1 border border-[#2E3440] outline-none placeholder-[#474D57]" placeholder="一句话备忘..." />
+      <!-- Row 4: Memo -->
+      <div class="px-4 pb-3 flex items-center gap-2">
+        <span id="client-uid" class="text-[9px] text-[#474D57] flex-shrink-0 tabular-nums"></span>
+        <div class="flex-1 h-[1px] bg-[#2E3440]"></div>
+        <input id="memo-input" type="text" class="flex-1 bg-transparent text-[#848E9C] text-[11px] outline-none placeholder-[#474D57] text-right" placeholder="备忘..." />
+      </div>
     </div>
 
     <!-- Tab Bar -->
@@ -200,11 +209,13 @@
 
   // === STICKY HEADER ===
 
-  // Module 1: Identity
+  // === HEADER CARD ===
   var badge = c.statusBadge;
-  document.getElementById('avatar-img').src = 'https://ui-avatars.com/api/?name=' + encodeURIComponent(c.name) + '&background=2B3139&color=EAECEF&size=40&font-size=0.4&bold=true';
+
+  // Identity
+  document.getElementById('avatar-img').src = 'https://ui-avatars.com/api/?name=' + encodeURIComponent(c.name) + '&background=2B3139&color=EAECEF&size=36&font-size=0.4&bold=true';
   document.getElementById('client-name').textContent = c.name;
-  document.getElementById('client-uid').textContent = 'UID: ' + c.uid;
+  document.getElementById('client-uid').textContent = c.uid;
   var statusEl = document.getElementById('status-badge');
   statusEl.textContent = c.status;
   statusEl.style.background = badge.bg;
@@ -212,9 +223,9 @@
 
   // From badge
   var fromMap = {
-    'event': { label: '来自: 事件', bg: 'rgba(77,166,255,0.15)', color: '#4DA6FF' },
-    'clients': { label: '来自: 客户列表', bg: 'rgba(132,142,156,0.1)', color: '#848E9C' },
-    'search': { label: '来自: 搜索', bg: 'rgba(132,142,156,0.1)', color: '#848E9C' }
+    'event': { label: '事件', bg: 'rgba(77,166,255,0.12)', color: '#4DA6FF' },
+    'clients': { label: '列表', bg: 'rgba(132,142,156,0.1)', color: '#848E9C' },
+    'search': { label: '搜索', bg: 'rgba(132,142,156,0.1)', color: '#848E9C' }
   };
   if (fromParam && fromMap[fromParam]) {
     var fb = document.getElementById('from-badge');
@@ -224,26 +235,33 @@
     fb.classList.remove('hidden');
   }
 
-  // Module 2: Deposit core
+  // Deposit hero
   document.getElementById('deposit-hero').textContent = c.thisWeekDisplay || '-';
-  document.getElementById('deposit-vs').textContent = 'vs 前8周均 ' + c.depositDisplay;
-  document.getElementById('flow-summary').innerHTML =
-    '<span class="text-[11px] text-[#848E9C]">本周</span>'
-    + '<span class="text-[12px] font-semibold text-[#0ECB81]">流入 ' + fmtFlow(thisWeekFlow.inflow) + '</span>'
-    + '<span class="text-[12px] font-semibold text-[#F6465D]">流出 ' + fmtFlow(thisWeekFlow.outflow) + '</span>';
+  document.getElementById('deposit-vs').textContent = 'vs 8w ' + c.depositDisplay;
 
+  // Flow ticker
+  document.getElementById('flow-in').textContent = fmtFlow(thisWeekFlow.inflow);
+  document.getElementById('flow-out').textContent = fmtFlow(thisWeekFlow.outflow);
+
+  // Anomaly badge (compact)
   var outflowRatio = avgOutflow > 0 ? thisWeekFlow.outflow / avgOutflow : 0;
   if (outflowRatio > 2) {
-    document.getElementById('flow-anomaly').innerHTML =
-      '<div class="text-[11px] text-[#F6465D] mt-0.5">▼ 流出是均值的 ' + outflowRatio.toFixed(1) + ' 倍</div>';
+    var anomalyEl = document.getElementById('flow-anomaly');
+    anomalyEl.textContent = '↓' + outflowRatio.toFixed(1) + '×';
+    anomalyEl.style.background = 'rgba(246,70,93,0.15)';
+    anomalyEl.style.color = '#F6465D';
+    anomalyEl.classList.remove('hidden');
+  }
+  var inflowRatio = avgInflow > 0 ? thisWeekFlow.inflow / avgInflow : 0;
+  if (inflowRatio > 2 && outflowRatio <= 2) {
+    var anomalyEl = document.getElementById('flow-anomaly');
+    anomalyEl.textContent = '↑' + inflowRatio.toFixed(1) + '×';
+    anomalyEl.style.background = 'rgba(14,203,129,0.15)';
+    anomalyEl.style.color = '#0ECB81';
+    anomalyEl.classList.remove('hidden');
   }
 
-  // Module 3: Overview
-  var overviewStatus = document.getElementById('overview-status');
-  overviewStatus.textContent = c.status;
-  overviewStatus.style.background = badge.bg;
-  overviewStatus.style.color = badge.text;
-
+  // Memo
   var memoKey = 'memo_' + c.uid;
   var memoInput = document.getElementById('memo-input');
   memoInput.value = localStorage.getItem(memoKey) || '';
