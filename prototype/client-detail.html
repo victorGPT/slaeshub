@@ -76,29 +76,26 @@
         <span id="from-badge" class="text-[9px] px-1.5 py-[1px] rounded hidden flex-shrink-0"></span>
       </div>
 
-      <!-- Row 2: Deposit Hero + Comparison -->
-      <div class="px-4 pb-1">
-        <div class="flex items-baseline gap-2">
-          <span class="text-[11px] text-[#848E9C]">资沉</span>
-          <span id="deposit-hero" class="text-[26px] font-bold text-[#EAECEF] tracking-tight leading-none"></span>
-          <span id="deposit-vs" class="text-[10px] text-[#474D57]"></span>
-        </div>
-      </div>
-
-      <!-- Row 3: Flow Ticker -->
+      <!-- Row 2: Deposit Hero + 8w Delta -->
       <div class="px-4 pb-2">
-        <div class="flex items-center gap-1 text-[12px]">
-          <span class="text-[10px] text-[#474D57] mr-1">本周</span>
-          <i class="fa-solid fa-arrow-up text-[8px] text-[#0ECB81]"></i>
-          <span id="flow-in" class="text-[#0ECB81] font-semibold tabular-nums"></span>
-          <span class="text-[#2E3440] mx-1">|</span>
-          <i class="fa-solid fa-arrow-down text-[8px] text-[#F6465D]"></i>
-          <span id="flow-out" class="text-[#F6465D] font-semibold tabular-nums"></span>
-          <span id="flow-anomaly" class="ml-1 text-[9px] font-bold px-1 py-[1px] rounded hidden"></span>
+        <div class="flex items-end gap-3">
+          <!-- Current deposit -->
+          <div>
+            <div class="text-[10px] text-[#474D57] mb-0.5">资沉</div>
+            <span id="deposit-hero" class="text-[28px] font-bold text-[#EAECEF] tracking-tight leading-none"></span>
+          </div>
+          <!-- 8w comparison: delta badge -->
+          <div id="deposit-delta" class="mb-1 flex items-center gap-1">
+            <!-- filled by JS: arrow icon + percentage + absolute change -->
+          </div>
+        </div>
+        <!-- 8w avg small reference -->
+        <div class="mt-1 text-[10px] text-[#474D57]">
+          8周均 <span id="deposit-avg" class="tabular-nums"></span>
         </div>
       </div>
 
-      <!-- Row 4: Memo -->
+      <!-- Row 3: Memo -->
       <div class="px-4 pb-3 flex items-center gap-2">
         <span id="client-uid" class="text-[9px] text-[#474D57] flex-shrink-0 tabular-nums"></span>
         <div class="flex-1 h-[1px] bg-[#2E3440]"></div>
@@ -202,9 +199,10 @@
   var avgOutflow = Math.round(baselineWeeks.reduce(function(s, w) { return s + w.outflow; }, 0) / baselineWeeks.length);
 
   function fmtFlow(v) {
-    if (v >= 10000) return '$' + (v / 10000).toFixed(1) + '万';
-    if (v >= 1000) return '$' + (v / 1000).toFixed(1) + '千';
-    return '$' + v;
+    var abs = Math.abs(v);
+    if (abs >= 10000) return '$' + Math.round(abs / 10000) + '万';
+    if (abs >= 1000) return '$' + (abs / 1000).toFixed(1) + '千';
+    return '$' + Math.round(abs);
   }
 
   // === STICKY HEADER ===
@@ -237,29 +235,26 @@
 
   // Deposit hero
   document.getElementById('deposit-hero').textContent = c.thisWeekDisplay || '-';
-  document.getElementById('deposit-vs').textContent = 'vs 8w ' + c.depositDisplay;
+  document.getElementById('deposit-avg').textContent = c.depositDisplay;
 
-  // Flow ticker
-  document.getElementById('flow-in').textContent = fmtFlow(thisWeekFlow.inflow);
-  document.getElementById('flow-out').textContent = fmtFlow(thisWeekFlow.outflow);
+  // Delta: this week vs 8w avg
+  var thisWeekVal = c.weeks[c.weeks.length - 1];
+  var avgVal = c.fMean;
+  var deltaAbs = thisWeekVal - avgVal;
+  var deltaPct = avgVal > 0 ? ((thisWeekVal - avgVal) / avgVal * 100) : 0;
+  var isUp = deltaAbs >= 0;
 
-  // Anomaly badge (compact)
-  var outflowRatio = avgOutflow > 0 ? thisWeekFlow.outflow / avgOutflow : 0;
-  if (outflowRatio > 2) {
-    var anomalyEl = document.getElementById('flow-anomaly');
-    anomalyEl.textContent = '↓' + outflowRatio.toFixed(1) + '×';
-    anomalyEl.style.background = 'rgba(246,70,93,0.15)';
-    anomalyEl.style.color = '#F6465D';
-    anomalyEl.classList.remove('hidden');
-  }
-  var inflowRatio = avgInflow > 0 ? thisWeekFlow.inflow / avgInflow : 0;
-  if (inflowRatio > 2 && outflowRatio <= 2) {
-    var anomalyEl = document.getElementById('flow-anomaly');
-    anomalyEl.textContent = '↑' + inflowRatio.toFixed(1) + '×';
-    anomalyEl.style.background = 'rgba(14,203,129,0.15)';
-    anomalyEl.style.color = '#0ECB81';
-    anomalyEl.classList.remove('hidden');
-  }
+  var deltaEl = document.getElementById('deposit-delta');
+  var deltaColor = isUp ? '#0ECB81' : '#F6465D';
+  var deltaBg = isUp ? 'rgba(14,203,129,0.12)' : 'rgba(246,70,93,0.12)';
+  var arrowIcon = isUp ? 'fa-caret-up' : 'fa-caret-down';
+  var sign = isUp ? '+' : '';
+
+  deltaEl.innerHTML = '<div class="flex items-center gap-1 px-1.5 py-0.5 rounded" style="background:' + deltaBg + '">'
+    + '<i class="fa-solid ' + arrowIcon + ' text-[11px]" style="color:' + deltaColor + '"></i>'
+    + '<span class="text-[12px] font-bold tabular-nums" style="color:' + deltaColor + '">' + sign + deltaPct.toFixed(1) + '%</span>'
+    + '</div>'
+    + '<span class="text-[10px] tabular-nums" style="color:' + deltaColor + '">' + sign + fmtFlow(Math.round(deltaAbs)) + '</span>';
 
   // Memo
   var memoKey = 'memo_' + c.uid;
