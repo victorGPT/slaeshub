@@ -116,6 +116,22 @@ def _generate_events_and_activities(uid, name, status, f_mean, row):
     has_savings = row.get('has_savings') == '1'
     has_trading = has_futures or has_leverage or row.get('has_mini') == '1'
 
+    # Time choices with numeric age_hours for auto-expiry
+    _RECENT_TIMES = [
+        ('30分钟前', 0.5), ('1小时前', 1), ('2小时前', 2),
+        ('3小时前', 3), ('5小时前', 5), ('6小时前', 6),
+    ]
+    _MEDIUM_TIMES = [
+        ('1天前', 24), ('2天前', 48), ('昨天', 20),
+    ]
+    _OLD_TIMES = [
+        ('3天前', 72), ('4天前', 96), ('5天前', 120),
+    ]
+
+    def _pick_time(choices):
+        t = random.choice(choices)
+        return t[0], t[1]
+
     # --- Events (push to homepage, need action) ---
 
     # 1. 风控触发: 流失客户 30% 概率
@@ -123,6 +139,7 @@ def _generate_events_and_activities(uid, name, status, f_mean, row):
         evt_counter += 1
         risk_types = ['提现限制', '交易限制', '账户冻结', 'KYC异常']
         risk_type = random.choice(risk_types)
+        time_ago, age_hours = _pick_time(_RECENT_TIMES + _MEDIUM_TIMES)
         evt = dict(EVENT_TEMPLATES['risk_control'])
         evt['id'] = f'evt-{uid}-{evt_counter:03d}'
         evt['client_uid'] = uid
@@ -130,24 +147,28 @@ def _generate_events_and_activities(uid, name, status, f_mean, row):
         evt['risk_type'] = risk_type
         evt['amount'] = 0
         evt['amount_display'] = ''
-        evt['time_ago'] = random.choice(['1小时前', '30分钟前', '2小时前'])
+        evt['time_ago'] = time_ago
+        evt['age_hours'] = age_hours
         evt['task_state'] = '待处理'
         evt['sub_type'] = risk_type
-        evt['expires_in'] = None
+        evt['expires_in'] = None  # 风控不过期
         events.append(evt)
 
     # 2. 超大额出金: 流失客户 40% 概率, 金额 >= fMean * 30%
     if status == '流失' and random.random() < 0.4:
         evt_counter += 1
         amount = -abs(f_mean * random.uniform(0.3, 0.6))
+        time_ago, age_hours = _pick_time(_RECENT_TIMES + _MEDIUM_TIMES + _OLD_TIMES)
         evt = dict(EVENT_TEMPLATES['mega_withdraw'])
         evt['id'] = f'evt-{uid}-{evt_counter:03d}'
         evt['client_uid'] = uid
         evt['client_name'] = name
         evt['amount'] = amount
         evt['amount_display'] = _fmt_amount(amount)
-        evt['time_ago'] = random.choice(['2小时前', '5小时前', '1天前'])
-        evt['task_state'] = random.choice(['待处理', '跟进中'])
+        evt['time_ago'] = time_ago
+        evt['age_hours'] = age_hours
+        # 超过48小时自动过期
+        evt['task_state'] = '已过期' if age_hours > 48 else random.choice(['待处理', '跟进中'])
         evt['sub_type'] = ''
         evt['expires_in'] = '48小时'
         events.append(evt)
@@ -159,14 +180,17 @@ def _generate_events_and_activities(uid, name, status, f_mean, row):
             (['合约爆仓'] if has_futures else [])
             + (['杠杆爆仓'] if has_leverage else [])
         )
+        time_ago, age_hours = _pick_time(_RECENT_TIMES + _MEDIUM_TIMES + _OLD_TIMES)
         evt = dict(EVENT_TEMPLATES['liquidation'])
         evt['id'] = f'evt-{uid}-{evt_counter:03d}'
         evt['client_uid'] = uid
         evt['client_name'] = name
         evt['amount'] = -abs(f_mean * random.uniform(0.05, 0.2))
         evt['amount_display'] = _fmt_amount(evt['amount'])
-        evt['time_ago'] = random.choice(['1小时前', '3小时前', '6小时前'])
-        evt['task_state'] = '待处理'
+        evt['time_ago'] = time_ago
+        evt['age_hours'] = age_hours
+        # 超过72小时自动过期
+        evt['task_state'] = '已过期' if age_hours > 72 else '待处理'
         evt['sub_type'] = sub
         evt['expires_in'] = '72小时'
         events.append(evt)
