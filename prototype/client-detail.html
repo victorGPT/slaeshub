@@ -265,11 +265,11 @@
   var deltaEl = document.getElementById('deposit-delta');
   var deltaColor = isUp ? '#0ECB81' : '#F6465D';
   var deltaBg = isUp ? 'rgba(14,203,129,0.12)' : 'rgba(246,70,93,0.12)';
-  var arrowIcon = isUp ? 'fa-caret-up' : 'fa-caret-down';
+  var arrowChar = isUp ? '▲' : '▼';
   var sign = isUp ? '+' : '';
 
   deltaEl.innerHTML = '<div class="flex items-center gap-1 px-1.5 py-0.5 rounded" style="background:' + deltaBg + '">'
-    + '<i class="fa-solid ' + arrowIcon + ' text-[11px]" style="color:' + deltaColor + '"></i>'
+    + '<span class="text-[11px]" style="color:' + deltaColor + '">' + arrowChar + '</span>'
     + '<span class="text-[12px] font-bold tabular-nums" style="color:' + deltaColor + '">' + sign + deltaPct.toFixed(1) + '%</span>'
     + '</div>'
     + '<span class="text-[10px] tabular-nums" style="color:' + deltaColor + '">' + sign + fmtFlow(Math.round(deltaAbs)) + '</span>';
@@ -407,7 +407,7 @@
 
   // 资金分布 (reuse deltaAbs/deltaPct from header)
   var distChgColor = deltaPct >= 0 ? '#0ECB81' : '#F6465D';
-  var distChgIcon = deltaPct >= 0 ? 'fa-caret-up' : 'fa-caret-down';
+  var distChgChar = deltaPct >= 0 ? '▲' : '▼';
   var distChgSign = deltaPct >= 0 ? '+' : '';
 
   assetsHtml += '<div class="mx-4 mt-3 bg-[#1E2329] rounded-xl border border-[#2E3440] p-3">'
@@ -415,7 +415,7 @@
     + '<div><div class="text-[13px] font-semibold text-[#EAECEF]">资金分布</div></div>'
     + '<div class="text-right">'
     + '<div class="text-[16px] font-bold tabular-nums" style="color:#F0B90B">' + c.depositDisplay + '</div>'
-    + '<div class="text-[10px] mt-0.5" style="color:' + distChgColor + '"><i class="fa-solid ' + distChgIcon + '"></i> ' + distChgSign + deltaPct.toFixed(1) + '%</div>'
+    + '<div class="text-[10px] mt-0.5" style="color:' + distChgColor + '">' + distChgChar + ' ' + distChgSign + deltaPct.toFixed(1) + '%</div>'
     + '</div>'
     + '</div>'
     + '<div class="h-[1px] bg-[#2E3440] mb-3"></div>';
@@ -469,7 +469,7 @@
   var thisWeekNet = thisWeekFlow.inflow - thisWeekFlow.outflow;
   var flowChgPct = Math.abs(avgNetPerWeek) > 0 ? ((thisWeekNet - avgNetPerWeek) / Math.abs(avgNetPerWeek) * 100) : 0;
   var flowChgColor = flowChgPct >= 0 ? '#0ECB81' : '#F6465D';
-  var flowChgIcon = flowChgPct >= 0 ? 'fa-caret-up' : 'fa-caret-down';
+  var flowChgChar = flowChgPct >= 0 ? '▲' : '▼';
   var flowChgSign = flowChgPct >= 0 ? '+' : '';
 
   assetsHtml += '<div class="mx-4 mt-3 bg-[#1E2329] rounded-xl border border-[#2E3440] p-3">'
@@ -477,7 +477,7 @@
     + '<div><div class="text-[13px] font-semibold text-[#EAECEF]">资沉流动</div></div>'
     + '<div class="text-right">'
     + '<div class="text-[16px] font-bold tabular-nums" style="color:' + netFlowColor + '">' + netFlowLabel + ' $' + fmtFlowAmt(Math.abs(avgNetPerWeek)) + '/周</div>'
-    + '<div class="text-[10px] mt-0.5" style="color:' + flowChgColor + '"><i class="fa-solid ' + flowChgIcon + '"></i> ' + flowChgSign + flowChgPct.toFixed(1) + '%</div>'
+    + '<div class="text-[10px] mt-0.5" style="color:' + flowChgColor + '">' + flowChgChar + ' ' + flowChgSign + flowChgPct.toFixed(1) + '%</div>'
     + '</div>'
     + '</div>'
     + '<div class="h-[1px] bg-[#2E3440] mb-3"></div>';
@@ -556,13 +556,13 @@
   ];
   var ncMax = Math.max.apply(null, ncItems.map(function(i) { return Math.abs(i.value); }));
 
-  var ncWowIcon = nc.wow >= 0 ? 'fa-caret-up' : 'fa-caret-down';
+  var ncWowChar = nc.wow >= 0 ? '▲' : '▼';
   assetsHtml += '<div class="mx-4 mt-3 bg-[#1E2329] rounded-xl border border-[#2E3440] p-3">'
     + '<div class="flex items-start justify-between mb-3">'
     + '<div><div class="text-[13px] font-semibold text-[#EAECEF]">7日利润贡献</div></div>'
     + '<div class="text-right">'
     + '<div class="text-[16px] font-bold tabular-nums" style="color:#F0B90B">' + nc.totalDisplay + '</div>'
-    + '<div class="text-[10px] mt-0.5" style="color:' + ncWowColor + '"><i class="fa-solid ' + ncWowIcon + '"></i> ' + nc.wowDisplay + '</div>'
+    + '<div class="text-[10px] mt-0.5" style="color:' + ncWowColor + '">' + ncWowChar + ' ' + nc.wowDisplay + '</div>'
     + '</div>'
     + '</div>'
     + '<div class="h-[1px] bg-[#2E3440] mb-3"></div>';
@@ -596,7 +596,7 @@
   var pnl7dVal = pnl.total7d.value;
   var pnlChgPct = Math.abs(pnlAvgVal) > 0 ? ((pnl7dVal - pnlAvgVal) / Math.abs(pnlAvgVal) * 100) : 0;
   var pnlChgColor = pnlChgPct >= 0 ? '#0ECB81' : '#F6465D';
-  var pnlChgIcon = pnlChgPct >= 0 ? 'fa-caret-up' : 'fa-caret-down';
+  var pnlChgChar = pnlChgPct >= 0 ? '▲' : '▼';
   var pnlChgSign = pnlChgPct >= 0 ? '+' : '';
 
   assetsHtml += '<div class="mx-4 mt-3 mb-4 bg-[#1E2329] rounded-xl border border-[#2E3440] p-3">'
@@ -604,7 +604,7 @@
     + '<div><div class="text-[13px] font-semibold text-[#EAECEF]">7日交易盈亏</div></div>'
     + '<div class="text-right">'
     + '<div class="text-[16px] font-bold tabular-nums" style="color:' + pnl.total7d.color + '">' + pnl.total7d.display + '</div>'
-    + '<div class="text-[10px] mt-0.5" style="color:' + pnlChgColor + '"><i class="fa-solid ' + pnlChgIcon + '"></i> ' + pnlChgSign + pnlChgPct.toFixed(1) + '%</div>'
+    + '<div class="text-[10px] mt-0.5" style="color:' + pnlChgColor + '">' + pnlChgChar + ' ' + pnlChgSign + pnlChgPct.toFixed(1) + '%</div>'
     + '</div>'
     + '</div>'
     + '<div class="h-[1px] bg-[#2E3440] mb-3"></div>';
