@@ -88,7 +88,7 @@
         <div class="flex items-end gap-3">
           <!-- Current deposit -->
           <div>
-            <div class="text-[10px] text-[#474D57] mb-0.5">资沉</div>
+            <div class="text-[10px] text-[#474D57] mb-0.5">7日资沉</div>
             <span id="deposit-hero" class="text-[28px] font-bold text-[#EAECEF] tracking-tight leading-none"></span>
           </div>
           <!-- 8w comparison: delta badge -->
@@ -456,7 +456,7 @@
   var avgOutflowPerWeek = Math.round(baselineOutflow / baselineWeeks.length);
   var avgNetPerWeek = Math.round(baselineNetFlow / baselineWeeks.length);
   assetsHtml += '<div class="flex items-center gap-3 text-[11px] mb-3">'
-    + '<span class="text-[#848E9C]">前' + baselineWeeks.length + '周均</span>'
+    + '<span class="text-[#848E9C]">8周均</span>'
     + '<span class="text-[#0ECB81]">流入 $' + fmtFlowAmt(avgInflowPerWeek) + '/周</span>'
     + '<span class="text-[#F6465D]">流出 $' + fmtFlowAmt(avgOutflowPerWeek) + '/周</span>'
     + '<span style="color:' + (avgNetPerWeek >= 0 ? '#0ECB81' : '#F6465D') + '">'
@@ -541,14 +541,14 @@
   assetsHtml += '<div class="mx-4 mt-3">'
     + '<div id="nc-toggle" class="flex items-center justify-between bg-[#1E2329] rounded-xl border border-[#2E3440] p-3 cursor-pointer">'
     + '<div class="flex items-center gap-2">'
-    + '<span class="text-[13px] font-semibold text-[#EAECEF]">利润贡献</span>'
+    + '<span class="text-[13px] font-semibold text-[#EAECEF]">7日利润贡献</span>'
     + '<span class="text-[15px] font-bold text-[#F0B90B]">' + nc.totalDisplay + '</span>'
     + '</div>'
     + '<i id="nc-arrow" class="fa-solid fa-chevron-down text-[11px] text-[#848E9C] transition-transform"></i>'
     + '</div>';
   assetsHtml += '<div id="nc-detail" class="hidden bg-[#1E2329] rounded-b-xl border border-t-0 border-[#2E3440] px-3 pb-3">';
   assetsHtml += '<div class="flex items-center gap-2 mb-2">'
-    + '<span class="text-[10px] text-[#848E9C]">周环比</span>'
+    + '<span class="text-[10px] text-[#848E9C]">vs 8周均</span>'
     + '<span class="text-[12px] font-semibold" style="color:' + ncWowColor + '">' + nc.wowDisplay + '</span>'
     + '</div>';
   ncItems.forEach(function(item) {
