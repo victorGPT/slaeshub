@@ -96,9 +96,9 @@ def test_trend_confidence_values(data):
 # --- Detail fields ---
 
 def test_deposit_dist_keys(data):
-    required = {"savings", "futuresMargin", "spotWallet", "card", "cloud",
-                "savingsDisplay", "futuresMarginDisplay", "spotWalletDisplay",
-                "cardDisplay", "cloudDisplay"}
+    required = {"futures", "leverage", "savings", "card", "cloud", "mini",
+                "futuresDisplay", "leverageDisplay", "savingsDisplay",
+                "cardDisplay", "cloudDisplay", "miniDisplay"}
     for c in data["clients"]:
         assert "depositDist" in c
         assert required.issubset(c["depositDist"].keys())

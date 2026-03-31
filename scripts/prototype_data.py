@@ -288,19 +288,21 @@ def build_mock_data(rows):
         # Weekly values for detail page
         weeks = [float(row[f"w{i}"]) for i in range(1, 9)]
 
-        # Deposit distribution
+        # Deposit distribution (6 business modules)
         deposit_dist = {
+            "futures": float(row["dd_futures"]),
+            "leverage": float(row["dd_leverage"]),
             "savings": float(row["dd_savings"]),
-            "futuresMargin": float(row["dd_futures_margin"]),
-            "spotWallet": float(row["dd_spot_wallet"]),
             "card": float(row["dd_card"]),
             "cloud": float(row["dd_cloud"]),
+            "mini": float(row["dd_mini"]),
         }
+        deposit_dist["futuresDisplay"] = _fmt_deposit(deposit_dist["futures"])
+        deposit_dist["leverageDisplay"] = _fmt_deposit(deposit_dist["leverage"])
         deposit_dist["savingsDisplay"] = _fmt_deposit(deposit_dist["savings"])
-        deposit_dist["futuresMarginDisplay"] = _fmt_deposit(deposit_dist["futuresMargin"])
-        deposit_dist["spotWalletDisplay"] = _fmt_deposit(deposit_dist["spotWallet"])
         deposit_dist["cardDisplay"] = _fmt_deposit(deposit_dist["card"])
         deposit_dist["cloudDisplay"] = _fmt_deposit(deposit_dist["cloud"])
+        deposit_dist["miniDisplay"] = _fmt_deposit(deposit_dist["mini"])
 
         # Net contribution
         nc_total = float(row["nc_total"])

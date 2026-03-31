@@ -351,13 +351,14 @@
 
   // Module 6: Deposit Distribution
   var dd = c.depositDist;
-  var ddTotal = dd.savings + dd.futuresMargin + dd.spotWallet + dd.card + dd.cloud;
+  var ddTotal = dd.futures + dd.leverage + dd.savings + dd.card + dd.cloud + dd.mini;
   var ddItems = [
+    { name: '双仓合约', value: dd.futures, display: dd.futuresDisplay },
+    { name: '超级杠杆', value: dd.leverage, display: dd.leverageDisplay },
     { name: '理财', value: dd.savings, display: dd.savingsDisplay },
-    { name: '合约保证金', value: dd.futuresMargin, display: dd.futuresMarginDisplay },
-    { name: '现货钱包', value: dd.spotWallet, display: dd.spotWalletDisplay },
     { name: '金融卡', value: dd.card, display: dd.cardDisplay },
-    { name: '云算力', value: dd.cloud, display: dd.cloudDisplay }
+    { name: '云算力', value: dd.cloud, display: dd.cloudDisplay },
+    { name: 'Mini合约', value: dd.mini, display: dd.miniDisplay }
   ].sort(function(a, b) { return b.value - a.value; });
   ddItems.forEach(function(item) {
     item.pct = ddTotal > 0 ? Math.round(item.value / ddTotal * 100) : 0;

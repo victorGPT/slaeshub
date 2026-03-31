@@ -41,8 +41,8 @@ FIELDS = [
     "churn_score","growth_score","status",
     "reason_tag","suggested_action",
     "has_futures","has_leverage","has_savings","has_card","has_cloud","has_mini",
-    # Deposit distribution
-    "dd_savings","dd_futures_margin","dd_spot_wallet","dd_card","dd_cloud",
+    # Deposit distribution (6 business modules)
+    "dd_futures","dd_leverage","dd_savings","dd_card","dd_cloud","dd_mini",
     # Net contribution
     "nc_total","nc_futures","nc_leverage","nc_mini","nc_card","nc_cloud",
     "nc_savings_interest","nc_rebate","nc_wow",
@@ -54,17 +54,24 @@ FIELDS = [
 ]
 
 
-def _deposit_distribution(f_mean):
-    """Distribute total deposits across business lines."""
-    weights = {
-        'savings': random.uniform(0, 0.8),
-        'futures_margin': random.uniform(0, 0.4),
-        'spot_wallet': random.uniform(0, 0.3),
-        'card': random.uniform(0, 0.1),
-        'cloud': random.uniform(0, 0.05),
-    }
+def _deposit_distribution(f_mean, biz_flags):
+    """Distribute total deposits across 6 business modules.
+
+    Only modules the client participates in (biz_flags) get non-zero allocation.
+    Keys: futures, leverage, savings, card, cloud, mini.
+    """
+    modules = ['futures', 'leverage', 'savings', 'card', 'cloud', 'mini']
+    weights = {}
+    for m in modules:
+        if biz_flags.get(f"has_{m}", False):
+            weights[m] = random.uniform(0.01, 1.0)
+        else:
+            weights[m] = 0.0
     total_w = sum(weights.values())
-    return {k: f_mean * v / total_w for k, v in weights.items()}
+    if total_w == 0:
+        # Client has no biz lines; spread evenly as fallback
+        return {m: f_mean / len(modules) for m in modules}
+    return {m: f_mean * w / total_w for m, w in weights.items()}
 
 
 def _net_contribution(f_mean):
@@ -200,7 +207,7 @@ def generate():
         biz = {f"has_{line}": random.random() < prob for line in BIZ_LINES}
 
         # New data fields
-        dd = _deposit_distribution(f_mean)
+        dd = _deposit_distribution(f_mean, biz)
         nc = _net_contribution(f_mean)
         pnl = _client_pnl()
         wf = _welfare_fund(f_mean)
@@ -216,12 +223,13 @@ def generate():
             "platform_trend_rate": platform_trend_rate,
             "adjusted_trend_rate": adjusted,
             **biz,
-            # Deposit distribution (dd_ prefix)
+            # Deposit distribution (dd_ prefix, 6 business modules)
+            "dd_futures": dd["futures"],
+            "dd_leverage": dd["leverage"],
             "dd_savings": dd["savings"],
-            "dd_futures_margin": dd["futures_margin"],
-            "dd_spot_wallet": dd["spot_wallet"],
             "dd_card": dd["card"],
             "dd_cloud": dd["cloud"],
+            "dd_mini": dd["mini"],
             # Net contribution
             **nc,
             # Client P&L
