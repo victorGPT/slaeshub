@@ -462,8 +462,8 @@
   var avgInflowPerWeek = Math.round(baselineInflow / baselineWeeks.length);
   var avgOutflowPerWeek = Math.round(baselineOutflow / baselineWeeks.length);
   var avgNetPerWeek = Math.round(baselineNetFlow / baselineWeeks.length);
-  var netFlowLabel = avgNetPerWeek >= 0 ? '净流入' : '净流出';
   var netFlowColor = avgNetPerWeek >= 0 ? '#0ECB81' : '#F6465D';
+  var netFlowSign = avgNetPerWeek >= 0 ? '+' : '-';
 
   // This week's net flow vs 8w avg net flow
   var thisWeekNet = thisWeekFlow.inflow - thisWeekFlow.outflow;
@@ -476,7 +476,7 @@
     + '<div class="flex items-start justify-between mb-3">'
     + '<div><div class="text-[13px] font-semibold text-[#EAECEF]">资沉流动</div></div>'
     + '<div class="text-right">'
-    + '<div class="text-[16px] font-bold tabular-nums" style="color:' + netFlowColor + '">' + netFlowLabel + ' $' + fmtFlowAmt(Math.abs(avgNetPerWeek)) + '/周</div>'
+    + '<div class="text-[16px] font-bold tabular-nums" style="color:' + netFlowColor + '">' + netFlowSign + '$' + fmtFlowAmt(Math.abs(avgNetPerWeek)) + '/周</div>'
     + '<div class="text-[10px] mt-0.5" style="color:' + flowChgColor + '">' + flowChgChar + ' ' + flowChgSign + flowChgPct.toFixed(1) + '%</div>'
     + '</div>'
     + '</div>'
