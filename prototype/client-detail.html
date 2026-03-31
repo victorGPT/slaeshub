@@ -382,26 +382,7 @@
   });
   assetsHtml += '</div></div>';
 
-  // Module 7: Business Lines
-  var allBizLines = ['双仓合约', '超级杠杆', 'Mini合约', '理财', '金融卡', '云算力'];
-  var activeBiz = {};
-  (c.bizLines || []).forEach(function(b) { activeBiz[b] = true; });
-
-  assetsHtml += '<div class="mx-4 mt-3">'
-    + '<div class="text-[13px] font-semibold text-[#EAECEF] mb-2">业务参与 <span class="text-[11px] text-[#848E9C] font-normal">已参与 ' + (c.bizCount || c.bizLines.length) + ' 条业务线</span></div>'
-    + '<div class="bg-[#1E2329] rounded-xl border border-[#2E3440] p-3 space-y-2">';
-  allBizLines.forEach(function(biz) {
-    var isActive = activeBiz[biz];
-    assetsHtml += '<div class="flex items-center justify-between">'
-      + '<span class="text-[12px] ' + (isActive ? 'text-[#EAECEF]' : 'text-[#474D57]') + '">' + biz + '</span>';
-    if (isActive) {
-      assetsHtml += '<i class="fa-solid fa-circle-check text-[12px] text-[#0ECB81]"></i>';
-    } else {
-      assetsHtml += '<span class="text-[10px] text-[#474D57] px-1.5 py-0.5 rounded bg-[rgba(71,77,87,0.2)]">未参与</span>';
-    }
-    assetsHtml += '</div>';
-  });
-  assetsHtml += '</div></div>';
+  // Module 7 (业务参与) removed — merged into 资金分布 above
 
   // Module 8: Asset Flow Chart (directly expanded)
   var maxFlow = Math.max.apply(null, flowWeeks.map(function(w) { return Math.max(w.inflow, w.outflow); }).concat([1]));
