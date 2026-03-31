@@ -405,11 +405,16 @@
     item.pct = ddTotal > 0 ? Math.round(item.value / ddTotal * 100) : 0;
   });
 
-  assetsHtml += '<div class="mx-4 mt-3 bg-[#1E2329] rounded-xl border border-[#2E3440] p-3">'
-    + '<div class="flex items-center gap-2 mb-3">'
+  // 资金分布 (collapsible, default OPEN)
+  assetsHtml += '<div class="mx-4 mt-3">'
+    + '<div id="dist-toggle" class="flex items-center justify-between bg-[#1E2329] rounded-xl border border-[#2E3440] p-3 cursor-pointer" style="border-radius:12px 12px 0 0">'
+    + '<div class="flex items-center gap-2">'
     + '<span class="text-[13px] font-semibold text-[#EAECEF]">资金分布</span>'
     + '<span class="text-[16px] font-bold text-[#F0B90B]">' + c.depositDisplay + '</span>'
-    + '</div>';
+    + '</div>'
+    + '<i id="dist-arrow" class="fa-solid fa-chevron-up text-[10px] text-[#474D57]"></i>'
+    + '</div>'
+    + '<div id="dist-body" class="bg-[#1E2329] rounded-b-xl border border-t-0 border-[#2E3440] px-3 pb-3">';
   ddItems.forEach(function(item, idx) {
     var barColor = idx < 2 ? '#F0B90B' : '#4DA6FF';
     assetsHtml += '<div class="mb-2 last:mb-0">'
@@ -422,7 +427,7 @@
       + '</div>'
       + '</div>';
   });
-  assetsHtml += '</div>';
+  assetsHtml += '</div></div>';
 
   // Module 7 (业务参与) removed — merged into 资金分布 above
 
@@ -445,8 +450,17 @@
   var yTop = maxFlow;
   var yMid = Math.round(maxFlow / 2);
 
-  assetsHtml += '<div class="mx-4 mt-3 bg-[#1E2329] rounded-xl border border-[#2E3440] p-3">'
-    + '<div class="text-[13px] font-semibold text-[#EAECEF] mb-2">资沉流动</div>';
+  // 资沉流动 (collapsible, default CLOSED)
+  assetsHtml += '<div class="mx-4 mt-3">'
+    + '<div id="flow-toggle" class="flex items-center justify-between bg-[#1E2329] rounded-xl border border-[#2E3440] p-3 cursor-pointer">'
+    + '<div class="flex items-center gap-2">'
+    + '<span class="text-[13px] font-semibold text-[#EAECEF]">资沉流动</span>'
+    + '<span class="text-[11px] text-[#0ECB81]">入 $' + fmtFlowAmt(avgInflow) + '/周</span>'
+    + '<span class="text-[11px] text-[#F6465D]">出 $' + fmtFlowAmt(avgOutflow) + '/周</span>'
+    + '</div>'
+    + '<i id="flow-arrow" class="fa-solid fa-chevron-down text-[10px] text-[#474D57]"></i>'
+    + '</div>'
+    + '<div id="flow-body" class="hidden bg-[#1E2329] rounded-b-xl border border-t-0 border-[#2E3440] p-3">';
 
   // Summary row: baseline per-week averages (excluding this week)
   var baselineInflow = baselineWeeks.reduce(function(s, w) { return s + w.inflow; }, 0);
@@ -522,7 +536,7 @@
     + '<div class="flex items-center gap-1"><span class="w-2 h-2 rounded-sm bg-[#F6465D]"></span><span class="text-[10px] text-[#848E9C]">流出</span></div>'
     + '</div>';
 
-  assetsHtml += '</div>';
+  assetsHtml += '</div></div>';
 
   // Net Contribution (collapsible)
   var nc = c.netContribution;
@@ -678,6 +692,46 @@
         pnlToggle.classList.add('rounded-xl');
         pnlToggle.classList.remove('rounded-t-xl');
         pnlArrow.style.transform = '';
+      }
+    });
+  }
+
+  // === INTERACTIVE: Dist toggle (default OPEN) ===
+  var distToggle = document.getElementById('dist-toggle');
+  var distBody = document.getElementById('dist-body');
+  var distArrow = document.getElementById('dist-arrow');
+  if (distToggle && distBody) {
+    distToggle.addEventListener('click', function() {
+      var isHidden = distBody.classList.contains('hidden');
+      if (isHidden) {
+        distBody.classList.remove('hidden');
+        distToggle.style.borderRadius = '12px 12px 0 0';
+        distArrow.style.transform = '';
+      } else {
+        distBody.classList.add('hidden');
+        distToggle.style.borderRadius = '12px';
+        distArrow.style.transform = 'rotate(180deg)';
+      }
+    });
+  }
+
+  // === INTERACTIVE: Flow toggle (default CLOSED) ===
+  var flowToggle = document.getElementById('flow-toggle');
+  var flowBody = document.getElementById('flow-body');
+  var flowArrow = document.getElementById('flow-arrow');
+  if (flowToggle && flowBody) {
+    flowToggle.addEventListener('click', function() {
+      var isHidden = flowBody.classList.contains('hidden');
+      if (isHidden) {
+        flowBody.classList.remove('hidden');
+        flowToggle.classList.remove('rounded-xl');
+        flowToggle.classList.add('rounded-t-xl');
+        flowArrow.style.transform = 'rotate(180deg)';
+      } else {
+        flowBody.classList.add('hidden');
+        flowToggle.classList.add('rounded-xl');
+        flowToggle.classList.remove('rounded-t-xl');
+        flowArrow.style.transform = '';
       }
     });
   }
