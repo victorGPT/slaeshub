@@ -14,6 +14,16 @@ REQUIRED_FIELDS = [
     "churn_score","growth_score","status",
     "reason_tag","suggested_action",
     "has_futures","has_leverage","has_savings","has_card","has_cloud","has_mini",
+    # Deposit distribution
+    "dd_savings","dd_futures_margin","dd_spot_wallet","dd_card","dd_cloud",
+    # Net contribution
+    "nc_total","nc_futures","nc_leverage","nc_mini","nc_card","nc_cloud",
+    "nc_savings_interest","nc_rebate","nc_wow",
+    # Client P&L
+    "pnl_7d_total","pnl_7d_futures","pnl_7d_leverage","pnl_7d_mini","pnl_7d_spot",
+    "pnl_8w_weekly_avg",
+    # Welfare fund
+    "welfare_budget","welfare_sent","welfare_activated","welfare_remaining",
 ]
 
 
@@ -99,3 +109,59 @@ def test_reason_and_action_not_empty():
     for row in _load():
         assert row["reason_tag"].strip()
         assert row["suggested_action"].strip()
+
+
+def test_deposit_distribution_sums_to_f_mean():
+    for row in _load():
+        f_mean = float(row["f_mean"])
+        dd_sum = sum(float(row[k]) for k in [
+            "dd_savings","dd_futures_margin","dd_spot_wallet","dd_card","dd_cloud"])
+        assert abs(dd_sum - f_mean) < 1.0, f"DD sum {dd_sum} != f_mean {f_mean}"
+
+
+def test_deposit_distribution_non_negative():
+    for row in _load():
+        for k in ["dd_savings","dd_futures_margin","dd_spot_wallet","dd_card","dd_cloud"]:
+            assert float(row[k]) >= 0
+
+
+def test_net_contribution_total_equals_sum():
+    for row in _load():
+        parts = sum(float(row[k]) for k in [
+            "nc_futures","nc_leverage","nc_mini","nc_card","nc_cloud",
+            "nc_savings_interest","nc_rebate"])
+        total = float(row["nc_total"])
+        assert abs(total - parts) < 0.1, f"NC total {total} != sum {parts}"
+
+
+def test_net_contribution_cost_modules_negative():
+    for row in _load():
+        assert float(row["nc_savings_interest"]) <= 0
+        assert float(row["nc_rebate"]) <= 0
+
+
+def test_pnl_7d_total_equals_sum():
+    for row in _load():
+        parts = sum(float(row[k]) for k in [
+            "pnl_7d_futures","pnl_7d_leverage","pnl_7d_mini","pnl_7d_spot"])
+        total = float(row["pnl_7d_total"])
+        assert abs(total - parts) < 0.1
+
+
+def test_pnl_spot_is_zero():
+    """Spot P&L is placeholder, must be 0."""
+    for row in _load():
+        assert float(row["pnl_7d_spot"]) == 0
+
+
+def test_welfare_remaining_equals_budget_minus_sent():
+    for row in _load():
+        budget = float(row["welfare_budget"])
+        sent = float(row["welfare_sent"])
+        remaining = float(row["welfare_remaining"])
+        assert abs(remaining - (budget - sent)) < 0.1
+
+
+def test_welfare_activated_leq_sent():
+    for row in _load():
+        assert float(row["welfare_activated"]) <= float(row["welfare_sent"]) + 0.01

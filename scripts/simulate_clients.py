@@ -41,7 +41,85 @@ FIELDS = [
     "churn_score","growth_score","status",
     "reason_tag","suggested_action",
     "has_futures","has_leverage","has_savings","has_card","has_cloud","has_mini",
+    # Deposit distribution
+    "dd_savings","dd_futures_margin","dd_spot_wallet","dd_card","dd_cloud",
+    # Net contribution
+    "nc_total","nc_futures","nc_leverage","nc_mini","nc_card","nc_cloud",
+    "nc_savings_interest","nc_rebate","nc_wow",
+    # Client P&L
+    "pnl_7d_total","pnl_7d_futures","pnl_7d_leverage","pnl_7d_mini","pnl_7d_spot",
+    "pnl_8w_weekly_avg",
+    # Welfare fund
+    "welfare_budget","welfare_sent","welfare_activated","welfare_remaining",
 ]
+
+
+def _deposit_distribution(f_mean):
+    """Distribute total deposits across business lines."""
+    weights = {
+        'savings': random.uniform(0, 0.8),
+        'futures_margin': random.uniform(0, 0.4),
+        'spot_wallet': random.uniform(0, 0.3),
+        'card': random.uniform(0, 0.1),
+        'cloud': random.uniform(0, 0.05),
+    }
+    total_w = sum(weights.values())
+    return {k: f_mean * v / total_w for k, v in weights.items()}
+
+
+def _net_contribution(f_mean):
+    """Generate net contribution breakdown (7 modules)."""
+    base = f_mean * random.uniform(0.001, 0.02)
+    futures = base * random.uniform(0.3, 0.6)
+    leverage = base * random.uniform(0.1, 0.3)
+    mini = base * random.uniform(0.05, 0.15)
+    card = base * random.uniform(0.02, 0.1)
+    cloud = base * random.uniform(0.01, 0.08)
+    savings_interest = -base * random.uniform(0.01, 0.05)
+    rebate = -base * random.uniform(0.005, 0.03)
+    total = futures + leverage + mini + card + cloud + savings_interest + rebate
+    return {
+        'nc_total': total,
+        'nc_futures': futures,
+        'nc_leverage': leverage,
+        'nc_mini': mini,
+        'nc_card': card,
+        'nc_cloud': cloud,
+        'nc_savings_interest': savings_interest,
+        'nc_rebate': rebate,
+        'nc_wow': random.uniform(-0.3, 0.4),
+    }
+
+
+def _client_pnl():
+    """Generate client trading P&L (7-day + 8-week avg)."""
+    pnl_futures_7d = random.uniform(-100000, 80000)
+    pnl_leverage_7d = random.uniform(-50000, 40000)
+    pnl_mini_7d = random.uniform(-20000, 15000)
+    pnl_spot_7d = 0  # placeholder, pending confirmation
+    total_7d = pnl_futures_7d + pnl_leverage_7d + pnl_mini_7d + pnl_spot_7d
+    pnl_8w_avg = random.uniform(-30000, 50000)
+    return {
+        'pnl_7d_total': total_7d,
+        'pnl_7d_futures': pnl_futures_7d,
+        'pnl_7d_leverage': pnl_leverage_7d,
+        'pnl_7d_mini': pnl_mini_7d,
+        'pnl_7d_spot': pnl_spot_7d,
+        'pnl_8w_weekly_avg': pnl_8w_avg,
+    }
+
+
+def _welfare_fund(f_mean):
+    """Generate welfare fund data (placeholder)."""
+    budget = f_mean * random.uniform(0.001, 0.005)
+    sent = budget * random.uniform(0.1, 0.6)
+    activated = sent * random.uniform(0.2, 0.8)
+    return {
+        'welfare_budget': budget,
+        'welfare_sent': sent,
+        'welfare_activated': activated,
+        'welfare_remaining': budget - sent,
+    }
 
 
 def _linreg(ys):
@@ -121,6 +199,12 @@ def generate():
         prob = 0.7 if f_mean > 1e7 else (0.4 if f_mean > 1e6 else 0.15)
         biz = {f"has_{line}": random.random() < prob for line in BIZ_LINES}
 
+        # New data fields
+        dd = _deposit_distribution(f_mean)
+        nc = _net_contribution(f_mean)
+        pnl = _client_pnl()
+        wf = _welfare_fund(f_mean)
+
         clients.append({
             "uid": str(random.randint(10_000_000, 99_999_999)),
             "name": random.choice(SURNAMES) + random.choice(GIVEN_NAMES),
@@ -132,6 +216,18 @@ def generate():
             "platform_trend_rate": platform_trend_rate,
             "adjusted_trend_rate": adjusted,
             **biz,
+            # Deposit distribution (dd_ prefix)
+            "dd_savings": dd["savings"],
+            "dd_futures_margin": dd["futures_margin"],
+            "dd_spot_wallet": dd["spot_wallet"],
+            "dd_card": dd["card"],
+            "dd_cloud": dd["cloud"],
+            # Net contribution
+            **nc,
+            # Client P&L
+            **pnl,
+            # Welfare fund
+            **wf,
         })
 
     return _score(clients)
@@ -186,8 +282,10 @@ def write_csv(clients):
                     row[k] = f"{c[k]:.2f}"
                 elif k in ("churn_score","growth_score"):
                     row[k] = f"{c[k]:.6f}"
-                elif k in ("trend_rate","r_squared","conf","platform_trend_rate","adjusted_trend_rate"):
+                elif k in ("trend_rate","r_squared","conf","platform_trend_rate","adjusted_trend_rate","nc_wow"):
                     row[k] = f"{c[k]:.6f}"
+                elif k.startswith(("dd_","nc_","pnl_","welfare_")):
+                    row[k] = f"{c[k]:.2f}"
                 elif isinstance(c.get(k), bool):
                     row[k] = "1" if c[k] else "0"
                 else:
