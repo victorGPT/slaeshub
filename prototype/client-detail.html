@@ -399,6 +399,19 @@
     + '<div class="flex items-center gap-1"><span class="w-2 h-2 rounded-sm bg-[#F6465D]"></span><span class="text-[10px] text-[#848E9C]">流出</span></div>'
     + '</div>';
 
+  function fmtFlowShort(v) {
+    if (v >= 10000) return Math.round(v / 10000) + '万';
+    if (v >= 1000) return (v / 10000).toFixed(1) + '万';
+    return Math.round(v) + '';
+  }
+
+  // Inflow labels (top)
+  assetsHtml += '<div class="flex items-end justify-center gap-[6px]" style="min-height:16px">';
+  flowWeeks.forEach(function(w) {
+    assetsHtml += '<div style="width:28px" class="text-center text-[9px] text-[#0ECB81]">' + (w.inflow > 0 ? fmtFlowShort(w.inflow) : '') + '</div>';
+  });
+  assetsHtml += '</div>';
+
   // Inflow bars (top)
   assetsHtml += '<div class="flex items-end justify-center gap-[6px]" style="height:' + maxBarH + 'px">';
   flowWeeks.forEach(function(w) {
@@ -415,6 +428,13 @@
   flowWeeks.forEach(function(w) {
     var h = maxFlow > 0 ? Math.round(w.outflow / maxFlow * maxBarH) : 0;
     assetsHtml += '<div style="width:28px;height:' + Math.max(h, 2) + 'px;background:#F6465D;border-radius:0 0 2px 2px"></div>';
+  });
+  assetsHtml += '</div>';
+
+  // Outflow labels (bottom)
+  assetsHtml += '<div class="flex items-start justify-center gap-[6px]" style="min-height:16px">';
+  flowWeeks.forEach(function(w) {
+    assetsHtml += '<div style="width:28px" class="text-center text-[9px] text-[#F6465D]">' + (w.outflow > 0 ? fmtFlowShort(w.outflow) : '') + '</div>';
   });
   assetsHtml += '</div>';
 
