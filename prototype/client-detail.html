@@ -77,7 +77,7 @@
               <span id="client-uid" class="text-[16px] font-bold text-[#EAECEF] tabular-nums tracking-wide"></span>
               <i class="fa-regular fa-copy text-[10px] text-[#474D57]"></i>
             </button>
-            <span id="status-badge" class="text-[10px] px-1.5 py-[1px] rounded flex-shrink-0 font-medium"></span>
+            <!-- status badge removed: no threshold classification without real data -->
           </div>
         </div>
         <span id="from-badge" class="text-[9px] px-1.5 py-[1px] rounded hidden flex-shrink-0"></span>
@@ -235,10 +235,7 @@
     localStorage.setItem(favKey, isFav ? '1' : '0');
     renderFav();
   };
-  var statusEl = document.getElementById('status-badge');
-  statusEl.textContent = c.status;
-  statusEl.style.background = badge.bg;
-  statusEl.style.color = badge.text;
+  // Status badge removed — delta percentage already shows direction
 
   // From badge
   var fromMap = {
