@@ -172,6 +172,46 @@
 
   function esc(s) { return String(s).replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
 
+  // --- Platform averages (across all clients) ---
+  var allClients = D.clients;
+  var platAvg = { depositChg: 0, flowNetChg: 0, profitChg: 0, pnlChg: 0 };
+  var platCounts = { depositChg: 0, flowNetChg: 0, profitChg: 0, pnlChg: 0 };
+
+  allClients.forEach(function(cl) {
+    // Deposit change rate
+    var w = cl.weeks;
+    var thisW = w[w.length - 1];
+    var avg8 = 0;
+    for (var j = 0; j < w.length - 1; j++) avg8 += w[j];
+    avg8 = avg8 / (w.length - 1);
+    if (avg8 > 0) { platAvg.depositChg += (thisW - avg8) / avg8; platCounts.depositChg++; }
+
+    // Profit contribution change rate
+    var nc = cl.netContribution;
+    if (nc && nc.total !== undefined) {
+      // Simplified: use wow as proxy for change rate
+      if (nc.wow !== undefined) { platAvg.profitChg += nc.wow; platCounts.profitChg++; }
+    }
+
+    // PnL change rate
+    var pnl = cl.clientPnl;
+    if (pnl && pnl.weeklyAvg8w && Math.abs(pnl.weeklyAvg8w.value) > 0) {
+      var pnlRate = (pnl.total7d.value - pnl.weeklyAvg8w.value) / Math.abs(pnl.weeklyAvg8w.value);
+      platAvg.pnlChg += pnlRate;
+      platCounts.pnlChg++;
+    }
+  });
+
+  // Compute averages
+  platAvg.depositChg = platCounts.depositChg > 0 ? (platAvg.depositChg / platCounts.depositChg * 100) : 0;
+  platAvg.profitChg = platCounts.profitChg > 0 ? (platAvg.profitChg / platCounts.profitChg * 100) : 0;
+  platAvg.pnlChg = platCounts.pnlChg > 0 ? (platAvg.pnlChg / platCounts.pnlChg * 100) : 0;
+
+  function fmtAvg(v) {
+    var s = v >= 0 ? '+' : '';
+    return s + v.toFixed(1) + '%';
+  }
+
   // --- Seeded random ---
   function seededRandom(seed) {
     var x = Math.sin(seed) * 10000;
@@ -415,7 +455,7 @@
     + '<div><div class="text-[13px] font-semibold text-[#EAECEF]">资金分布</div></div>'
     + '<div class="text-right">'
     + '<div class="text-[16px] font-bold tabular-nums" style="color:#F0B90B">' + fmtFlow(c.fMean) + '</div>'
-    + '<div class="text-[10px] mt-0.5" style="color:' + distChgColor + '">' + distChgChar + ' ' + distChgSign + deltaPct.toFixed(1) + '%</div>'
+    + '<div class="text-[10px] mt-0.5"><span style="color:' + distChgColor + '">' + distChgChar + ' ' + distChgSign + deltaPct.toFixed(1) + '%</span> <span class="text-[#474D57]">| 均 ' + fmtAvg(platAvg.depositChg) + '</span></div>'
     + '</div>'
     + '</div>'
     + '<div class="h-[1px] bg-[#2E3440] mb-3"></div>';
@@ -477,7 +517,7 @@
     + '<div><div class="text-[13px] font-semibold text-[#EAECEF]">资沉流动</div></div>'
     + '<div class="text-right">'
     + '<div class="text-[16px] font-bold tabular-nums" style="color:' + netFlowColor + '">' + netFlowSign + fmtFlow(Math.abs(avgNetPerWeek)) + '/周</div>'
-    + '<div class="text-[10px] mt-0.5" style="color:' + flowChgColor + '">' + flowChgChar + ' ' + flowChgSign + flowChgPct.toFixed(1) + '%</div>'
+    + '<div class="text-[10px] mt-0.5"><span style="color:' + flowChgColor + '">' + flowChgChar + ' ' + flowChgSign + flowChgPct.toFixed(1) + '%</span> <span class="text-[#474D57]">| 均 ' + fmtAvg(platAvg.depositChg) + '</span></div>'
     + '</div>'
     + '</div>'
     + '<div class="h-[1px] bg-[#2E3440] mb-3"></div>';
@@ -562,7 +602,7 @@
     + '<div><div class="text-[13px] font-semibold text-[#EAECEF]">7日利润贡献</div></div>'
     + '<div class="text-right">'
     + '<div class="text-[16px] font-bold tabular-nums" style="color:' + (nc.total >= 0 ? '#0ECB81' : '#F6465D') + '">' + (nc.total >= 0 ? '+' : '-') + fmtFlow(nc.total) + '</div>'
-    + '<div class="text-[10px] mt-0.5" style="color:' + ncWowColor + '">' + ncWowChar + ' ' + nc.wowDisplay + '</div>'
+    + '<div class="text-[10px] mt-0.5"><span style="color:' + ncWowColor + '">' + ncWowChar + ' ' + nc.wowDisplay + '</span> <span class="text-[#474D57]">| 均 ' + fmtAvg(platAvg.profitChg) + '</span></div>'
     + '</div>'
     + '</div>'
     + '<div class="h-[1px] bg-[#2E3440] mb-3"></div>';
@@ -604,7 +644,7 @@
     + '<div><div class="text-[13px] font-semibold text-[#EAECEF]">7日交易盈亏</div></div>'
     + '<div class="text-right">'
     + '<div class="text-[16px] font-bold tabular-nums" style="color:' + pnl.total7d.color + '">' + (pnl.total7d.value >= 0 ? '+' : '-') + fmtFlow(pnl.total7d.value) + '</div>'
-    + '<div class="text-[10px] mt-0.5" style="color:' + pnlChgColor + '">' + pnlChgChar + ' ' + pnlChgSign + pnlChgPct.toFixed(1) + '%</div>'
+    + '<div class="text-[10px] mt-0.5"><span style="color:' + pnlChgColor + '">' + pnlChgChar + ' ' + pnlChgSign + pnlChgPct.toFixed(1) + '%</span> <span class="text-[#474D57]">| 均 ' + fmtAvg(platAvg.pnlChg) + '</span></div>'
     + '</div>'
     + '</div>'
     + '<div class="h-[1px] bg-[#2E3440] mb-3"></div>';
