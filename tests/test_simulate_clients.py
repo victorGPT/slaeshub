@@ -1,4 +1,4 @@
-"""Tests for 8-week regression mock data generator (v3)."""
+"""Tests for 9-week regression mock data generator (v3)."""
 import csv
 import os
 import subprocess
@@ -8,7 +8,7 @@ CSV_PATH = "data/clients_simulation_v2.csv"
 
 REQUIRED_FIELDS = [
     "uid","name",
-    "w1","w2","w3","w4","w5","w6","w7","w8",
+    "w1","w2","w3","w4","w5","w6","w7","w8","w9",
     "f_mean","trend_rate","r_squared","conf",
     "platform_trend_rate","adjusted_trend_rate",
     "churn_score","growth_score","status",
@@ -55,9 +55,9 @@ def test_f_mean_positive():
         assert float(row["f_mean"]) > 0
 
 
-def test_8_weeks_exist():
+def test_9_weeks_exist():
     for row in _load():
-        for i in range(1, 9):
+        for i in range(1, 10):
             assert float(row[f"w{i}"]) > 0
 
 

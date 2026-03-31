@@ -188,8 +188,9 @@
   }
 
   var thisWeekFlow = flowWeeks[flowWeeks.length - 1];
-  var avgInflow = Math.round(flowWeeks.reduce(function(s, w) { return s + w.inflow; }, 0) / flowWeeks.length);
-  var avgOutflow = Math.round(flowWeeks.reduce(function(s, w) { return s + w.outflow; }, 0) / flowWeeks.length);
+  var baselineWeeks = flowWeeks.slice(0, -1); // all except last (this week)
+  var avgInflow = Math.round(baselineWeeks.reduce(function(s, w) { return s + w.inflow; }, 0) / baselineWeeks.length);
+  var avgOutflow = Math.round(baselineWeeks.reduce(function(s, w) { return s + w.outflow; }, 0) / baselineWeeks.length);
 
   function fmtFlow(v) {
     if (v >= 10000) return '$' + (v / 10000).toFixed(1) + '万';
@@ -225,7 +226,7 @@
 
   // Module 2: Deposit core
   document.getElementById('deposit-hero').textContent = c.thisWeekDisplay || '-';
-  document.getElementById('deposit-vs').textContent = 'vs 8周均 ' + c.depositDisplay;
+  document.getElementById('deposit-vs').textContent = 'vs 前8周均 ' + c.depositDisplay;
   document.getElementById('flow-summary').innerHTML =
     '<span class="text-[11px] text-[#848E9C]">本周</span>'
     + '<span class="text-[12px] font-semibold text-[#0ECB81]">流入 ' + fmtFlow(thisWeekFlow.inflow) + '</span>'
@@ -408,13 +409,19 @@
     + '<div class="text-[13px] font-semibold text-[#EAECEF] mb-2">资沉流动</div>'
     + '<div class="bg-[#1E2329] rounded-xl border border-[#2E3440] p-3">';
 
-  // Summary row: totals
+  // Summary row: baseline per-week averages (excluding this week)
+  var baselineInflow = baselineWeeks.reduce(function(s, w) { return s + w.inflow; }, 0);
+  var baselineOutflow = baselineWeeks.reduce(function(s, w) { return s + w.outflow; }, 0);
+  var baselineNetFlow = baselineInflow - baselineOutflow;
+  var avgInflowPerWeek = Math.round(baselineInflow / baselineWeeks.length);
+  var avgOutflowPerWeek = Math.round(baselineOutflow / baselineWeeks.length);
+  var avgNetPerWeek = Math.round(baselineNetFlow / baselineWeeks.length);
   assetsHtml += '<div class="flex items-center gap-3 text-[11px] mb-3">'
-    + '<span class="text-[#848E9C]">近' + flowWeeks.length + '周</span>'
-    + '<span class="text-[#0ECB81]">流入 $' + fmtFlowAmt(totalInflow) + '</span>'
-    + '<span class="text-[#F6465D]">流出 $' + fmtFlowAmt(totalOutflow) + '</span>'
-    + '<span style="color:' + (netFlow >= 0 ? '#0ECB81' : '#F6465D') + '">'
-    + (netFlow >= 0 ? '净流入' : '净流出') + ' $' + fmtFlowAmt(Math.abs(netFlow))
+    + '<span class="text-[#848E9C]">前' + baselineWeeks.length + '周均</span>'
+    + '<span class="text-[#0ECB81]">流入 $' + fmtFlowAmt(avgInflowPerWeek) + '/周</span>'
+    + '<span class="text-[#F6465D]">流出 $' + fmtFlowAmt(avgOutflowPerWeek) + '/周</span>'
+    + '<span style="color:' + (avgNetPerWeek >= 0 ? '#0ECB81' : '#F6465D') + '">'
+    + (avgNetPerWeek >= 0 ? '净流入' : '净流出') + ' $' + fmtFlowAmt(Math.abs(avgNetPerWeek)) + '/周'
     + '</span>'
     + '</div>';
 

@@ -1,4 +1,4 @@
-"""Tests for 8-week regression data contract (v4 - events vs activities)."""
+"""Tests for 9-week regression data contract (v4 - events vs activities)."""
 import csv
 import pytest
 import sys, os
@@ -47,7 +47,7 @@ def test_card_fields(data):
 
 def test_weeks_array(data):
     for c in data["clients"]:
-        assert len(c["weeks"]) == 8
+        assert len(c["weeks"]) == 9
         assert all(w > 0 for w in c["weeks"])
 
 

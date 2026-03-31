@@ -1,7 +1,7 @@
 """
 Sales Hub MVP - Mock Client Data Generator (v3)
 
-8-week linear regression trend + log-compressed scoring.
+9-week linear regression trend + log-compressed scoring.
 Source of truth: docs/product-concept-v2.md S4-5
 """
 import csv
@@ -35,7 +35,7 @@ BIZ_LINES = ["futures","leverage","savings","card","cloud","mini"]
 
 FIELDS = [
     "uid","name",
-    "w1","w2","w3","w4","w5","w6","w7","w8",
+    "w1","w2","w3","w4","w5","w6","w7","w8","w9",
     "f_mean","trend_rate","r_squared","conf",
     "platform_trend_rate","adjusted_trend_rate",
     "churn_score","growth_score","status",
@@ -150,9 +150,9 @@ def _linreg(ys):
 
 
 def _generate_weekly_series(base_level, trend_type, noise_std=0.05):
-    """Generate 8 weekly deposit values with a trend pattern."""
+    """Generate 9 weekly deposit values with a trend pattern."""
     weeks = []
-    for t in range(8):
+    for t in range(9):
         if trend_type == "churn":
             drift = -random.uniform(0.01, 0.06) * (t + 1)
         elif trend_type == "growth":
@@ -179,7 +179,7 @@ def generate():
 
     platform_weeks = _generate_weekly_series(platform_base, platform_type, noise_std=0.02)
     platform_b, platform_r2 = _linreg(platform_weeks)
-    platform_mean = sum(platform_weeks) / 8
+    platform_mean = sum(platform_weeks) / len(platform_weeks)
     platform_trend_rate = platform_b / platform_mean if platform_mean > 0 else 0
 
     clients = []
@@ -197,7 +197,7 @@ def generate():
 
         weeks = _generate_weekly_series(base, trend_type)
         b, r2 = _linreg(weeks)
-        f_mean = sum(weeks) / 8
+        f_mean = sum(weeks) / len(weeks)
         trend_rate = b / f_mean if f_mean > 0 else 0
         adjusted = trend_rate - platform_trend_rate
         conf = 0.5 + 0.5 * r2
@@ -283,7 +283,7 @@ def write_csv(clients):
         for c in clients:
             row = {}
             for k in FIELDS:
-                if k in ("w1","w2","w3","w4","w5","w6","w7","w8"):
+                if k in ("w1","w2","w3","w4","w5","w6","w7","w8","w9"):
                     idx = int(k[1]) - 1
                     row[k] = f"{c['weeks'][idx]:.2f}"
                 elif k == "f_mean":

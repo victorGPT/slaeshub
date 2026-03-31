@@ -1,7 +1,7 @@
 """
 Sales Hub MVP - Mock Data Contract Builder (v4)
 
-8-week regression model + deposit distribution, net contribution,
+9-week regression model + deposit distribution, net contribution,
 client P&L, events, and welfare fund.
 Source: docs/product-concept-v2.md
 """
@@ -286,7 +286,7 @@ def build_mock_data(rows):
         biz = _biz_summary(row)
 
         # Weekly values for detail page
-        weeks = [float(row[f"w{i}"]) for i in range(1, 9)]
+        weeks = [float(row[f"w{i}"]) for i in range(1, 10)]
 
         # Deposit distribution (6 business modules)
         deposit_dist = {
