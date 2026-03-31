@@ -407,10 +407,11 @@
 
   // 资金分布
   assetsHtml += '<div class="mx-4 mt-3 bg-[#1E2329] rounded-xl border border-[#2E3440] p-3">'
-    + '<div class="flex items-center justify-between mb-3">'
-    + '<span class="text-[13px] font-semibold text-[#EAECEF]">资金分布</span>'
-    + '<span class="text-[14px] font-bold text-[#F0B90B]">' + c.depositDisplay + '</span>'
-    + '</div>';
+    + '<div class="flex items-start justify-between mb-3">'
+    + '<div><div class="text-[13px] font-semibold text-[#EAECEF]">资金分布</div></div>'
+    + '<div class="text-right"><div class="text-[16px] font-bold tabular-nums" style="color:#F0B90B">' + c.depositDisplay + '</div></div>'
+    + '</div>'
+    + '<div class="h-[1px] bg-[#2E3440] mb-3"></div>';
   ddItems.forEach(function(item, idx) {
     var barColor = idx < 2 ? '#F0B90B' : '#4DA6FF';
     assetsHtml += '<div class="mb-2 last:mb-0">'
@@ -447,27 +448,27 @@
   var yMid = Math.round(maxFlow / 2);
 
   // 资沉流动
-  assetsHtml += '<div class="mx-4 mt-3 bg-[#1E2329] rounded-xl border border-[#2E3440] p-3">'
-    + '<div class="flex items-center justify-between mb-3">'
-    + '<span class="text-[13px] font-semibold text-[#EAECEF]">资沉流动</span>'
-    + '<span class="text-[11px]"><span class="text-[#848E9C]">8周均</span> <span class="text-[#0ECB81]">入$' + fmtFlowAmt(avgInflow) + '</span> <span class="text-[#F6465D]">出$' + fmtFlowAmt(avgOutflow) + '</span></span>'
-    + '</div>';
-
-  // Summary row: baseline per-week averages (excluding this week)
+  // Baseline per-week averages (excluding this week)
   var baselineInflow = baselineWeeks.reduce(function(s, w) { return s + w.inflow; }, 0);
   var baselineOutflow = baselineWeeks.reduce(function(s, w) { return s + w.outflow; }, 0);
   var baselineNetFlow = baselineInflow - baselineOutflow;
   var avgInflowPerWeek = Math.round(baselineInflow / baselineWeeks.length);
   var avgOutflowPerWeek = Math.round(baselineOutflow / baselineWeeks.length);
   var avgNetPerWeek = Math.round(baselineNetFlow / baselineWeeks.length);
-  assetsHtml += '<div class="flex items-center gap-3 text-[11px] mb-3">'
-    + '<span class="text-[#848E9C]">8周均</span>'
-    + '<span class="text-[#0ECB81]">流入 $' + fmtFlowAmt(avgInflowPerWeek) + '/周</span>'
-    + '<span class="text-[#F6465D]">流出 $' + fmtFlowAmt(avgOutflowPerWeek) + '/周</span>'
-    + '<span style="color:' + (avgNetPerWeek >= 0 ? '#0ECB81' : '#F6465D') + '">'
-    + (avgNetPerWeek >= 0 ? '净流入' : '净流出') + ' $' + fmtFlowAmt(Math.abs(avgNetPerWeek)) + '/周'
-    + '</span>'
-    + '</div>';
+  var netFlowLabel = avgNetPerWeek >= 0 ? '净流入' : '净流出';
+  var netFlowColor = avgNetPerWeek >= 0 ? '#0ECB81' : '#F6465D';
+
+  assetsHtml += '<div class="mx-4 mt-3 bg-[#1E2329] rounded-xl border border-[#2E3440] p-3">'
+    + '<div class="flex items-start justify-between mb-3">'
+    + '<div>'
+    + '<div class="text-[13px] font-semibold text-[#EAECEF]">资沉流动</div>'
+    + '<div class="text-[10px] text-[#474D57] mt-0.5">8周均基线</div>'
+    + '</div>'
+    + '<div class="text-right">'
+    + '<div class="text-[16px] font-bold tabular-nums" style="color:' + netFlowColor + '">' + netFlowLabel + ' $' + fmtFlowAmt(Math.abs(avgNetPerWeek)) + '/周</div>'
+    + '</div>'
+    + '</div>'
+    + '<div class="h-[1px] bg-[#2E3440] mb-3"></div>';
 
   // Chart area with Y-axis
   assetsHtml += '<div class="flex">';
@@ -543,15 +544,16 @@
   ];
   var ncMax = Math.max.apply(null, ncItems.map(function(i) { return Math.abs(i.value); }));
 
+  var ncWowIcon = nc.wow >= 0 ? 'fa-caret-up' : 'fa-caret-down';
   assetsHtml += '<div class="mx-4 mt-3 bg-[#1E2329] rounded-xl border border-[#2E3440] p-3">'
-    + '<div class="flex items-center justify-between mb-3">'
-    + '<span class="text-[13px] font-semibold text-[#EAECEF]">7日利润贡献</span>'
-    + '<span class="text-[14px] font-bold text-[#F0B90B]">' + nc.totalDisplay + '</span>'
-    + '</div>';
-  assetsHtml += '<div class="flex items-center gap-2 mb-2">'
-    + '<span class="text-[10px] text-[#848E9C]">vs 8周均</span>'
-    + '<span class="text-[12px] font-semibold" style="color:' + ncWowColor + '">' + nc.wowDisplay + '</span>'
-    + '</div>';
+    + '<div class="flex items-start justify-between mb-3">'
+    + '<div><div class="text-[13px] font-semibold text-[#EAECEF]">7日利润贡献</div></div>'
+    + '<div class="text-right">'
+    + '<div class="text-[16px] font-bold tabular-nums" style="color:#F0B90B">' + nc.totalDisplay + '</div>'
+    + '<div class="text-[10px] mt-0.5" style="color:' + ncWowColor + '"><i class="fa-solid ' + ncWowIcon + '"></i> ' + nc.wowDisplay + '</div>'
+    + '</div>'
+    + '</div>'
+    + '<div class="h-[1px] bg-[#2E3440] mb-3"></div>';
   ncItems.forEach(function(item) {
     var color = item.isRevenue ? '#0ECB81' : '#F6465D';
     var sign = item.value >= 0 ? '+' : '';
@@ -578,14 +580,22 @@
   var pnlMax = Math.max.apply(null, pnlItems.map(function(i) { return Math.abs(i.data.value); }).concat([1]));
 
   // 7日交易盈亏
+  var pnlAvgVal = pnl.weeklyAvg8w.value;
+  var pnl7dVal = pnl.total7d.value;
+  var pnlChgPct = Math.abs(pnlAvgVal) > 0 ? ((pnl7dVal - pnlAvgVal) / Math.abs(pnlAvgVal) * 100) : 0;
+  var pnlChgColor = pnlChgPct >= 0 ? '#0ECB81' : '#F6465D';
+  var pnlChgIcon = pnlChgPct >= 0 ? 'fa-caret-up' : 'fa-caret-down';
+  var pnlChgSign = pnlChgPct >= 0 ? '+' : '';
+
   assetsHtml += '<div class="mx-4 mt-3 mb-4 bg-[#1E2329] rounded-xl border border-[#2E3440] p-3">'
-    + '<div class="flex items-center justify-between mb-3">'
-    + '<span class="text-[13px] font-semibold text-[#EAECEF]">7日交易盈亏</span>'
+    + '<div class="flex items-start justify-between mb-3">'
+    + '<div><div class="text-[13px] font-semibold text-[#EAECEF]">7日交易盈亏</div></div>'
     + '<div class="text-right">'
-    + '<span class="text-[14px] font-bold" style="color:' + pnl.total7d.color + '">' + pnl.total7d.display + '</span>'
-    + '<div class="text-[10px] text-[#848E9C]">8周均 <span style="color:' + pnl.weeklyAvg8w.color + '">' + pnl.weeklyAvg8w.display + '</span></div>'
+    + '<div class="text-[16px] font-bold tabular-nums" style="color:' + pnl.total7d.color + '">' + pnl.total7d.display + '</div>'
+    + '<div class="text-[10px] mt-0.5" style="color:' + pnlChgColor + '"><i class="fa-solid ' + pnlChgIcon + '"></i> ' + pnlChgSign + pnlChgPct.toFixed(1) + '%</div>'
     + '</div>'
-    + '</div>';
+    + '</div>'
+    + '<div class="h-[1px] bg-[#2E3440] mb-3"></div>';
   pnlItems.forEach(function(item) {
     var d = item.data;
     var barW = pnlMax > 0 ? Math.round(Math.abs(d.value) / pnlMax * 100) : 0;
