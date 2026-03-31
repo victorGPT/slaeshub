@@ -405,16 +405,12 @@
     item.pct = ddTotal > 0 ? Math.round(item.value / ddTotal * 100) : 0;
   });
 
-  // 资金分布 (collapsible, default OPEN)
-  assetsHtml += '<div class="mx-4 mt-3">'
-    + '<div id="dist-toggle" class="flex items-center justify-between bg-[#1E2329] rounded-xl border border-[#2E3440] p-3 cursor-pointer" style="border-radius:12px 12px 0 0">'
-    + '<div class="flex items-center gap-2">'
+  // 资金分布
+  assetsHtml += '<div class="mx-4 mt-3 bg-[#1E2329] rounded-xl border border-[#2E3440] p-3">'
+    + '<div class="flex items-center justify-between mb-3">'
     + '<span class="text-[13px] font-semibold text-[#EAECEF]">资金分布</span>'
-    + '<span class="text-[16px] font-bold text-[#F0B90B]">' + c.depositDisplay + '</span>'
-    + '</div>'
-    + '<i id="dist-arrow" class="fa-solid fa-chevron-up text-[10px] text-[#474D57]"></i>'
-    + '</div>'
-    + '<div id="dist-body" class="bg-[#1E2329] rounded-b-xl border border-t-0 border-[#2E3440] px-3 pb-3">';
+    + '<span class="text-[14px] font-bold text-[#F0B90B]">' + c.depositDisplay + '</span>'
+    + '</div>';
   ddItems.forEach(function(item, idx) {
     var barColor = idx < 2 ? '#F0B90B' : '#4DA6FF';
     assetsHtml += '<div class="mb-2 last:mb-0">'
@@ -427,7 +423,7 @@
       + '</div>'
       + '</div>';
   });
-  assetsHtml += '</div></div>';
+  assetsHtml += '</div>';
 
   // Module 7 (业务参与) removed — merged into 资金分布 above
 
@@ -450,17 +446,12 @@
   var yTop = maxFlow;
   var yMid = Math.round(maxFlow / 2);
 
-  // 资沉流动 (collapsible, default CLOSED)
-  assetsHtml += '<div class="mx-4 mt-3">'
-    + '<div id="flow-toggle" class="flex items-center justify-between bg-[#1E2329] rounded-xl border border-[#2E3440] p-3 cursor-pointer">'
-    + '<div class="flex items-center gap-2">'
+  // 资沉流动
+  assetsHtml += '<div class="mx-4 mt-3 bg-[#1E2329] rounded-xl border border-[#2E3440] p-3">'
+    + '<div class="flex items-center justify-between mb-3">'
     + '<span class="text-[13px] font-semibold text-[#EAECEF]">资沉流动</span>'
-    + '<span class="text-[11px] text-[#0ECB81]">入 $' + fmtFlowAmt(avgInflow) + '/周</span>'
-    + '<span class="text-[11px] text-[#F6465D]">出 $' + fmtFlowAmt(avgOutflow) + '/周</span>'
-    + '</div>'
-    + '<i id="flow-arrow" class="fa-solid fa-chevron-down text-[10px] text-[#474D57]"></i>'
-    + '</div>'
-    + '<div id="flow-body" class="hidden bg-[#1E2329] rounded-b-xl border border-t-0 border-[#2E3440] p-3">';
+    + '<span class="text-[11px]"><span class="text-[#848E9C]">8周均</span> <span class="text-[#0ECB81]">入$' + fmtFlowAmt(avgInflow) + '</span> <span class="text-[#F6465D]">出$' + fmtFlowAmt(avgOutflow) + '</span></span>'
+    + '</div>';
 
   // Summary row: baseline per-week averages (excluding this week)
   var baselineInflow = baselineWeeks.reduce(function(s, w) { return s + w.inflow; }, 0);
@@ -536,9 +527,9 @@
     + '<div class="flex items-center gap-1"><span class="w-2 h-2 rounded-sm bg-[#F6465D]"></span><span class="text-[10px] text-[#848E9C]">流出</span></div>'
     + '</div>';
 
-  assetsHtml += '</div></div>';
+  assetsHtml += '</div>';
 
-  // Net Contribution (collapsible)
+  // Net Contribution
   var nc = c.netContribution;
   var ncWowColor = nc.wow >= 0 ? '#0ECB81' : '#F6465D';
   var ncItems = [
@@ -552,15 +543,11 @@
   ];
   var ncMax = Math.max.apply(null, ncItems.map(function(i) { return Math.abs(i.value); }));
 
-  assetsHtml += '<div class="mx-4 mt-3">'
-    + '<div id="nc-toggle" class="flex items-center justify-between bg-[#1E2329] rounded-xl border border-[#2E3440] p-3 cursor-pointer">'
-    + '<div class="flex items-center gap-2">'
+  assetsHtml += '<div class="mx-4 mt-3 bg-[#1E2329] rounded-xl border border-[#2E3440] p-3">'
+    + '<div class="flex items-center justify-between mb-3">'
     + '<span class="text-[13px] font-semibold text-[#EAECEF]">7日利润贡献</span>'
-    + '<span class="text-[15px] font-bold text-[#F0B90B]">' + nc.totalDisplay + '</span>'
-    + '</div>'
-    + '<i id="nc-arrow" class="fa-solid fa-chevron-down text-[11px] text-[#848E9C] transition-transform"></i>'
+    + '<span class="text-[14px] font-bold text-[#F0B90B]">' + nc.totalDisplay + '</span>'
     + '</div>';
-  assetsHtml += '<div id="nc-detail" class="hidden bg-[#1E2329] rounded-b-xl border border-t-0 border-[#2E3440] px-3 pb-3">';
   assetsHtml += '<div class="flex items-center gap-2 mb-2">'
     + '<span class="text-[10px] text-[#848E9C]">vs 8周均</span>'
     + '<span class="text-[12px] font-semibold" style="color:' + ncWowColor + '">' + nc.wowDisplay + '</span>'
@@ -578,7 +565,7 @@
       + '<span class="text-[10px] font-medium w-[48px] text-right flex-shrink-0" style="color:' + color + '">$ ' + displayVal + '</span>'
       + '</div>';
   });
-  assetsHtml += '</div></div>';
+  assetsHtml += '</div>';
 
   // Client P&L
   var pnl = c.clientPnl;
@@ -590,18 +577,15 @@
   ];
   var pnlMax = Math.max.apply(null, pnlItems.map(function(i) { return Math.abs(i.data.value); }).concat([1]));
 
-  // 7日交易盈亏 (collapsible, like 利润贡献)
-  assetsHtml += '<div class="mx-4 mt-3 mb-4">'
-    + '<div id="pnl-toggle" class="flex items-center justify-between bg-[#1E2329] rounded-xl border border-[#2E3440] p-3 cursor-pointer">'
-    + '<div class="flex items-center gap-2">'
+  // 7日交易盈亏
+  assetsHtml += '<div class="mx-4 mt-3 mb-4 bg-[#1E2329] rounded-xl border border-[#2E3440] p-3">'
+    + '<div class="flex items-center justify-between mb-3">'
     + '<span class="text-[13px] font-semibold text-[#EAECEF]">7日交易盈亏</span>'
-    + '<span class="text-[16px] font-bold" style="color:' + pnl.total7d.color + '">' + pnl.total7d.display + '</span>'
-    + '<span class="text-[11px] text-[#848E9C]">8周均</span>'
-    + '<span class="text-[12px] font-medium" style="color:' + pnl.weeklyAvg8w.color + '">' + pnl.weeklyAvg8w.display + '</span>'
+    + '<div class="text-right">'
+    + '<span class="text-[14px] font-bold" style="color:' + pnl.total7d.color + '">' + pnl.total7d.display + '</span>'
+    + '<div class="text-[10px] text-[#848E9C]">8周均 <span style="color:' + pnl.weeklyAvg8w.color + '">' + pnl.weeklyAvg8w.display + '</span></div>'
     + '</div>'
-    + '<i id="pnl-arrow" class="fa-solid fa-chevron-down text-[10px] text-[#474D57] transition-transform"></i>'
     + '</div>';
-  assetsHtml += '<div id="pnl-detail" class="hidden bg-[#1E2329] rounded-b-xl border border-t-0 border-[#2E3440] px-3 pb-3 pt-2 space-y-2">';
   pnlItems.forEach(function(item) {
     var d = item.data;
     var barW = pnlMax > 0 ? Math.round(Math.abs(d.value) / pnlMax * 100) : 0;
@@ -615,7 +599,7 @@
       + '</div>'
       + '</div>';
   });
-  assetsHtml += '</div></div>';
+  assetsHtml += '</div>';
 
   document.getElementById('tab-assets').innerHTML = assetsHtml;
 
@@ -651,88 +635,6 @@
   if (noteEl) {
     noteEl.addEventListener('input', function() {
       localStorage.setItem(noteKey, noteEl.value);
-    });
-  }
-
-  // === INTERACTIVE: Net contribution toggle ===
-  var ncToggle = document.getElementById('nc-toggle');
-  var ncDetail = document.getElementById('nc-detail');
-  var ncArrow = document.getElementById('nc-arrow');
-  if (ncToggle && ncDetail) {
-    ncToggle.addEventListener('click', function() {
-      var isHidden = ncDetail.classList.contains('hidden');
-      if (isHidden) {
-        ncDetail.classList.remove('hidden');
-        ncToggle.classList.remove('rounded-xl');
-        ncToggle.classList.add('rounded-t-xl');
-        ncArrow.style.transform = 'rotate(180deg)';
-      } else {
-        ncDetail.classList.add('hidden');
-        ncToggle.classList.add('rounded-xl');
-        ncToggle.classList.remove('rounded-t-xl');
-        ncArrow.style.transform = '';
-      }
-    });
-  }
-
-  // === INTERACTIVE: PnL toggle ===
-  var pnlToggle = document.getElementById('pnl-toggle');
-  var pnlDetail = document.getElementById('pnl-detail');
-  var pnlArrow = document.getElementById('pnl-arrow');
-  if (pnlToggle && pnlDetail) {
-    pnlToggle.addEventListener('click', function() {
-      var isHidden = pnlDetail.classList.contains('hidden');
-      if (isHidden) {
-        pnlDetail.classList.remove('hidden');
-        pnlToggle.classList.remove('rounded-xl');
-        pnlToggle.classList.add('rounded-t-xl');
-        pnlArrow.style.transform = 'rotate(180deg)';
-      } else {
-        pnlDetail.classList.add('hidden');
-        pnlToggle.classList.add('rounded-xl');
-        pnlToggle.classList.remove('rounded-t-xl');
-        pnlArrow.style.transform = '';
-      }
-    });
-  }
-
-  // === INTERACTIVE: Dist toggle (default OPEN) ===
-  var distToggle = document.getElementById('dist-toggle');
-  var distBody = document.getElementById('dist-body');
-  var distArrow = document.getElementById('dist-arrow');
-  if (distToggle && distBody) {
-    distToggle.addEventListener('click', function() {
-      var isHidden = distBody.classList.contains('hidden');
-      if (isHidden) {
-        distBody.classList.remove('hidden');
-        distToggle.style.borderRadius = '12px 12px 0 0';
-        distArrow.style.transform = '';
-      } else {
-        distBody.classList.add('hidden');
-        distToggle.style.borderRadius = '12px';
-        distArrow.style.transform = 'rotate(180deg)';
-      }
-    });
-  }
-
-  // === INTERACTIVE: Flow toggle (default CLOSED) ===
-  var flowToggle = document.getElementById('flow-toggle');
-  var flowBody = document.getElementById('flow-body');
-  var flowArrow = document.getElementById('flow-arrow');
-  if (flowToggle && flowBody) {
-    flowToggle.addEventListener('click', function() {
-      var isHidden = flowBody.classList.contains('hidden');
-      if (isHidden) {
-        flowBody.classList.remove('hidden');
-        flowToggle.classList.remove('rounded-xl');
-        flowToggle.classList.add('rounded-t-xl');
-        flowArrow.style.transform = 'rotate(180deg)';
-      } else {
-        flowBody.classList.add('hidden');
-        flowToggle.classList.add('rounded-xl');
-        flowToggle.classList.remove('rounded-t-xl');
-        flowArrow.style.transform = '';
-      }
     });
   }
 
