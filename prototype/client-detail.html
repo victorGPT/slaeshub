@@ -209,7 +209,8 @@
 
   function fmtAvg(v) {
     var s = v >= 0 ? '+' : '';
-    return s + v.toFixed(1) + '%';
+    var c = v >= 0 ? '#0ECB81' : '#F6465D';
+    return '<span style="color:' + c + '">' + s + v.toFixed(1) + '%</span>';
   }
 
   // --- Seeded random ---
@@ -455,7 +456,7 @@
     + '<div><div class="text-[13px] font-semibold text-[#EAECEF]">资金分布</div></div>'
     + '<div class="text-right">'
     + '<div class="text-[16px] font-bold tabular-nums" style="color:#F0B90B">' + fmtFlow(c.fMean) + '</div>'
-    + '<div class="text-[10px] mt-0.5"><span style="color:' + distChgColor + '">' + distChgChar + ' ' + distChgSign + deltaPct.toFixed(1) + '%</span> <span class="text-[#474D57]">| 均 ' + fmtAvg(platAvg.depositChg) + '</span></div>'
+    + '<div class="text-[10px] mt-0.5"><span style="color:' + distChgColor + '">' + distChgChar + ' ' + distChgSign + deltaPct.toFixed(1) + '%</span> <span class="text-[#474D57]">| </span>均' + fmtAvg(platAvg.depositChg) + '</span></div>'
     + '</div>'
     + '</div>'
     + '<div class="h-[1px] bg-[#2E3440] mb-3"></div>';
@@ -517,7 +518,7 @@
     + '<div><div class="text-[13px] font-semibold text-[#EAECEF]">资沉流动</div></div>'
     + '<div class="text-right">'
     + '<div class="text-[16px] font-bold tabular-nums" style="color:' + netFlowColor + '">' + netFlowSign + fmtFlow(Math.abs(avgNetPerWeek)) + '/周</div>'
-    + '<div class="text-[10px] mt-0.5"><span style="color:' + flowChgColor + '">' + flowChgChar + ' ' + flowChgSign + flowChgPct.toFixed(1) + '%</span> <span class="text-[#474D57]">| 均 ' + fmtAvg(platAvg.depositChg) + '</span></div>'
+    + '<div class="text-[10px] mt-0.5"><span style="color:' + flowChgColor + '">' + flowChgChar + ' ' + flowChgSign + flowChgPct.toFixed(1) + '%</span> <span class="text-[#474D57]">| </span>均' + fmtAvg(platAvg.depositChg) + '</span></div>'
     + '</div>'
     + '</div>'
     + '<div class="h-[1px] bg-[#2E3440] mb-3"></div>';
@@ -602,7 +603,7 @@
     + '<div><div class="text-[13px] font-semibold text-[#EAECEF]">7日利润贡献</div></div>'
     + '<div class="text-right">'
     + '<div class="text-[16px] font-bold tabular-nums" style="color:' + (nc.total >= 0 ? '#0ECB81' : '#F6465D') + '">' + (nc.total >= 0 ? '+' : '-') + fmtFlow(nc.total) + '</div>'
-    + '<div class="text-[10px] mt-0.5"><span style="color:' + ncWowColor + '">' + ncWowChar + ' ' + nc.wowDisplay + '</span> <span class="text-[#474D57]">| 均 ' + fmtAvg(platAvg.profitChg) + '</span></div>'
+    + '<div class="text-[10px] mt-0.5"><span style="color:' + ncWowColor + '">' + ncWowChar + ' ' + nc.wowDisplay + '</span> <span class="text-[#474D57]">| </span>均' + fmtAvg(platAvg.profitChg) + '</span></div>'
     + '</div>'
     + '</div>'
     + '<div class="h-[1px] bg-[#2E3440] mb-3"></div>';
@@ -644,7 +645,7 @@
     + '<div><div class="text-[13px] font-semibold text-[#EAECEF]">7日交易盈亏</div></div>'
     + '<div class="text-right">'
     + '<div class="text-[16px] font-bold tabular-nums" style="color:' + pnl.total7d.color + '">' + (pnl.total7d.value >= 0 ? '+' : '-') + fmtFlow(pnl.total7d.value) + '</div>'
-    + '<div class="text-[10px] mt-0.5"><span style="color:' + pnlChgColor + '">' + pnlChgChar + ' ' + pnlChgSign + pnlChgPct.toFixed(1) + '%</span> <span class="text-[#474D57]">| 均 ' + fmtAvg(platAvg.pnlChg) + '</span></div>'
+    + '<div class="text-[10px] mt-0.5"><span style="color:' + pnlChgColor + '">' + pnlChgChar + ' ' + pnlChgSign + pnlChgPct.toFixed(1) + '%</span> <span class="text-[#474D57]">| </span>均' + fmtAvg(platAvg.pnlChg) + '</span></div>'
     + '</div>'
     + '</div>'
     + '<div class="h-[1px] bg-[#2E3440] mb-3"></div>';
