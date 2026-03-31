@@ -385,65 +385,97 @@
 
   // Module 7 (业务参与) removed — merged into 资金分布 above
 
-  // Module 8: Asset Flow Chart (directly expanded)
+  // Module 8: Asset Flow Chart (complete redesign)
   var maxFlow = Math.max.apply(null, flowWeeks.map(function(w) { return Math.max(w.inflow, w.outflow); }).concat([1]));
-  var maxBarH = 70;
+  var maxBarH = 60;
+
+  // Totals
+  var totalInflow = flowWeeks.reduce(function(s, w) { return s + w.inflow; }, 0);
+  var totalOutflow = flowWeeks.reduce(function(s, w) { return s + w.outflow; }, 0);
+  var netFlow = totalInflow - totalOutflow;
+
+  function fmtFlowAmt(v) {
+    if (Math.abs(v) >= 10000) return Math.round(v / 10000) + '万';
+    if (Math.abs(v) >= 1000) return (v / 10000).toFixed(1) + '万';
+    return Math.round(v) + '';
+  }
+
+  // Y-axis ticks: 3 levels (maxFlow rounded up)
+  var yTop = maxFlow;
+  var yMid = Math.round(maxFlow / 2);
 
   assetsHtml += '<div class="mx-4 mt-3">'
     + '<div class="text-[13px] font-semibold text-[#EAECEF] mb-2">资沉流动</div>'
     + '<div class="bg-[#1E2329] rounded-xl border border-[#2E3440] p-3">';
 
-  // Legend
-  assetsHtml += '<div class="flex items-center gap-4 mb-2">'
-    + '<div class="flex items-center gap-1"><span class="w-2 h-2 rounded-sm bg-[#0ECB81]"></span><span class="text-[10px] text-[#848E9C]">流入</span></div>'
-    + '<div class="flex items-center gap-1"><span class="w-2 h-2 rounded-sm bg-[#F6465D]"></span><span class="text-[10px] text-[#848E9C]">流出</span></div>'
+  // Summary row: totals
+  assetsHtml += '<div class="flex items-center gap-3 text-[11px] mb-3">'
+    + '<span class="text-[#848E9C]">近' + flowWeeks.length + '周</span>'
+    + '<span class="text-[#0ECB81]">流入 $' + fmtFlowAmt(totalInflow) + '</span>'
+    + '<span class="text-[#F6465D]">流出 $' + fmtFlowAmt(totalOutflow) + '</span>'
+    + '<span style="color:' + (netFlow >= 0 ? '#0ECB81' : '#F6465D') + '">'
+    + (netFlow >= 0 ? '净流入' : '净流出') + ' $' + fmtFlowAmt(Math.abs(netFlow))
+    + '</span>'
     + '</div>';
 
-  function fmtFlowShort(v) {
-    if (v >= 10000) return Math.round(v / 10000) + '万';
-    if (v >= 1000) return (v / 10000).toFixed(1) + '万';
-    return Math.round(v) + '';
-  }
+  // Chart area with Y-axis
+  assetsHtml += '<div class="flex">';
 
-  // Inflow labels (top)
-  assetsHtml += '<div class="flex items-end justify-center gap-[6px]" style="min-height:16px">';
-  flowWeeks.forEach(function(w) {
-    assetsHtml += '<div style="width:28px" class="text-center text-[9px] text-[#0ECB81]">' + (w.inflow > 0 ? fmtFlowShort(w.inflow) : '') + '</div>';
-  });
+  // Y-axis labels (left side)
+  assetsHtml += '<div class="flex flex-col flex-shrink-0" style="width:36px">';
+  // Top half labels
+  assetsHtml += '<div style="height:' + maxBarH + 'px" class="flex flex-col justify-between">'
+    + '<span class="text-[9px] text-[#474D57] leading-none">' + fmtFlowAmt(yTop) + '</span>'
+    + '<span class="text-[9px] text-[#474D57] leading-none">' + fmtFlowAmt(yMid) + '</span>'
+    + '</div>';
+  // Zero
+  assetsHtml += '<div class="text-[9px] text-[#848E9C] leading-none" style="height:12px;line-height:12px">0</div>';
+  // Bottom half labels
+  assetsHtml += '<div style="height:' + maxBarH + 'px" class="flex flex-col justify-between">'
+    + '<span class="text-[9px] text-[#474D57] leading-none">' + fmtFlowAmt(yMid) + '</span>'
+    + '<span class="text-[9px] text-[#474D57] leading-none">' + fmtFlowAmt(yTop) + '</span>'
+    + '</div>';
   assetsHtml += '</div>';
 
-  // Inflow bars (top)
-  assetsHtml += '<div class="flex items-end justify-center gap-[6px]" style="height:' + maxBarH + 'px">';
+  // Bars area
+  assetsHtml += '<div class="flex-1">';
+
+  // Inflow bars
+  assetsHtml += '<div class="flex items-end justify-around" style="height:' + maxBarH + 'px">';
   flowWeeks.forEach(function(w) {
     var h = maxFlow > 0 ? Math.round(w.inflow / maxFlow * maxBarH) : 0;
-    assetsHtml += '<div style="width:28px;height:' + Math.max(h, 2) + 'px;background:#0ECB81;border-radius:2px 2px 0 0"></div>';
+    assetsHtml += '<div style="width:24px;height:' + Math.max(h, 1) + 'px;background:#0ECB81;border-radius:2px 2px 0 0"></div>';
   });
   assetsHtml += '</div>';
 
   // Zero line
-  assetsHtml += '<div style="height:1px;background:#2E3440"></div>';
+  assetsHtml += '<div style="height:1px;background:#474D57;margin:0 -4px"></div>';
 
-  // Outflow bars (bottom)
-  assetsHtml += '<div class="flex items-start justify-center gap-[6px]" style="height:' + maxBarH + 'px">';
+  // Outflow bars
+  assetsHtml += '<div class="flex items-start justify-around" style="height:' + maxBarH + 'px">';
   flowWeeks.forEach(function(w) {
     var h = maxFlow > 0 ? Math.round(w.outflow / maxFlow * maxBarH) : 0;
-    assetsHtml += '<div style="width:28px;height:' + Math.max(h, 2) + 'px;background:#F6465D;border-radius:0 0 2px 2px"></div>';
+    assetsHtml += '<div style="width:24px;height:' + Math.max(h, 1) + 'px;background:#F6465D;border-radius:0 0 2px 2px"></div>';
   });
   assetsHtml += '</div>';
 
-  // Outflow labels (bottom)
-  assetsHtml += '<div class="flex items-start justify-center gap-[6px]" style="min-height:16px">';
-  flowWeeks.forEach(function(w) {
-    assetsHtml += '<div style="width:28px" class="text-center text-[9px] text-[#F6465D]">' + (w.outflow > 0 ? fmtFlowShort(w.outflow) : '') + '</div>';
-  });
-  assetsHtml += '</div>';
-
-  // X labels
-  assetsHtml += '<div class="flex items-start justify-center gap-[6px] mt-1">';
+  // X-axis labels
+  assetsHtml += '<div class="flex justify-around mt-1">';
   for (var wi = 0; wi < flowWeeks.length; wi++) {
-    assetsHtml += '<div style="width:28px" class="text-center text-[10px] text-[#848E9C]">W' + (wi + 2) + '</div>';
+    var xLabel = (wi === flowWeeks.length - 1) ? '本周' : 'W' + (wi + 2);
+    assetsHtml += '<div style="width:24px" class="text-center text-[9px] text-[#848E9C]">' + xLabel + '</div>';
   }
   assetsHtml += '</div>';
+
+  assetsHtml += '</div>'; // bars area
+  assetsHtml += '</div>'; // chart flex
+
+  // Legend
+  assetsHtml += '<div class="flex items-center gap-4 mt-2 pt-2 border-t border-[#2E3440]">'
+    + '<div class="flex items-center gap-1"><span class="w-2 h-2 rounded-sm bg-[#0ECB81]"></span><span class="text-[10px] text-[#848E9C]">流入</span></div>'
+    + '<div class="flex items-center gap-1"><span class="w-2 h-2 rounded-sm bg-[#F6465D]"></span><span class="text-[10px] text-[#848E9C]">流出</span></div>'
+    + '</div>';
+
   assetsHtml += '</div></div>';
 
   // Net Contribution (collapsible)
