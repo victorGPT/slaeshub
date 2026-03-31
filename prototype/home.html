@@ -37,7 +37,7 @@
   </style>
 </head>
 <body class="bg-[#0B0E11] text-[#EAECEF]">
-<div class="w-full">
+<div class="w-full h-screen flex flex-col" style="max-height: 852px;">
 
   <!-- iOS Status Bar -->
   <div class="h-[44px] bg-[#0B0E11] flex items-center justify-between px-6 flex-shrink-0">
@@ -49,13 +49,8 @@
     </div>
   </div>
 
-  <!-- Top Nav -->
-  <div class="h-[52px] sticky top-0 z-30 bg-[#0B0E11] border-b border-[#2E3440] flex items-center justify-center px-4">
-    <h1 class="text-[17px] font-bold text-[#EAECEF] tracking-wide">Sales Hub</h1>
-  </div>
-
-  <!-- Search Bar (always visible) -->
-  <div class="sticky top-[52px] z-20 bg-[#0B0E11] px-4 py-2 relative">
+  <!-- 1. Search Bar (~48px) -->
+  <div class="flex-shrink-0 bg-[#0B0E11] px-4 py-1.5 relative z-20">
     <div class="flex items-center bg-[#1E2329] rounded-lg px-3 py-2 border border-[#2E3440]">
       <i class="fa-solid fa-magnifying-glass text-[12px] text-[#848E9C] mr-2"></i>
       <input id="search-input" type="text" placeholder="搜索客户名字或 UID..."
@@ -69,32 +64,41 @@
     <div id="search-dropdown" class="hidden absolute left-0 right-0 top-full z-40 mx-4 bg-[#1E2329] rounded-b-lg border border-t-0 border-[#2E3440] max-h-[320px] overflow-y-auto shadow-lg"></div>
   </div>
 
-  <!-- Event Feed -->
-  <div id="event-feed" class="overflow-y-auto pb-[100px]"></div>
+  <!-- 2. Summary Row (~28px) -->
+  <div id="summary-row" class="flex-shrink-0 px-4 py-1"></div>
 
-</div>
+  <!-- 3. Hero Card (~140px) -->
+  <div id="hero-card" class="flex-shrink-0 px-4 py-1.5"></div>
 
-<!-- Bottom Tab Bar -->
-<div class="fixed-bar bg-[#0B0E11] border-t border-[#2E3440] z-30">
-  <div class="flex items-center justify-around h-[56px]">
-    <a href="home.html" class="flex flex-col items-center gap-0.5">
-      <i class="fa-solid fa-house text-[18px] text-[#F0B90B]"></i>
-      <span class="text-[10px] text-[#F0B90B] font-semibold">首页</span>
-    </a>
-    <a href="clients.html" class="flex flex-col items-center gap-0.5">
-      <i class="fa-solid fa-users text-[18px] text-[#848E9C]"></i>
-      <span class="text-[10px] text-[#848E9C]">客户</span>
-    </a>
-    <a href="events.html" class="flex flex-col items-center gap-0.5">
-      <i class="fa-solid fa-bell text-[18px] text-[#848E9C]"></i>
-      <span class="text-[10px] text-[#848E9C]">事件</span>
-    </a>
-    <a href="profile.html" class="flex flex-col items-center gap-0.5">
-      <i class="fa-solid fa-user text-[18px] text-[#848E9C]"></i>
-      <span class="text-[10px] text-[#848E9C]">我的</span>
-    </a>
+  <!-- 4. Small Rows x4 (~224px) -->
+  <div id="small-rows" class="flex-shrink-0 flex-1 min-h-0"></div>
+
+  <!-- 5. Progress Bar (~48px) -->
+  <div id="progress-bar" class="flex-shrink-0 px-4 py-2"></div>
+
+  <!-- 6. Bottom Tab Bar + safe area (~90px) -->
+  <div class="flex-shrink-0 bg-[#0B0E11] border-t border-[#2E3440]">
+    <div class="flex items-center justify-around h-[56px]">
+      <a href="home.html" class="flex flex-col items-center gap-0.5">
+        <i class="fa-solid fa-house text-[18px] text-[#F0B90B]"></i>
+        <span class="text-[10px] text-[#F0B90B] font-semibold">首页</span>
+      </a>
+      <a href="clients.html" class="flex flex-col items-center gap-0.5">
+        <i class="fa-solid fa-users text-[18px] text-[#848E9C]"></i>
+        <span class="text-[10px] text-[#848E9C]">客户</span>
+      </a>
+      <a href="events.html" class="flex flex-col items-center gap-0.5">
+        <i class="fa-solid fa-bell text-[18px] text-[#848E9C]"></i>
+        <span class="text-[10px] text-[#848E9C]">事件</span>
+      </a>
+      <a href="profile.html" class="flex flex-col items-center gap-0.5">
+        <i class="fa-solid fa-user text-[18px] text-[#848E9C]"></i>
+        <span class="text-[10px] text-[#848E9C]">我的</span>
+      </a>
+    </div>
+    <div class="h-[34px]"></div>
   </div>
-  <div class="h-[34px]"></div>
+
 </div>
 
 <script src="mock-data.js"></script>
@@ -110,46 +114,198 @@
     '已忽略': { bg: 'rgba(132,142,156,0.15)', text: '#848E9C' }
   };
 
-  // Sort events by urgency: critical > warning > info
-  var sortedEvents = D.events.slice().sort(function(a, b) {
+  // Build watchlist: top 30 clients by fMean
+  var watchlistUids = D.clients.slice().sort(function(a, b) {
+    return b.fMean - a.fMean;
+  }).slice(0, 30).map(function(c) { return c.uid; });
+
+  var watchlistSet = {};
+  watchlistUids.forEach(function(uid) { watchlistSet[uid] = true; });
+
+  // Client lookup by uid
+  var clientMap = {};
+  D.clients.forEach(function(c) { clientMap[c.uid] = c; });
+
+  // Filter: watchlist + active states, sort by urgency
+  var activeEvents = D.events.filter(function(e) {
+    return watchlistSet[e.client_uid] &&
+           (e.task_state === '待处理' || e.task_state === '跟进中');
+  }).sort(function(a, b) {
     return (URGENCY_ORDER[a.urgency] || 9) - (URGENCY_ORDER[b.urgency] || 9);
   });
 
-  // Render event feed
-  function renderEventFeed() {
-    var container = document.getElementById('event-feed');
+  // Count all handled events today (已完成 + 已忽略, watchlist only)
+  var handledCount = D.events.filter(function(e) {
+    return watchlistSet[e.client_uid] &&
+           (e.task_state === '已完成' || e.task_state === '已忽略');
+  }).length;
 
-    if (sortedEvents.length === 0) {
-      container.innerHTML =
-        '<div class="flex flex-col items-center justify-center py-20 text-[#848E9C]">'
-        + '<i class="fa-solid fa-circle-check text-[40px] mb-3 text-[#474D57]"></i>'
-        + '<span class="text-[14px]">暂无待处理事件</span>'
+  var totalEvents = activeEvents.length + handledCount;
+  var pendingCount = activeEvents.filter(function(e) { return e.task_state === '待处理'; }).length;
+  var ongoingCount = activeEvents.filter(function(e) { return e.task_state === '跟进中'; }).length;
+
+  // ---------- 2. Summary Row ----------
+  function renderSummary() {
+    var el = document.getElementById('summary-row');
+    el.innerHTML =
+      '<div class="flex items-center justify-between text-[12px]">'
+      + '<div class="flex items-center gap-1.5">'
+      +   '<span class="text-[#EAECEF] font-medium">今日</span>'
+      +   '<span class="text-[#848E9C]">&middot;</span>'
+      +   '<span class="text-[#F6465D]">' + pendingCount + ' 待处理</span>'
+      +   '<span class="text-[#848E9C]">&middot;</span>'
+      +   '<span class="text-[#4DA6FF]">' + ongoingCount + ' 跟进中</span>'
+      + '</div>'
+      + '<a href="events.html" class="text-[#848E9C]">全部 ›</a>'
+      + '</div>';
+  }
+
+  // ---------- 3. Hero Card ----------
+  function renderHeroCard() {
+    var el = document.getElementById('hero-card');
+
+    if (activeEvents.length === 0) {
+      // Empty state
+      el.innerHTML =
+        '<div class="bg-[#1E2329] rounded-xl border border-[#2E3440] p-5 flex flex-col items-center justify-center" style="height:140px">'
+        + '<i class="fa-solid fa-circle-check text-[36px] text-[#0ECB81] mb-2"></i>'
+        + '<span class="text-[15px] font-medium text-[#EAECEF]">所有事件已处理</span>'
         + '</div>';
       return;
     }
 
-    container.innerHTML = sortedEvents.map(function(evt) {
-      var tc = TASK_COLORS[evt.task_state] || TASK_COLORS['已忽略'];
-      return '<a href="event-thread.html?id=' + evt.id + '" class="block px-4 py-3 border-b border-[#2E3440] active:bg-[#2B3139]">'
-        + '<div class="flex items-center gap-2 mb-1">'
-        +   '<span class="w-2 h-2 rounded-full flex-shrink-0" style="background:' + evt.color + '"></span>'
-        +   '<span class="text-[13px] font-medium text-[#EAECEF]">' + evt.client_name + '</span>'
-        +   '<span class="text-[12px] text-[#848E9C]">&middot;</span>'
-        +   '<span class="text-[12px] text-[#848E9C]">' + evt.type + '</span>'
-        +   (evt.sub_type ? '<span class="text-[10px] px-1.5 py-0.5 rounded bg-[#2B3139] text-[#848E9C]">' + evt.sub_type + '</span>' : '')
-        + '</div>'
-        + '<div class="flex items-center justify-between">'
-        +   '<div class="flex items-center gap-2">'
-        +     '<span class="text-[14px] font-bold" style="color:' + evt.color + '">' + evt.amount_display + '</span>'
-        +     '<span class="text-[10px] px-1.5 py-0.5 rounded-full" style="background:' + tc.bg + ';color:' + tc.text + '">' + evt.task_state + '</span>'
-        +   '</div>'
-        +   '<span class="text-[10px] text-[#848E9C]">' + evt.time_ago + '</span>'
-        + '</div>'
-        + '</a>';
-    }).join('');
+    var evt = activeEvents[0];
+    var client = clientMap[evt.client_uid];
+    var tc = TASK_COLORS[evt.task_state] || TASK_COLORS['已忽略'];
+    var urgencyDot = evt.urgency === 'critical' ? '#F6465D' : evt.urgency === 'warning' ? '#F0B90B' : '#4DA6FF';
+
+    el.innerHTML =
+      '<a href="event-thread.html?id=' + evt.id + '" class="block bg-[#1E2329] rounded-xl border border-[#2E3440] p-4 active:bg-[#2B3139]" style="height:140px">'
+      // Row 1: type + urgency dot + time
+      + '<div class="flex items-center justify-between mb-2">'
+      +   '<div class="flex items-center gap-2">'
+      +     '<span class="w-2.5 h-2.5 rounded-full flex-shrink-0" style="background:' + urgencyDot + '"></span>'
+      +     '<span class="text-[13px] font-medium text-[#848E9C]">' + evt.type + (evt.sub_type ? ' · ' + evt.sub_type : '') + '</span>'
+      +   '</div>'
+      +   '<span class="text-[11px] text-[#848E9C]">' + evt.time_ago + '</span>'
+      + '</div>'
+      // Row 2: client name + deposit
+      + '<div class="flex items-center gap-2 mb-1.5">'
+      +   '<span class="text-[15px] font-bold text-[#EAECEF]">' + evt.client_name + '</span>'
+      +   (client ? '<span class="text-[11px] text-[#848E9C]">资沉 ' + client.depositDisplay + '</span>' : '')
+      + '</div>'
+      // Row 3: amount (big)
+      + '<div class="text-[24px] font-bold mb-1.5" style="color:' + evt.color + ';line-height:1.1">' + evt.amount_display + '</div>'
+      // Row 4: suggested action
+      + '<div class="flex items-center justify-between">'
+      +   '<span class="text-[12px] text-[#F0B90B] truncate mr-2"><i class="fa-solid fa-bolt mr-1"></i>' + (evt.action || '') + '</span>'
+      +   '<span class="text-[10px] px-2 py-0.5 rounded-full flex-shrink-0" style="background:' + tc.bg + ';color:' + tc.text + '">' + evt.task_state + '</span>'
+      + '</div>'
+      + '</a>';
   }
 
-  // Search
+  // ---------- 4. Small Rows x4 ----------
+  function renderSmallRows() {
+    var el = document.getElementById('small-rows');
+
+    if (activeEvents.length === 0) {
+      // Empty: recommend clients with oldest last event
+      var staleClients = watchlistUids.map(function(uid) {
+        var evts = D.eventsByClientUid[uid] || [];
+        var lastTime = evts.length > 0 ? evts[0].time_ago : '无事件';
+        return { uid: uid, name: (clientMap[uid] || {}).name || uid, deposit: (clientMap[uid] || {}).depositDisplay || '', lastTime: lastTime, evtCount: evts.length };
+      }).sort(function(a, b) {
+        // fewer/no events = more stale
+        return a.evtCount - b.evtCount;
+      }).slice(0, 3);
+
+      var html = '<div class="px-4 pt-1">';
+      staleClients.forEach(function(c) {
+        html +=
+          '<a href="client-detail.html?uid=' + c.uid + '" class="flex items-center justify-between py-3 border-b border-[#2E3440] active:bg-[#2B3139]">'
+          + '<div class="flex items-center gap-2 min-w-0">'
+          +   '<span class="text-[10px] px-1.5 py-0.5 rounded bg-[rgba(77,166,255,0.15)] text-[#4DA6FF] flex-shrink-0">推荐</span>'
+          +   '<span class="text-[13px] text-[#EAECEF] truncate">' + c.name + '</span>'
+          +   '<span class="text-[11px] text-[#848E9C]">' + c.deposit + '</span>'
+          + '</div>'
+          + '<span class="text-[11px] text-[#474D57] flex-shrink-0">' + c.lastTime + '</span>'
+          + '</a>';
+      });
+      // pad remaining rows to keep layout stable
+      var remaining = 4 - staleClients.length;
+      for (var i = 0; i < remaining; i++) {
+        html += '<div class="py-3 border-b border-[#2E3440]">&nbsp;</div>';
+      }
+      html += '</div>';
+      el.innerHTML = html;
+      return;
+    }
+
+    var rows = activeEvents.slice(1, 5);
+    var html = '<div class="px-4">';
+
+    rows.forEach(function(evt) {
+      var tc = TASK_COLORS[evt.task_state] || TASK_COLORS['已忽略'];
+      html +=
+        '<a href="event-thread.html?id=' + evt.id + '" class="flex items-center justify-between py-2.5 border-b border-[#2E3440] active:bg-[#2B3139]">'
+        + '<div class="flex items-center gap-2 min-w-0 flex-1">'
+        +   '<span class="w-1.5 h-1.5 rounded-full flex-shrink-0" style="background:' + evt.color + '"></span>'
+        +   '<span class="text-[13px] font-medium text-[#EAECEF] truncate">' + evt.client_name + '</span>'
+        +   '<span class="text-[11px] text-[#848E9C] flex-shrink-0">' + evt.type + '</span>'
+        + '</div>'
+        + '<div class="flex items-center gap-2 flex-shrink-0 ml-2">'
+        +   '<span class="text-[13px] font-bold" style="color:' + evt.color + '">' + evt.amount_display + '</span>'
+        +   '<span class="text-[10px] px-1.5 py-0.5 rounded-full" style="background:' + tc.bg + ';color:' + tc.text + '">' + evt.task_state + '</span>'
+        + '</div>'
+        + '</a>';
+    });
+
+    // pad if fewer than 4
+    var remaining = 4 - rows.length;
+    for (var i = 0; i < remaining; i++) {
+      html += '<div class="py-2.5 border-b border-[#2E3440]">&nbsp;</div>';
+    }
+    html += '</div>';
+    el.innerHTML = html;
+  }
+
+  // ---------- 5. Progress Bar ----------
+  function renderProgress() {
+    var el = document.getElementById('progress-bar');
+
+    if (activeEvents.length === 0) {
+      // All done
+      el.innerHTML =
+        '<div class="flex items-center gap-3">'
+        + '<div class="flex-1 h-1.5 rounded-full bg-[#2E3440] overflow-hidden">'
+        +   '<div class="h-full rounded-full bg-[#0ECB81]" style="width:100%"></div>'
+        + '</div>'
+        + '<span class="text-[12px] text-[#0ECB81] flex-shrink-0 whitespace-nowrap">今日已处理 ' + handledCount + ' 条 ✓</span>'
+        + '</div>';
+      return;
+    }
+
+    var pct = totalEvents > 0 ? Math.round(handledCount / totalEvents * 100) : 0;
+    var extraCount = activeEvents.length > 5 ? activeEvents.length - 5 : 0;
+    var progressText = extraCount > 0
+      ? '还有 ' + (activeEvents.length - 5 + 5) + ' 条待处理'
+      : '已处理 ' + handledCount + '/' + totalEvents;
+
+    // If more than 5 events, show overflow text
+    if (activeEvents.length > 5) {
+      progressText = '还有 ' + (activeEvents.length - 5) + ' 条待处理';
+    }
+
+    el.innerHTML =
+      '<div class="flex items-center gap-3">'
+      + '<div class="flex-1 h-1.5 rounded-full bg-[#2E3440] overflow-hidden">'
+      +   '<div class="h-full rounded-full bg-[#F0B90B] transition-all" style="width:' + pct + '%"></div>'
+      + '</div>'
+      + '<a href="events.html" class="text-[12px] text-[#848E9C] flex-shrink-0 whitespace-nowrap">' + progressText + ' · 查看全部 →</a>'
+      + '</div>';
+  }
+
+  // ---------- Search (preserved from original) ----------
   function getStatusLabel(c) {
     var rate = c.adjustedTrendRate;
     var r2 = c.rSquared;
@@ -168,7 +324,6 @@
     if (!query) {
       dropdown.classList.add('hidden');
       clearBtn.classList.add('hidden');
-      document.getElementById('event-feed').classList.remove('hidden');
       return;
     }
 
@@ -181,7 +336,6 @@
     if (matches.length === 0) {
       dropdown.innerHTML = '<div class="text-center py-6 text-[13px] text-[#848E9C]">未找到匹配客户</div>';
       dropdown.classList.remove('hidden');
-      document.getElementById('event-feed').classList.add('hidden');
       return;
     }
 
@@ -203,7 +357,6 @@
     }).join('');
 
     dropdown.classList.remove('hidden');
-    document.getElementById('event-feed').classList.add('hidden');
   }
 
   window.onSearchInput = function() {
@@ -217,7 +370,6 @@
     document.getElementById('search-input').focus();
   };
 
-  // ESC to clear search
   document.addEventListener('keydown', function(e) {
     if (e.key === 'Escape') {
       document.getElementById('search-input').value = '';
@@ -225,8 +377,11 @@
     }
   });
 
-  // Init
-  renderEventFeed();
+  // ---------- Init ----------
+  renderSummary();
+  renderHeroCard();
+  renderSmallRows();
+  renderProgress();
 })();
 </script>
 
