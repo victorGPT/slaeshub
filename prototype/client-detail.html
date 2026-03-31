@@ -317,9 +317,9 @@
   } catch(e) {}
   var pendingEvents = events.filter(function(ev) { return !processedSet[ev.id]; });
 
-  eventsHtml += '<div class="mx-4 mt-3">'
+  eventsHtml += '<div class="mx-4 mt-3 bg-[#1E2329] rounded-xl border border-[#2E3440] p-3">'
     + '<div class="text-[13px] font-semibold text-[#EAECEF] mb-2">当前事件</div>'
-    + '<div class="bg-[#1E2329] rounded-xl border border-[#2E3440] p-3 space-y-2.5">';
+    + '<div class="space-y-2.5">';
   if (pendingEvents.length === 0) {
     eventsHtml += '<div class="flex items-center justify-center gap-2 py-4 text-[#848E9C]">'
       + '<i class="fa-solid fa-circle-check text-[#0ECB81]"></i>'
@@ -369,12 +369,11 @@
   }
 
   var followups = getFollowups();
-  eventsHtml += '<div class="mx-4 mt-3 mb-4">'
+  eventsHtml += '<div class="mx-4 mt-3 mb-4 bg-[#1E2329] rounded-xl border border-[#2E3440] p-3">'
     + '<div class="flex items-center justify-between mb-2">'
     + '<div class="text-[13px] font-semibold text-[#EAECEF]">跟进记录</div>'
     + '<span class="text-[11px] text-[#F0B90B] cursor-pointer">+ 添加记录</span>'
     + '</div>'
-    + '<div class="bg-[#1E2329] rounded-xl border border-[#2E3440] p-3">'
     + '<div class="border-l-2 border-[#2E3440] pl-3 space-y-3">';
   followups.forEach(function(f) {
     var isSystem = f.bd === '系统';
@@ -384,7 +383,7 @@
       + '<div class="text-[12px] text-[#EAECEF] mt-0.5">' + f.text + '</div>'
       + '</div>';
   });
-  eventsHtml += '</div></div></div>';
+  eventsHtml += '</div></div>';
 
   document.getElementById('tab-events').innerHTML = eventsHtml;
 
@@ -406,9 +405,8 @@
     item.pct = ddTotal > 0 ? Math.round(item.value / ddTotal * 100) : 0;
   });
 
-  assetsHtml += '<div class="mx-4 mt-3">'
+  assetsHtml += '<div class="mx-4 mt-3 bg-[#1E2329] rounded-xl border border-[#2E3440] p-3">'
     + '<div class="text-[13px] font-semibold text-[#EAECEF] mb-2">资金分布</div>'
-    + '<div class="bg-[#1E2329] rounded-xl border border-[#2E3440] p-3">'
     + '<div class="text-[11px] text-[#848E9C] mb-0.5">总计</div>'
     + '<div class="text-[18px] font-bold text-[#EAECEF] mb-3">' + c.depositDisplay + '</div>';
   ddItems.forEach(function(item, idx) {
@@ -423,7 +421,7 @@
       + '</div>'
       + '</div>';
   });
-  assetsHtml += '</div></div>';
+  assetsHtml += '</div>';
 
   // Module 7 (业务参与) removed — merged into 资金分布 above
 
@@ -446,9 +444,8 @@
   var yTop = maxFlow;
   var yMid = Math.round(maxFlow / 2);
 
-  assetsHtml += '<div class="mx-4 mt-3">'
-    + '<div class="text-[13px] font-semibold text-[#EAECEF] mb-2">资沉流动</div>'
-    + '<div class="bg-[#1E2329] rounded-xl border border-[#2E3440] p-3">';
+  assetsHtml += '<div class="mx-4 mt-3 bg-[#1E2329] rounded-xl border border-[#2E3440] p-3">'
+    + '<div class="text-[13px] font-semibold text-[#EAECEF] mb-2">资沉流动</div>';
 
   // Summary row: baseline per-week averages (excluding this week)
   var baselineInflow = baselineWeeks.reduce(function(s, w) { return s + w.inflow; }, 0);
@@ -524,7 +521,7 @@
     + '<div class="flex items-center gap-1"><span class="w-2 h-2 rounded-sm bg-[#F6465D]"></span><span class="text-[10px] text-[#848E9C]">流出</span></div>'
     + '</div>';
 
-  assetsHtml += '</div></div>';
+  assetsHtml += '</div>';
 
   // Net Contribution (collapsible)
   var nc = c.netContribution;
@@ -543,7 +540,7 @@
   assetsHtml += '<div class="mx-4 mt-3">'
     + '<div id="nc-toggle" class="flex items-center justify-between bg-[#1E2329] rounded-xl border border-[#2E3440] p-3 cursor-pointer">'
     + '<div class="flex items-center gap-2">'
-    + '<span class="text-[13px] font-semibold text-[#EAECEF]">综合净贡献</span>'
+    + '<span class="text-[13px] font-semibold text-[#EAECEF]">利润贡献</span>'
     + '<span class="text-[15px] font-bold text-[#F0B90B]">' + nc.totalDisplay + '</span>'
     + '</div>'
     + '<i id="nc-arrow" class="fa-solid fa-chevron-down text-[11px] text-[#848E9C] transition-transform"></i>'
@@ -578,9 +575,8 @@
   ];
   var pnlMax = Math.max.apply(null, pnlItems.map(function(i) { return Math.abs(i.data.value); }).concat([1]));
 
-  assetsHtml += '<div class="mx-4 mt-3 mb-4">'
-    + '<div class="text-[13px] font-semibold text-[#EAECEF] mb-2">客户近期盈亏</div>'
-    + '<div class="bg-[#1E2329] rounded-xl border border-[#2E3440] p-3">';
+  assetsHtml += '<div class="mx-4 mt-3 mb-4 bg-[#1E2329] rounded-xl border border-[#2E3440] p-3">'
+    + '<div class="text-[13px] font-semibold text-[#EAECEF] mb-2">交易盈亏</div>';
   assetsHtml += '<div class="flex items-end gap-4 mb-3">'
     + '<div>'
     + '<div class="text-[10px] text-[#848E9C] mb-0.5">近7天</div>'
@@ -605,7 +601,7 @@
       + '</div>'
       + '</div>';
   });
-  assetsHtml += '</div></div></div>';
+  assetsHtml += '</div></div>';
 
   document.getElementById('tab-assets').innerHTML = assetsHtml;
 
@@ -620,21 +616,19 @@
     localStorage.setItem(tagKey, JSON.stringify(savedTags));
   }
 
-  profileHtml += '<div class="mx-4 mt-3">'
+  profileHtml += '<div class="mx-4 mt-3 bg-[#1E2329] rounded-xl border border-[#2E3440] p-3" id="bd-tags-card">'
     + '<div class="text-[13px] font-semibold text-[#EAECEF] mb-2">BD 标签</div>'
-    + '<div id="bd-tags-card" class="bg-[#1E2329] rounded-xl border border-[#2E3440] p-3">'
     + '<div id="bd-tags-container" class="flex flex-wrap gap-1.5"></div>'
-    + '</div></div>';
+    + '</div>';
 
   // Module 10: Notes
   var noteKey = 'bd_note_' + c.uid;
   var savedNote = localStorage.getItem(noteKey) || '';
 
-  profileHtml += '<div class="mx-4 mt-3 mb-4">'
-    + '<div class="text-[13px] font-semibold text-[#EAECEF] mb-2">备注</div>'
-    + '<div class="bg-[#1E2329] rounded-xl border border-[#2E3440] p-3">'
+  profileHtml += '<div class="mx-4 mt-3 mb-4 bg-[#1E2329] rounded-xl border border-[#2E3440] p-3">'
+    + '<div class="text-[13px] font-semibold text-[#EAECEF] mb-2">BD 备注</div>'
     + '<textarea id="bd-note" class="w-full bg-[#2B3139] text-[#EAECEF] text-[12px] rounded-lg p-3 border border-[#2E3440] outline-none resize-none min-h-[100px] placeholder-[#474D57]" placeholder="添加备注...">' + esc(savedNote) + '</textarea>'
-    + '</div></div>';
+    + '</div>';
 
   document.getElementById('tab-profile').innerHTML = profileHtml;
 
