@@ -405,11 +405,18 @@
     item.pct = ddTotal > 0 ? Math.round(item.value / ddTotal * 100) : 0;
   });
 
-  // 资金分布
+  // 资金分布 (reuse deltaAbs/deltaPct from header)
+  var distChgColor = deltaPct >= 0 ? '#0ECB81' : '#F6465D';
+  var distChgIcon = deltaPct >= 0 ? 'fa-caret-up' : 'fa-caret-down';
+  var distChgSign = deltaPct >= 0 ? '+' : '';
+
   assetsHtml += '<div class="mx-4 mt-3 bg-[#1E2329] rounded-xl border border-[#2E3440] p-3">'
     + '<div class="flex items-start justify-between mb-3">'
     + '<div><div class="text-[13px] font-semibold text-[#EAECEF]">资金分布</div></div>'
-    + '<div class="text-right"><div class="text-[16px] font-bold tabular-nums" style="color:#F0B90B">' + c.depositDisplay + '</div></div>'
+    + '<div class="text-right">'
+    + '<div class="text-[16px] font-bold tabular-nums" style="color:#F0B90B">' + c.depositDisplay + '</div>'
+    + '<div class="text-[10px] mt-0.5" style="color:' + distChgColor + '"><i class="fa-solid ' + distChgIcon + '"></i> ' + distChgSign + deltaPct.toFixed(1) + '%</div>'
+    + '</div>'
     + '</div>'
     + '<div class="h-[1px] bg-[#2E3440] mb-3"></div>';
   ddItems.forEach(function(item, idx) {
@@ -458,14 +465,19 @@
   var netFlowLabel = avgNetPerWeek >= 0 ? '净流入' : '净流出';
   var netFlowColor = avgNetPerWeek >= 0 ? '#0ECB81' : '#F6465D';
 
+  // This week's net flow vs 8w avg net flow
+  var thisWeekNet = thisWeekFlow.inflow - thisWeekFlow.outflow;
+  var flowChgPct = Math.abs(avgNetPerWeek) > 0 ? ((thisWeekNet - avgNetPerWeek) / Math.abs(avgNetPerWeek) * 100) : 0;
+  var flowChgColor = flowChgPct >= 0 ? '#0ECB81' : '#F6465D';
+  var flowChgIcon = flowChgPct >= 0 ? 'fa-caret-up' : 'fa-caret-down';
+  var flowChgSign = flowChgPct >= 0 ? '+' : '';
+
   assetsHtml += '<div class="mx-4 mt-3 bg-[#1E2329] rounded-xl border border-[#2E3440] p-3">'
     + '<div class="flex items-start justify-between mb-3">'
-    + '<div>'
-    + '<div class="text-[13px] font-semibold text-[#EAECEF]">资沉流动</div>'
-    + '<div class="text-[10px] text-[#474D57] mt-0.5">8周均基线</div>'
-    + '</div>'
+    + '<div><div class="text-[13px] font-semibold text-[#EAECEF]">资沉流动</div></div>'
     + '<div class="text-right">'
     + '<div class="text-[16px] font-bold tabular-nums" style="color:' + netFlowColor + '">' + netFlowLabel + ' $' + fmtFlowAmt(Math.abs(avgNetPerWeek)) + '/周</div>'
+    + '<div class="text-[10px] mt-0.5" style="color:' + flowChgColor + '"><i class="fa-solid ' + flowChgIcon + '"></i> ' + flowChgSign + flowChgPct.toFixed(1) + '%</div>'
     + '</div>'
     + '</div>'
     + '<div class="h-[1px] bg-[#2E3440] mb-3"></div>';
