@@ -71,36 +71,21 @@ def _fmt_pct(val):
 
 
 EVENT_TEMPLATES = {
-    'large_withdraw': {
-        'type': '大额出金', 'urgency': 'critical', 'color': '#F6465D',
-        'action': '立即联系，了解出金原因',
-        'script': '张总您好，注意到您最近有一笔资金调整，想跟您确认一下是否有什么我们可以协助的地方？',
-    },
     'risk_control': {
         'type': '风控触发', 'urgency': 'critical', 'color': '#F6465D',
         'action': '一键复制客户信息，发给研发排查',
         'script': None,
         'copy_template': '客户 UID: {uid}\n风控类型: {risk_type}\n触发时间: {time}\n客户资沉: {deposit}\n请协助排查，谢谢。',
     },
-    'large_loss': {
-        'type': '大额亏损', 'urgency': 'warning', 'color': '#F0A030',
-        'action': '关怀客户情绪，建议风控',
-        'script': '注意到您最近的交易有些波动，如果需要任何帮助或想了解风控方案，随时联系我。',
+    'mega_withdraw': {
+        'type': '超大额出金', 'urgency': 'critical', 'color': '#F6465D',
+        'action': '挽留话术 + 福利金',
+        'script': '张总您好，注意到您最近有一笔较大的资金调整，想跟您确认一下是否有什么我们可以协助的地方？',
     },
-    'finance_expiry': {
-        'type': '理财到期', 'urgency': 'warning', 'color': '#F0B90B',
-        'action': '提醒续存，推送权益说明',
-        'script': '您好，您的理财产品即将到期，目前有续存权益方案，年化可以到 X%，需要我帮您了解一下吗？',
-    },
-    'large_deposit': {
-        'type': '大额入金', 'urgency': 'info', 'color': '#0ECB81',
-        'action': '感谢并推荐产品',
-        'script': '感谢您的信任，您最近入金的资金是否需要配置理财或其他产品？我可以给您推荐适合的方案。',
-    },
-    'large_profit': {
-        'type': '大额盈利', 'urgency': 'info', 'color': '#0ECB81',
-        'action': '祝贺并建议锁定部分盈利',
-        'script': '恭喜最近收益不错！建议将部分盈利转入理财锁定，我可以帮您看看适合的产品。',
+    'liquidation': {
+        'type': '爆仓', 'urgency': 'critical', 'color': '#F6465D',
+        'action': '安抚话术 + 风控教育',
+        'script': '注意到您最近的仓位有波动，我们有一些风控工具可以帮助管理风险，方便的话我给您介绍一下？',
     },
 }
 
@@ -115,80 +100,156 @@ def _fmt_amount(val):
     return f'{sign}${abs_val:.0f}'
 
 
-def _generate_events(uid, name, status, f_mean):
-    """Generate 1-3 events per client based on status."""
-    events = []
+def _generate_events_and_activities(uid, name, status, f_mean, row):
+    """Generate events (push to homepage) and activities (client detail only).
 
-    if status == '流失':
-        evt = dict(EVENT_TEMPLATES['large_withdraw'])
-        evt['id'] = f'evt-{uid}-001'
+    Events (3 types): 风控触发, 超大额出金, 爆仓
+    Activities (5 types): 大额出金, 大额入金, 理财到期, 大额盈利, 大额亏损
+    """
+    events = []
+    activities = []
+    evt_counter = 0
+    act_counter = 0
+
+    has_futures = row.get('has_futures') == '1'
+    has_leverage = row.get('has_leverage') == '1'
+    has_savings = row.get('has_savings') == '1'
+    has_trading = has_futures or has_leverage or row.get('has_mini') == '1'
+
+    # --- Events (push to homepage, need action) ---
+
+    # 1. 风控触发: 流失客户 30% 概率
+    if status == '流失' and random.random() < 0.3:
+        evt_counter += 1
+        risk_types = ['提现限制', '交易限制', '账户冻结', 'KYC异常']
+        risk_type = random.choice(risk_types)
+        evt = dict(EVENT_TEMPLATES['risk_control'])
+        evt['id'] = f'evt-{uid}-{evt_counter:03d}'
         evt['client_uid'] = uid
         evt['client_name'] = name
-        evt['amount'] = -abs(random.uniform(50000, 500000))
-        evt['amount_display'] = _fmt_amount(evt['amount'])
+        evt['risk_type'] = risk_type
+        evt['amount'] = 0
+        evt['amount_display'] = ''
+        evt['time_ago'] = random.choice(['1小时前', '30分钟前', '2小时前'])
+        evt['task_state'] = '待处理'
+        evt['sub_type'] = risk_type
+        evt['expires_in'] = None
+        events.append(evt)
+
+    # 2. 超大额出金: 流失客户 40% 概率, 金额 >= fMean * 30%
+    if status == '流失' and random.random() < 0.4:
+        evt_counter += 1
+        amount = -abs(f_mean * random.uniform(0.3, 0.6))
+        evt = dict(EVENT_TEMPLATES['mega_withdraw'])
+        evt['id'] = f'evt-{uid}-{evt_counter:03d}'
+        evt['client_uid'] = uid
+        evt['client_name'] = name
+        evt['amount'] = amount
+        evt['amount_display'] = _fmt_amount(amount)
         evt['time_ago'] = random.choice(['2小时前', '5小时前', '1天前'])
         evt['task_state'] = random.choice(['待处理', '跟进中'])
         evt['sub_type'] = ''
+        evt['expires_in'] = '48小时'
         events.append(evt)
 
-        if random.random() < 0.4:
-            evt2 = dict(EVENT_TEMPLATES['finance_expiry'])
-            evt2['id'] = f'evt-{uid}-002'
-            evt2['client_uid'] = uid
-            evt2['client_name'] = name
-            evt2['amount'] = random.uniform(100000, 2000000)
-            evt2['amount_display'] = _fmt_amount(evt2['amount'])
-            evt2['time_ago'] = random.choice(['今天', '明天', '3天后'])
-            evt2['task_state'] = '待处理'
-            evt2['sub_type'] = ''
-            events.append(evt2)
-
-    elif status == '增长':
-        evt = dict(EVENT_TEMPLATES['large_deposit'])
-        evt['id'] = f'evt-{uid}-001'
+    # 3. 爆仓: 有合约或杠杆的客户 20% 概率
+    if (has_futures or has_leverage) and random.random() < 0.2:
+        evt_counter += 1
+        sub = random.choice(
+            (['合约爆仓'] if has_futures else [])
+            + (['杠杆爆仓'] if has_leverage else [])
+        )
+        evt = dict(EVENT_TEMPLATES['liquidation'])
+        evt['id'] = f'evt-{uid}-{evt_counter:03d}'
         evt['client_uid'] = uid
         evt['client_name'] = name
-        evt['amount'] = abs(random.uniform(50000, 800000))
+        evt['amount'] = -abs(f_mean * random.uniform(0.05, 0.2))
         evt['amount_display'] = _fmt_amount(evt['amount'])
-        evt['time_ago'] = random.choice(['1小时前', '3小时前', '昨天'])
-        evt['task_state'] = random.choice(['待处理', '已完成'])
-        evt['sub_type'] = ''
-        events.append(evt)
-
-    else:  # 稳定
-        if random.random() < 0.3:
-            evt = dict(EVENT_TEMPLATES['finance_expiry'])
-            evt['id'] = f'evt-{uid}-001'
-            evt['client_uid'] = uid
-            evt['client_name'] = name
-            evt['amount'] = random.uniform(50000, 500000)
-            evt['amount_display'] = _fmt_amount(evt['amount'])
-            evt['time_ago'] = random.choice(['3天后', '5天后', '下周'])
-            evt['task_state'] = '待处理'
-            evt['sub_type'] = ''
-            events.append(evt)
-
-    # Random chance of risk control event
-    if random.random() < 0.05:
-        risk_types = ['提现限制', '交易限制', '账户冻结']
-        evt = dict(EVENT_TEMPLATES['risk_control'])
-        evt['id'] = f'evt-{uid}-risk'
-        evt['client_uid'] = uid
-        evt['client_name'] = name
-        evt['risk_type'] = random.choice(risk_types)
-        evt['amount'] = 0
-        evt['amount_display'] = ''
-        evt['time_ago'] = random.choice(['1小时前', '30分钟前'])
+        evt['time_ago'] = random.choice(['1小时前', '3小时前', '6小时前'])
         evt['task_state'] = '待处理'
-        evt['sub_type'] = evt['risk_type']
+        evt['sub_type'] = sub
+        evt['expires_in'] = '72小时'
         events.append(evt)
 
-    return events
+    # --- Activities (client detail timeline only) ---
+
+    # 普通大额出金 (< 30% 资沉): 流失客户 60% 概率
+    if status == '流失' and random.random() < 0.6:
+        act_counter += 1
+        amount = -abs(f_mean * random.uniform(0.05, 0.29))
+        activities.append({
+            'id': f'act-{uid}-{act_counter:03d}',
+            'client_uid': uid,
+            'client_name': name,
+            'type': '大额出金',
+            'sub_type': '',
+            'amount_display': _fmt_amount(amount),
+            'time_ago': random.choice(['2小时前', '5小时前', '1天前', '2天前']),
+        })
+
+    # 大额入金: 增长/稳定客户 50% 概率
+    if status in ('增长', '稳定') and random.random() < 0.5:
+        act_counter += 1
+        amount = abs(f_mean * random.uniform(0.05, 0.3))
+        activities.append({
+            'id': f'act-{uid}-{act_counter:03d}',
+            'client_uid': uid,
+            'client_name': name,
+            'type': '大额入金',
+            'sub_type': '',
+            'amount_display': _fmt_amount(amount),
+            'time_ago': random.choice(['1小时前', '3小时前', '昨天']),
+        })
+
+    # 理财到期: 有理财业务 40% 概率
+    if has_savings and random.random() < 0.4:
+        act_counter += 1
+        amount = f_mean * random.uniform(0.1, 0.4)
+        activities.append({
+            'id': f'act-{uid}-{act_counter:03d}',
+            'client_uid': uid,
+            'client_name': name,
+            'type': '理财到期',
+            'sub_type': '',
+            'amount_display': _fmt_amount(amount),
+            'time_ago': random.choice(['今天', '明天', '3天后', '下周']),
+        })
+
+    # 大额盈利: 有交易业务 30% 概率
+    if has_trading and random.random() < 0.3:
+        act_counter += 1
+        amount = abs(f_mean * random.uniform(0.02, 0.15))
+        activities.append({
+            'id': f'act-{uid}-{act_counter:03d}',
+            'client_uid': uid,
+            'client_name': name,
+            'type': '大额盈利',
+            'sub_type': '',
+            'amount_display': _fmt_amount(amount),
+            'time_ago': random.choice(['1小时前', '6小时前', '昨天']),
+        })
+
+    # 大额亏损: 有交易业务 30% 概率
+    if has_trading and random.random() < 0.3:
+        act_counter += 1
+        amount = -abs(f_mean * random.uniform(0.02, 0.15))
+        activities.append({
+            'id': f'act-{uid}-{act_counter:03d}',
+            'client_uid': uid,
+            'client_name': name,
+            'type': '大额亏损',
+            'sub_type': '',
+            'amount_display': _fmt_amount(amount),
+            'time_ago': random.choice(['2小时前', '8小时前', '昨天']),
+        })
+
+    return events, activities
 
 
 def build_mock_data(rows):
     clients = []
     all_events = []
+    all_activities = []
 
     for row in rows:
         f_mean = float(row["f_mean"])
@@ -258,11 +319,14 @@ def build_mock_data(rows):
             "remainingDisplay": _fmt_deposit(float(row["welfare_remaining"])),
         }
 
-        # Events
+        # Events & Activities
         uid = row["uid"]
         name = row["name"]
-        client_events = _generate_events(uid, name, row["status"], f_mean)
+        client_events, client_activities = _generate_events_and_activities(
+            uid, name, row["status"], f_mean, row,
+        )
         all_events.extend(client_events)
+        all_activities.extend(client_activities)
 
         clients.append({
             "uid": uid,
@@ -297,6 +361,7 @@ def build_mock_data(rows):
             "clientPnl": client_pnl,
             "welfare": welfare,
             "events": client_events,
+            "activities": client_activities,
         })
 
     by_id = {c["uid"]: c for c in clients}
@@ -309,6 +374,12 @@ def build_mock_data(rows):
     for evt in all_events:
         cuid = evt["client_uid"]
         events_by_uid.setdefault(cuid, []).append(evt)
+
+    # Activities by client UID lookup
+    activities_by_uid = {}
+    for act in all_activities:
+        cuid = act["client_uid"]
+        activities_by_uid.setdefault(cuid, []).append(act)
 
     # Three views
     deposit_rank = sorted(clients, key=lambda c: c["fMean"], reverse=True)
@@ -332,6 +403,8 @@ def build_mock_data(rows):
         "growthUids": [c["uid"] for c in growth_list],
         "events": all_events,
         "eventsByClientUid": events_by_uid,
+        "activities": all_activities,
+        "activitiesByClientUid": activities_by_uid,
         "stats": {
             "total": len(clients),
             "churn": len(churn_list),
@@ -339,6 +412,7 @@ def build_mock_data(rows):
             "stable": len(clients) - len(churn_list) - len(growth_list),
             "eventCount": len(all_events),
             "criticalEvents": sum(1 for e in all_events if e.get("urgency") == "critical"),
+            "activityCount": len(all_activities),
         },
     }
 
