@@ -63,8 +63,34 @@
     </div>
   </div>
 
-  <!-- Sort Info -->
-  <div id="sort-info" class="px-4 pb-2 text-[11px] text-[#848E9C]"></div>
+  <!-- Sort Tabs + 方向切换 -->
+  <div class="flex items-center gap-2 px-4 py-2">
+    <div class="flex gap-2 overflow-x-auto flex-1" style="scrollbar-width:none">
+      <button data-sort="deposit"
+        class="sort-tab text-[12px] px-3 py-1 rounded-full whitespace-nowrap flex-shrink-0 cursor-pointer border-0">
+        资沉
+      </button>
+      <button data-sort="inflow"
+        class="sort-tab text-[12px] px-3 py-1 rounded-full whitespace-nowrap flex-shrink-0 cursor-pointer border-0">
+        本周入金
+      </button>
+      <button data-sort="outflow"
+        class="sort-tab text-[12px] px-3 py-1 rounded-full whitespace-nowrap flex-shrink-0 cursor-pointer border-0">
+        本周出金
+      </button>
+      <button data-sort="profit"
+        class="sort-tab text-[12px] px-3 py-1 rounded-full whitespace-nowrap flex-shrink-0 cursor-pointer border-0">
+        利润贡献
+      </button>
+      <button data-sort="favs"
+        class="sort-tab text-[12px] px-3 py-1 rounded-full whitespace-nowrap flex-shrink-0 cursor-pointer border-0">
+        <i class="fa-solid fa-star text-[11px] mr-1"></i>收藏
+      </button>
+    </div>
+    <button id="dir-btn" class="flex-shrink-0 bg-[#2E3440] border-0 rounded-lg px-2 py-1 cursor-pointer text-[#848E9C] text-[13px]">
+      <i id="dir-icon" class="fa-solid fa-arrow-down-wide-short"></i>
+    </button>
+  </div>
 
   <!-- Client List -->
   <div id="client-list" class="overflow-y-auto pb-[100px]" style="scrollbar-width:none;"></div>
@@ -100,69 +126,251 @@
   var D = window.PROTOTYPE_DATA;
   var searchInput = document.getElementById('search-input');
 
-  function getStatusLabel(c) {
-    var rate = c.adjustedTrendRate;
-    var pct = Math.abs(rate * 100).toFixed(1);
-    if (rate <= -0.01) return { label: '流失 ' + pct + '%', bg: 'rgba(246,70,93,0.15)', color: '#F6465D' };
-    if (rate >= 0.01) return { label: '增长 ' + pct + '%', bg: 'rgba(14,203,129,0.15)', color: '#0ECB81' };
-    return { label: '稳定', bg: 'rgba(132,142,156,0.15)', color: '#848E9C' };
+  // 跟进事件：读取一次，供圆点指示使用
+  var _fuEvents = [];
+  try { _fuEvents = JSON.parse(sessionStorage.getItem('follow_up_events') || '[]'); } catch(e) {}
+  var _todayStr = new Date().toISOString().split('T')[0];
+  function getFollowUpDot(uid) {
+    var dot = null;
+    _fuEvents.forEach(function(e) {
+      if (e.client_uid === uid && e.status !== '已完成' && e.status !== '已忽略') {
+        dot = (e.follow_up_at < _todayStr) ? '#F6465D' : '#4DA6FF';
+      }
+    });
+    return dot;
   }
 
-  function getLastContactHours(uid) {
-    var evts = D.eventsByClientUid[uid];
-    if (!evts || evts.length === 0) return 999;
-    var min = Infinity;
-    evts.forEach(function(e) { if (e.age_hours < min) min = e.age_hours; });
-    return min;
+  // 维度配置
+  var SORT_CONFIG = {
+    deposit:  { color: '#F0B90B' },
+    inflow:   { color: '#0ECB81' },
+    outflow:  { color: '#F6465D' },
+    profit:   { color: '#4DA6FF' },
+    favs:     { color: '#F0B90B' },
+  };
+
+  // 收藏 localStorage
+  var FAV_KEY = 'slaeshub_favs';
+  function getFavs() { try { return JSON.parse(localStorage.getItem(FAV_KEY) || '[]'); } catch(e) { return []; } }
+  function setFavs(arr) { localStorage.setItem(FAV_KEY, JSON.stringify(arr)); }
+  function isFav(uid) { return getFavs().indexOf(uid) !== -1; }
+  function toggleFav(uid) {
+    var arr = getFavs();
+    var idx = arr.indexOf(uid);
+    if (idx === -1) arr.push(uid); else arr.splice(idx, 1);
+    setFavs(arr);
   }
 
-  function lastContactLabel(hours) {
-    if (hours >= 999) return '7天未联系';
-    if (hours < 24) return '今天联系';
-    if (hours < 48) return '1天前联系';
-    if (hours < 72) return '2天前联系';
-    if (hours < 168) return Math.floor(hours / 24) + '天前联系';
-    return '7天未联系';
+  // 读取 URL 参数，默认 deposit
+  var urlSort = new URLSearchParams(location.search).get('sort') || 'deposit';
+  var activeSort = (SORT_CONFIG[urlSort] ? urlSort : 'deposit');
+  var sortAsc = false; // 默认倒序（大→小）
+  var PAGE_SIZE = 20;
+  var currentPage = 1;
+
+  // 计算 weekDelta（末周 - 倒二周）
+  function getWeekDelta(c) {
+    var w = c.weeks;
+    if (!w || w.length < 2) return 0;
+    return w[w.length - 1] - w[w.length - 2];
   }
 
-  function rowHTML(c) {
-    var s = getStatusLabel(c);
-    var h = getLastContactHours(c.uid);
-    var lbl = lastContactLabel(h);
-    var lblColor = (h >= 168 || h >= 999) ? '#F6465D' : '#848E9C';
-    return '<a href="client-detail.html?uid=' + c.uid + '" class="flex items-center px-4 py-3 border-b border-[#2E3440] active:bg-[#2B3139]">'
-      + '<div class="flex-1 min-w-0">'
-      +   '<div class="flex items-center gap-2">'
-      +     '<span class="text-[13px] font-medium text-[#EAECEF] truncate">' + c.name + '</span>'
-      +     '<span class="text-[11px] text-[#474D57]">' + c.uid + '</span>'
-      +   '</div>'
-      + '</div>'
-      + '<div class="flex items-center gap-3 flex-shrink-0 ml-2">'
-      +   '<span class="text-[14px] font-bold text-[#EAECEF]">' + c.depositDisplay + '</span>'
-      +   '<span class="text-[10px] px-1.5 py-0.5 rounded-full" style="background:' + s.bg + ';color:' + s.color + '">' + s.label + '</span>'
-      +   '<span class="text-[10px] text-right" style="color:' + lblColor + ';min-width:32px">' + lbl + '</span>'
-      + '</div>'
-      + '</a>';
+  // 金额格式化（万）
+  function fmtWan(val) {
+    var abs = Math.abs(val);
+    if (abs >= 10000) return (val > 0 ? '+' : '-') + (abs / 10000).toFixed(1) + '万';
+    return (val > 0 ? '+' : '') + Math.round(val).toLocaleString();
+  }
+
+  // 获取当前维度的指标值文本
+  function getMetricDisplay(c, sort) {
+    if (sort === 'deposit') {
+      return c.depositDisplay;
+    }
+    if (sort === 'inflow') {
+      var delta = getWeekDelta(c);
+      return delta > 0 ? fmtWan(delta) : null;
+    }
+    if (sort === 'outflow') {
+      var delta = getWeekDelta(c);
+      return delta < 0 ? fmtWan(delta) : null;
+    }
+    if (sort === 'profit') {
+      return c.netContribution ? c.netContribution.totalDisplay : null;
+    }
+    return null;
+  }
+
+  // 排序函数
+  function sortClients(list, sort) {
+    var sorted = list.slice();
+    if (sort === 'deposit') {
+      sorted.sort(function(a, b) { return b.fMean - a.fMean; });
+    } else if (sort === 'inflow') {
+      sorted.sort(function(a, b) {
+        var da = getWeekDelta(a), db = getWeekDelta(b);
+        var hasA = da > 0, hasB = db > 0;
+        if (hasA && !hasB) return -1;
+        if (!hasA && hasB) return 1;
+        if (!hasA && !hasB) return 0;
+        return db - da;
+      });
+    } else if (sort === 'outflow') {
+      sorted.sort(function(a, b) {
+        var da = getWeekDelta(a), db = getWeekDelta(b);
+        var hasA = da < 0, hasB = db < 0;
+        if (hasA && !hasB) return -1;
+        if (!hasA && hasB) return 1;
+        if (!hasA && !hasB) return 0;
+        return Math.abs(db) - Math.abs(da);
+      });
+    } else if (sort === 'profit') {
+      sorted.sort(function(a, b) {
+        var ta = a.netContribution ? a.netContribution.total : 0;
+        var tb = b.netContribution ? b.netContribution.total : 0;
+        return tb - ta;
+      });
+    }
+    return sorted;
+  }
+
+  function lastContact(c) {
+    var evts = D.eventsByClientUid[c.uid];
+    if (!evts || evts.length === 0) return { label: '未联系', color: '#F6465D' };
+    var minH = Infinity;
+    evts.forEach(function(e) { if (e.age_hours < minH) minH = e.age_hours; });
+    var label = minH < 24 ? '今天联系' : Math.floor(minH / 24) + '天前联系';
+    var color = minH >= 720 ? '#F6465D' : minH >= 168 ? '#F0B90B' : '#0ECB81';
+    return { label: label, color: color };
+  }
+
+  // 渲染单行
+  function rowHTML(c, sort) {
+    var color = SORT_CONFIG[sort].color;
+    var metric = sort === 'favs' ? c.depositDisplay : getMetricDisplay(c, sort);
+    var metricHTML = metric
+      ? '<span class="text-[13px] font-bold flex-shrink-0" style="color:' + color + '">' + metric + '</span>'
+      : '<span class="text-[13px] flex-shrink-0 text-[#474D57]">—</span>';
+    var lc = lastContact(c);
+    var label = c.name ? c.uid + ' (' + c.name + ')' : c.uid;
+    var faved = isFav(c.uid);
+    var starColor = faved ? '#F0B90B' : '#474D57';
+
+    var dotColor = getFollowUpDot(c.uid);
+    var dotHTML = dotColor
+      ? '<span style="width:7px;height:7px;border-radius:50%;background:' + dotColor + ';flex-shrink:0;display:inline-block"></span>'
+      : '<span style="width:7px;height:7px;flex-shrink:0;display:inline-block"></span>';
+    return '<div class="flex items-center px-4 py-3 border-b border-[#2E3440] gap-2">'
+      + '<a href="client-detail.html?uid=' + c.uid + '" class="flex items-center gap-2 flex-1 min-w-0 active:opacity-70">'
+      +   dotHTML
+      +   '<span class="flex-1 text-[13px] text-[#EAECEF] truncate min-w-0">' + label + '</span>'
+      +   metricHTML
+      +   '<span class="text-[11px] flex-shrink-0 text-right" style="color:' + lc.color + ';min-width:42px">' + lc.label + '</span>'
+      + '</a>'
+      + '<button onclick="onToggleFav(\'' + c.uid + '\',this)" class="flex-shrink-0 bg-transparent border-0 cursor-pointer p-1" style="color:' + starColor + '">'
+      +   '<i class="fa-' + (faved ? 'solid' : 'regular') + ' fa-star text-[14px]"></i>'
+      + '</button>'
+      + '</div>';
+  }
+
+  // 更新胶囊样式
+  function updateTabs() {
+    document.querySelectorAll('.sort-tab').forEach(function(btn) {
+      var s = btn.getAttribute('data-sort');
+      if (s === activeSort) {
+        btn.style.background = '#F0B90B';
+        btn.style.color = '#0B0E11';
+        btn.style.fontWeight = '600';
+      } else {
+        btn.style.background = '#2E3440';
+        btn.style.color = '#848E9C';
+        btn.style.fontWeight = '400';
+      }
+    });
   }
 
   function renderList() {
     var query = searchInput.value.toLowerCase();
-    var filtered = D.clients.filter(function(c) {
+    var pool = D.clients;
+    if (activeSort === 'favs') {
+      var favArr = getFavs();
+      pool = favArr.map(function(uid) {
+        return D.clients.filter(function(c) { return c.uid === uid; })[0];
+      }).filter(Boolean);
+      pool.sort(function(a, b) { return b.fMean - a.fMean; });
+    }
+    var filtered = pool.filter(function(c) {
       return !query || c.name.toLowerCase().includes(query) || c.uid.includes(query);
     });
-    filtered.sort(function(a, b) {
-      return getLastContactHours(b.uid) - getLastContactHours(a.uid);
-    });
+    var sorted = activeSort === 'favs' ? filtered : sortClients(filtered, activeSort);
+    if (sortAsc) sorted = sorted.slice().reverse();
 
-    document.getElementById('sort-info').textContent =
-      '按最近联系时间排序 · 共 ' + filtered.length + ' 位客户';
+    var total = sorted.length;
+    var totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
+    if (currentPage > totalPages) currentPage = totalPages;
+    var pageItems = sorted.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
 
-    document.getElementById('client-list').innerHTML = filtered.length
-      ? filtered.map(function(c) { return rowHTML(c); }).join('')
-      : '<div class="py-8 text-center text-[#848E9C] text-[13px]">未找到匹配的客户</div>';
+    var listHTML = pageItems.length
+      ? pageItems.map(function(c) { return rowHTML(c, activeSort); }).join('')
+      : activeSort === 'favs'
+        ? '<div class="py-12 text-center text-[#848E9C] text-[13px]">还没有收藏的客户<br><span class="text-[11px]">点击列表右侧 ☆ 添加</span></div>'
+        : '<div class="py-8 text-center text-[#848E9C] text-[13px]">未找到匹配的客户</div>';
+
+    // 分页控件
+    var paginationHTML = totalPages > 1 ? (
+      '<div style="display:flex;align-items:center;justify-content:center;gap:12px;padding:16px;border-top:1px solid #2E3440">'
+      + '<button onclick="goPage(' + (currentPage - 1) + ')" style="background:#2E3440;border:0;border-radius:8px;padding:6px 14px;color:' + (currentPage <= 1 ? '#474D57' : '#EAECEF') + ';font-size:13px;cursor:' + (currentPage <= 1 ? 'default' : 'pointer') + '">'
+      +   '<i class="fa-solid fa-chevron-left"></i>'
+      + '</button>'
+      + '<span style="font-size:12px;color:#848E9C">' + currentPage + ' / ' + totalPages + '<span style="margin-left:6px;color:#474D57">共' + total + '人</span></span>'
+      + '<button onclick="goPage(' + (currentPage + 1) + ')" style="background:#2E3440;border:0;border-radius:8px;padding:6px 14px;color:' + (currentPage >= totalPages ? '#474D57' : '#EAECEF') + ';font-size:13px;cursor:' + (currentPage >= totalPages ? 'default' : 'pointer') + '">'
+      +   '<i class="fa-solid fa-chevron-right"></i>'
+      + '</button>'
+      + '</div>'
+    ) : '';
+
+    document.getElementById('client-list').innerHTML = listHTML + paginationHTML;
   }
 
-  searchInput.addEventListener('input', renderList);
+  window.goPage = function(p) {
+    var totalPages = Math.max(1, Math.ceil(D.clients.length / PAGE_SIZE));
+    if (p < 1 || p > totalPages) return;
+    currentPage = p;
+    renderList();
+    document.getElementById('client-list').scrollIntoView({ behavior: 'smooth' });
+  };
+
+  window.onToggleFav = function(uid, btn) {
+    toggleFav(uid);
+    var faved = isFav(uid);
+    btn.style.color = faved ? '#F0B90B' : '#474D57';
+    btn.innerHTML = '<i class="fa-' + (faved ? 'solid' : 'regular') + ' fa-star text-[14px]"></i>';
+    if (activeSort === 'favs') renderList();
+  };
+
+  // 胶囊点击
+  document.querySelectorAll('.sort-tab').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      activeSort = btn.getAttribute('data-sort');
+      currentPage = 1;
+      updateTabs();
+      renderList();
+    });
+  });
+
+  // 方向切换
+  document.getElementById('dir-btn').addEventListener('click', function() {
+    sortAsc = !sortAsc;
+    currentPage = 1;
+    var icon = document.getElementById('dir-icon');
+    icon.className = sortAsc ? 'fa-solid fa-arrow-up-wide-short' : 'fa-solid fa-arrow-down-wide-short';
+    renderList();
+  });
+
+  searchInput.addEventListener('input', function() { currentPage = 1; renderList(); });
+
+  // 初始化
+  updateTabs();
   renderList();
 })();
 </script>

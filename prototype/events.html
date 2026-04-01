@@ -98,135 +98,182 @@
   <div class="h-[34px]"></div>
 </div>
 
-<script src="mock-data.js"></script>
 <script>
 (function() {
-  var D = window.PROTOTYPE_DATA;
-
-  // Read processed events from sessionStorage (written by event-thread.html)
-  var processedList = JSON.parse(sessionStorage.getItem('processed_events') || '[]');
-  var processedSet = {};
-  processedList.forEach(function(id) { processedSet[id] = true; });
-
-  var URGENCY_ORDER = { critical: 0, warning: 1, info: 2 };
-  var TASK_COLORS = {
-    '待处理': { bg: 'rgba(246,70,93,0.15)', text: '#F6465D' },
-    '跟进中': { bg: 'rgba(77,166,255,0.15)', text: '#4DA6FF' },
-    '已完成': { bg: 'rgba(14,203,129,0.15)', text: '#0ECB81' },
-    '已忽略': { bg: 'rgba(132,142,156,0.15)', text: '#848E9C' }
+  var STATUS_COLORS = {
+    '待处理': { bg: 'rgba(240,185,11,0.15)',   text: '#F0B90B' },
+    '跟进中': { bg: 'rgba(77,166,255,0.15)',   text: '#4DA6FF' },
+    '已完成': { bg: 'rgba(14,203,129,0.15)',   text: '#0ECB81' },
+    '已忽略': { bg: 'rgba(132,142,156,0.15)',  text: '#848E9C' }
   };
-
-  function parseTimeAgo(s) {
-    if (!s) return 9999;
-    var m = s.match(/(\d+)/);
-    var n = m ? parseInt(m[1], 10) : 9999;
-    if (s.indexOf('分钟') !== -1) return n / 60;
-    if (s.indexOf('小时') !== -1) return n;
-    if (s.indexOf('天') !== -1) return n * 24;
-    if (s.indexOf('周') !== -1) return n * 168;
-    return 9999;
-  }
-
-  // All events sorted by time (newest first), with processed overrides
-  var allEvents = D.events.slice().map(function(e) {
-    if (processedSet[e.id] && e.task_state === '待处理') {
-      return Object.assign({}, e, { task_state: '已完成' });
-    }
-    return e;
-  }).sort(function(a, b) {
-    var aH = (typeof a.age_hours === 'number') ? a.age_hours : parseTimeAgo(a.time_ago);
-    var bH = (typeof b.age_hours === 'number') ? b.age_hours : parseTimeAgo(b.time_ago);
-    return aH - bH;
-  });
-
+  var todayStr = new Date().toISOString().split('T')[0];
   var currentFilter = '全部';
+  var _markDoneId = null;
 
-  function filterEvents(state) {
-    if (state === '全部') return allEvents;
-    return allEvents.filter(function(e) { return e.task_state === state; });
+  function loadEvents() {
+    var arr = [];
+    try { arr = JSON.parse(sessionStorage.getItem('follow_up_events') || '[]'); } catch(e) {}
+    return arr;
   }
 
-  function renderStats(filtered) {
-    var total = filtered.length;
-    var pending = 0;
-    var inProgress = 0;
-    filtered.forEach(function(e) {
-      if (e.task_state === '待处理') pending++;
-      if (e.task_state === '跟进中') inProgress++;
+  function daysLabel(fuAt) {
+    var d = Math.round((new Date(fuAt) - new Date(todayStr)) / 86400000);
+    if (d < 0) return { text: '逾期' + Math.abs(d) + '天', color: '#F6465D' };
+    if (d === 0) return { text: '今天', color: '#F0B90B' };
+    if (d === 1) return { text: '明天', color: '#F0B90B' };
+    return { text: d + '天后', color: '#4DA6FF' };
+  }
+
+  function sortScore(ev) {
+    // 逾期最前，已完成/已忽略最后
+    if (ev.status === '已完成' || ev.status === '已忽略') return 99999;
+    var d = Math.round((new Date(ev.follow_up_at) - new Date(todayStr)) / 86400000);
+    return d; // 逾期为负（最小值 = 最前）
+  }
+
+  function filtered(events) {
+    if (currentFilter === '全部') return events;
+    return events.filter(function(e) { return e.status === currentFilter; });
+  }
+
+  function renderStats(events) {
+    var pending = 0, following = 0, total = events.length;
+    events.forEach(function(e) {
+      if (e.status === '待处理') pending++;
+      if (e.status === '跟进中') following++;
     });
-
     document.getElementById('stats-bar').innerHTML =
-      '共 ' + total + ' 个事件 · '
-      + '<span class="text-[#F6465D]">' + pending + ' 待处理</span> · '
-      + '<span class="text-[#4DA6FF]">' + inProgress + ' 跟进中</span>';
+      '共 ' + total + ' 个跟进事件 · '
+      + '<span style="color:#F0B90B">' + pending + ' 待处理</span> · '
+      + '<span style="color:#4DA6FF">' + following + ' 跟进中</span>';
   }
 
-  function renderEventList(filtered) {
+  function renderList(events) {
     var container = document.getElementById('event-list');
-
-    if (filtered.length === 0) {
+    if (events.length === 0) {
       container.innerHTML =
-        '<div class="flex flex-col items-center justify-center py-20 text-[#848E9C]">'
-        + '<i class="fa-solid fa-inbox text-[40px] mb-3 text-[#474D57]"></i>'
-        + '<span class="text-[14px]">没有符合条件的事件</span>'
+        '<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;padding:80px 0;color:#848E9C">'
+        + '<i class="fa-solid fa-inbox" style="font-size:40px;margin-bottom:12px;color:#474D57"></i>'
+        + '<span style="font-size:14px">暂无跟进事件</span>'
+        + '<a href="clients.html" style="font-size:12px;color:#4DA6FF;margin-top:8px">打开客户列表，记录主动沟通</a>'
         + '</div>';
       return;
     }
 
-    container.innerHTML = filtered.map(function(evt) {
-      var tc = TASK_COLORS[evt.task_state] || TASK_COLORS['已忽略'];
-      return '<a href="event-thread.html?id=' + evt.id + '" class="block px-4 py-3 border-b border-[#2E3440] active:bg-[#2B3139]">'
-        + '<div class="flex items-center gap-2 mb-1">'
-        +   '<span class="w-2 h-2 rounded-full flex-shrink-0" style="background:' + evt.color + '"></span>'
-        +   '<span class="text-[13px] font-medium text-[#EAECEF]">' + evt.client_name + '</span>'
-        +   '<span class="text-[12px] text-[#848E9C]">&middot;</span>'
-        +   '<span class="text-[12px] text-[#848E9C]">' + evt.type + '</span>'
-        +   (evt.sub_type ? '<span class="text-[10px] px-1.5 py-0.5 rounded bg-[#2B3139] text-[#848E9C]">' + evt.sub_type + '</span>' : '')
+    container.innerHTML = events.map(function(ev) {
+      var sc = STATUS_COLORS[ev.status] || STATUS_COLORS['已忽略'];
+      var dl = daysLabel(ev.follow_up_at);
+      var isDone = ev.status === '已完成' || ev.status === '已忽略';
+      return '<div class="px-4 py-3 border-b border-[#2E3440]">'
+        + '<div class="flex items-start justify-between gap-2">'
+        + '<a href="client-detail.html?uid=' + ev.client_uid + '" class="flex-1 min-w-0 active:opacity-70">'
+        + '<div class="flex items-center gap-1.5 mb-1">'
+        + '<span style="background:#4DA6FF;width:7px;height:7px;border-radius:50%;display:inline-block;flex-shrink:0"></span>'
+        + '<span style="font-size:13px;font-weight:600;color:#EAECEF">' + ev.client_name + '</span>'
+        + '<span style="font-size:10px;padding:1px 6px;border-radius:9999px;background:' + sc.bg + ';color:' + sc.text + '">' + ev.status + '</span>'
         + '</div>'
-        + '<div class="flex items-center justify-between">'
-        +   '<div class="flex items-center gap-2">'
-        +     '<span class="text-[14px] font-bold" style="color:' + evt.color + '">' + evt.amount_display + '</span>'
-        +     '<span class="text-[10px] px-1.5 py-0.5 rounded-full" style="background:' + tc.bg + ';color:' + tc.text + '">' + evt.task_state + '</span>'
-        +   '</div>'
-        +   '<span class="text-[10px] text-[#848E9C]">' + evt.time_ago + '</span>'
+        + '<div style="font-size:12px;color:#EAECEF;margin-bottom:2px">' + (ev.follow_up_note || '—') + '</div>'
+        + '<div style="font-size:11px;color:' + dl.color + ';font-weight:500">' + dl.text + ' · ' + ev.follow_up_at + '</div>'
+        + (ev.done_note ? '<div style="font-size:11px;color:#848E9C;margin-top:3px">"' + ev.done_note + '"</div>' : '')
+        + '</a>'
+        + (!isDone
+          ? '<div style="display:flex;flex-direction:column;gap:4px;flex-shrink:0">'
+            + (ev.status === '待处理' ? '<button onclick="setFollowing(\'' + ev.id + '\')" style="font-size:11px;padding:4px 8px;border-radius:6px;border:1px solid #2E3440;color:#848E9C;background:none;cursor:pointer">跟进</button>' : '')
+            + '<button onclick="openDoneSheet(\'' + ev.id + '\')" style="font-size:11px;padding:4px 8px;border-radius:6px;border:1px solid #0ECB81;color:#0ECB81;background:none;cursor:pointer">完成</button>'
+            + '</div>'
+          : '')
         + '</div>'
-        + '</a>';
+        + '</div>';
     }).join('');
   }
 
-  function updatePillStyles() {
-    var pills = document.querySelectorAll('.filter-pill');
-    pills.forEach(function(pill) {
-      var isActive = pill.getAttribute('data-filter') === currentFilter;
-      if (isActive) {
-        pill.style.background = '#F0B90B';
-        pill.style.color = '#0B0E11';
-      } else {
-        pill.style.background = '#1E2329';
-        pill.style.color = '#848E9C';
-      }
+  function updatePills() {
+    document.querySelectorAll('.filter-pill').forEach(function(p) {
+      var active = p.getAttribute('data-filter') === currentFilter;
+      p.style.background = active ? '#F0B90B' : '#1E2329';
+      p.style.color = active ? '#0B0E11' : '#848E9C';
     });
   }
 
   function render() {
-    var filtered = filterEvents(currentFilter);
-    updatePillStyles();
-    renderStats(filtered);
-    renderEventList(filtered);
+    var all = loadEvents().sort(function(a, b) { return sortScore(a) - sortScore(b); });
+    var shown = filtered(all);
+    updatePills();
+    renderStats(all);
+    renderList(shown);
   }
 
-  // Bind filter pill clicks
+  // filter pill clicks
   document.getElementById('filter-bar').addEventListener('click', function(e) {
-    var pill = e.target.closest('.filter-pill');
-    if (!pill) return;
-    currentFilter = pill.getAttribute('data-filter');
+    var p = e.target.closest('.filter-pill');
+    if (!p) return;
+    currentFilter = p.getAttribute('data-filter');
     render();
   });
 
-  // Initial render
+  // mark-done sheet
+  window.openDoneSheet = function(id) {
+    _markDoneId = id;
+    document.getElementById('mark-done-note').value = '';
+    document.getElementById('mark-done-sheet').style.display = 'flex';
+  };
+  window.closeDoneSheet = function() {
+    document.getElementById('mark-done-sheet').style.display = 'none';
+    _markDoneId = null;
+  };
+  window.confirmDone = function() {
+    if (!_markDoneId) return;
+    var note = document.getElementById('mark-done-note').value.trim();
+    var evs = loadEvents();
+    evs.forEach(function(e) {
+      if (e.id === _markDoneId) { e.status = '已完成'; e.done_note = note; e.done_at = new Date().toISOString(); }
+    });
+    sessionStorage.setItem('follow_up_events', JSON.stringify(evs));
+    window.closeDoneSheet();
+    render();
+  };
+  window.postpone = function() {
+    if (!_markDoneId) return;
+    var evs = loadEvents();
+    evs.forEach(function(e) {
+      if (e.id === _markDoneId) {
+        var d = new Date(e.follow_up_at || new Date()); d.setDate(d.getDate() + 3);
+        var pad = function(n) { return n < 10 ? '0' + n : '' + n; };
+        e.follow_up_at = d.getFullYear() + '-' + pad(d.getMonth()+1) + '-' + pad(d.getDate());
+        e.status = '跟进中';
+      }
+    });
+    sessionStorage.setItem('follow_up_events', JSON.stringify(evs));
+    window.closeDoneSheet();
+    render();
+  };
+  window.setFollowing = function(id) {
+    var evs = loadEvents();
+    evs.forEach(function(e) { if (e.id === id) e.status = '跟进中'; });
+    sessionStorage.setItem('follow_up_events', JSON.stringify(evs));
+    render();
+  };
+
   render();
 })();
 </script>
+
+<!-- Mark Done Bottom Sheet -->
+<div id="mark-done-sheet" style="display:none;position:fixed;inset:0;z-index:50;align-items:flex-end;justify-content:center" onclick="if(event.target===this)window.closeDoneSheet()">
+  <div style="position:absolute;inset:0;background:rgba(0,0,0,0.6)"></div>
+  <div style="position:relative;width:393px;background:#1E2329;border-radius:16px 16px 0 0;padding:20px;padding-bottom:calc(20px + env(safe-area-inset-bottom))">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+      <span style="font-size:15px;font-weight:600;color:#EAECEF">标记完成</span>
+      <button onclick="window.closeDoneSheet()" style="width:28px;height:28px;display:flex;align-items:center;justify-content:center;color:#848E9C;font-size:18px;background:none;border:0;cursor:pointer">✕</button>
+    </div>
+    <div style="font-size:11px;color:#848E9C;margin-bottom:4px">备注（选填）</div>
+    <textarea id="mark-done-note" rows="3" style="width:100%;background:#2B3139;color:#EAECEF;font-size:13px;border-radius:8px;padding:10px 12px;border:1px solid #2E3440;outline:none;resize:none;margin-bottom:16px;box-sizing:border-box;font-family:inherit" placeholder="记录一下结果..."></textarea>
+    <div style="display:flex;gap:8px">
+      <button onclick="window.confirmDone()" style="flex:1;padding:12px;border-radius:12px;font-size:14px;font-weight:600;background:#F0B90B;color:#0B0E11;border:0;cursor:pointer">确认完成</button>
+      <button onclick="window.postpone()" style="padding:12px 16px;border-radius:12px;font-size:13px;color:#4DA6FF;border:1px solid #4DA6FF;background:none;cursor:pointer">推迟3天</button>
+    </div>
+  </div>
+</div>
 
 </body>
 </html>

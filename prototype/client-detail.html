@@ -113,6 +113,8 @@
 
       <!-- Row 5: Last Contact -->
       <div id="last-contact-row" class="px-4 pb-3 flex items-center justify-between"></div>
+      <!-- Row 6: Active Follow-up (hidden when none) -->
+      <div id="active-followup-row" class="hidden px-4 pb-3 flex items-center justify-between"></div>
     </div>
 
     <!-- Tab Bar -->
@@ -463,6 +465,22 @@
 
   var allFollowups = commFollowups;
 
+  // 读取全局跟进事件
+  var allFollowUpEvents = [];
+  try { allFollowUpEvents = JSON.parse(sessionStorage.getItem('follow_up_events') || '[]'); } catch(e) {}
+  var clientActiveEvents = allFollowUpEvents.filter(function(e) {
+    return e.client_uid === uid && e.status !== '已完成' && e.status !== '已忽略';
+  });
+  var todayStr = new Date().toISOString().split('T')[0];
+
+  function fuDaysLabel(fuAt) {
+    var d = Math.round((new Date(fuAt) - new Date(todayStr)) / 86400000);
+    if (d < 0) return { text: '逾期' + Math.abs(d) + '天', color: '#F6465D' };
+    if (d === 0) return { text: '今天', color: '#F0B90B' };
+    if (d === 1) return { text: '明天', color: '#F0B90B' };
+    return { text: d + '天后', color: '#4DA6FF' };
+  }
+
   // Row 5: 上次联系（写入顶部固定头部，不进 eventsHtml）
   var lastContactEl = document.getElementById('last-contact-row');
   if (lastContactEl) {
@@ -479,6 +497,46 @@
       lastContactEl.innerHTML = '<span class="text-[11px] text-[#848E9C]">上次联系</span>'
         + '<span class="text-[12px] text-[#474D57]">暂无记录</span>';
     }
+  }
+
+  // Row 6: 活跃跟进（写入顶部 header）
+  var fuRow = document.getElementById('active-followup-row');
+  if (fuRow && clientActiveEvents.length > 0) {
+    var fuLatest = clientActiveEvents[0];
+    var fuDL = fuDaysLabel(fuLatest.follow_up_at);
+    fuRow.classList.remove('hidden');
+    fuRow.innerHTML = '<span class="text-[11px] text-[#848E9C]">待跟进</span>'
+      + '<span class="text-[12px] flex items-center gap-2">'
+      + '<span class="font-semibold" style="color:' + fuDL.color + '">' + fuDL.text + '</span>'
+      + (fuLatest.follow_up_note ? '<span class="text-[#848E9C] max-w-[120px] truncate">' + esc(fuLatest.follow_up_note) + '</span>' : '')
+      + '<button onclick="window.markEventDone(\'' + fuLatest.id + '\')" class="flex-shrink-0 text-[11px] px-2.5 py-0.5 rounded-full border active:opacity-70" style="color:#4DA6FF;border-color:#4DA6FF">完成</button>'
+      + '</span>';
+  }
+
+  // 当前跟进事件区块
+  if (clientActiveEvents.length > 0) {
+    eventsHtml += '<div class="mx-4 mt-3 bg-[#1E2329] rounded-xl border border-[#2E3440] p-3">'
+      + '<div class="text-[13px] font-semibold text-[#EAECEF] mb-2">当前跟进</div>'
+      + '<div class="space-y-2">';
+    clientActiveEvents.forEach(function(ev) {
+      var dl = fuDaysLabel(ev.follow_up_at);
+      var stateBg = ev.status === '跟进中' ? 'rgba(77,166,255,0.12)' : 'rgba(240,185,11,0.12)';
+      var stateColor = ev.status === '跟进中' ? '#4DA6FF' : '#F0B90B';
+      eventsHtml += '<div class="flex items-start justify-between gap-2">'
+        + '<div class="flex-1 min-w-0">'
+        + '<div class="flex items-center gap-1.5 mb-0.5">'
+        + '<span class="text-[10px] px-1.5 py-0.5 rounded-full" style="background:' + stateBg + ';color:' + stateColor + '">' + ev.status + '</span>'
+        + '<span class="text-[11px] font-medium" style="color:' + dl.color + '">' + dl.text + '</span>'
+        + '</div>'
+        + '<div class="text-[12px] text-[#EAECEF]">' + esc(ev.follow_up_note || '—') + '</div>'
+        + '</div>'
+        + '<div class="flex flex-col gap-1 flex-shrink-0">'
+        + (ev.status === '待处理' ? '<button onclick="window.setEventFollowing(\'' + ev.id + '\')" class="text-[11px] px-2 py-1 rounded-lg border border-[#2E3440] text-[#848E9C] active:opacity-70">跟进</button>' : '')
+        + '<button onclick="window.markEventDone(\'' + ev.id + '\')" class="text-[11px] px-2 py-1 rounded-lg border active:opacity-70" style="color:#0ECB81;border-color:#0ECB81">完成</button>'
+        + '</div>'
+        + '</div>';
+    });
+    eventsHtml += '</div></div>';
   }
 
   eventsHtml += '<div class="mx-4 mt-3 mb-2 bg-[#1E2329] rounded-xl border border-[#2E3440] p-3">'
@@ -527,6 +585,16 @@
     + '<input type="datetime-local" id="comm-occurred-at" class="w-full bg-[#2B3139] text-[#EAECEF] text-[12px] rounded-lg px-3 py-2 border border-[#2E3440] outline-none mb-3" style="color-scheme:dark" />'
     + '<div class="text-[11px] text-[#848E9C] mb-1">内容摘要（选填）</div>'
     + '<textarea id="comm-summary" rows="2" class="w-full bg-[#2B3139] text-[#EAECEF] text-[12px] rounded-lg px-3 py-2 border border-[#2E3440] outline-none placeholder-[#474D57] resize-none mb-3" placeholder="简要说明聊了什么"></textarea>'
+    + '<label class="flex items-center gap-2 mb-2 cursor-pointer">'
+    + '<input type="checkbox" id="comm-follow-up" onchange="window.toggleFollowUp()" class="w-4 h-4 accent-[#F0B90B]">'
+    + '<span class="text-[12px] text-[#848E9C]">需要后续跟进</span>'
+    + '</label>'
+    + '<div id="follow-up-fields" style="display:none" class="bg-[#2B3139] rounded-lg p-3 mb-3">'
+    + '<div class="text-[11px] text-[#848E9C] mb-1">跟进日期</div>'
+    + '<input type="date" id="comm-follow-up-at" class="w-full bg-[#0B0E11] text-[#EAECEF] text-[12px] rounded-lg px-3 py-2 border border-[#2E3440] outline-none mb-2" style="color-scheme:dark">'
+    + '<div class="text-[11px] text-[#848E9C] mb-1">跟进要点（选填）</div>'
+    + '<input type="text" id="comm-follow-up-note" class="w-full bg-[#0B0E11] text-[#EAECEF] text-[12px] rounded-lg px-3 py-2 border border-[#2E3440] outline-none placeholder-[#474D57]" placeholder="下次要做什么">'
+    + '</div>'
     + '<div class="flex gap-2">'
     + '<button onclick="submitComm()" class="flex-1 py-2 rounded-lg text-[13px] font-semibold bg-[#F0B90B] text-[#0B0E11] active:opacity-80">创建</button>'
     + '<button onclick="closeCommForm()" class="py-2 px-4 rounded-lg text-[13px] text-[#848E9C] border border-[#2E3440] active:opacity-80">取消</button>'
@@ -823,6 +891,101 @@ window.submitComm = function() {
   records.unshift({ date: occurredAt, bd: 'BD', channel: channel, result: result, occurred_at: occurredAt, summary: summary, text: text });
   sessionStorage.setItem(commKey, JSON.stringify(records));
   sessionStorage.setItem('last_contact_' + uid, new Date().toISOString());
+
+  // 创建跟进事件（如勾选）
+  var fuCheckEl = document.getElementById('comm-follow-up');
+  if (fuCheckEl && fuCheckEl.checked) {
+    var fuAt = (document.getElementById('comm-follow-up-at') || {}).value || '';
+    var fuNote = ((document.getElementById('comm-follow-up-note') || {}).value || '').trim();
+    if (fuAt) {
+      var fuEvents = [];
+      try { fuEvents = JSON.parse(sessionStorage.getItem('follow_up_events') || '[]'); } catch(e) {}
+      // 关闭该客户的旧活跃跟进
+      fuEvents.forEach(function(e) {
+        if (e.client_uid === uid && e.status !== '已完成' && e.status !== '已忽略') {
+          e.status = '已完成';
+          e.done_note = '被新跟进替代';
+          e.done_at = new Date().toISOString();
+        }
+      });
+      var clientNameEl = document.getElementById('client-uid');
+      fuEvents.push({
+        id: 'fu_' + uid + '_' + Date.now(),
+        client_uid: uid,
+        client_name: clientNameEl ? clientNameEl.textContent : uid,
+        status: '待处理',
+        created_at: new Date().toISOString(),
+        follow_up_at: fuAt,
+        follow_up_note: fuNote
+      });
+      sessionStorage.setItem('follow_up_events', JSON.stringify(fuEvents));
+    }
+  }
+
+  location.reload();
+};
+
+// === 跟进事件操作 ===
+window.toggleFollowUp = function() {
+  var el = document.getElementById('comm-follow-up');
+  var fields = document.getElementById('follow-up-fields');
+  if (!el || !fields) return;
+  fields.style.display = el.checked ? 'block' : 'none';
+  if (el.checked && !document.getElementById('comm-follow-up-at').value) {
+    var d = new Date(); d.setDate(d.getDate() + 1);
+    var pad = function(n) { return n < 10 ? '0' + n : '' + n; };
+    document.getElementById('comm-follow-up-at').value = d.getFullYear() + '-' + pad(d.getMonth()+1) + '-' + pad(d.getDate());
+  }
+};
+
+var _markDoneEventId = null;
+window.markEventDone = function(eventId) {
+  _markDoneEventId = eventId;
+  var el = document.getElementById('mark-done-note');
+  if (el) el.value = '';
+  document.getElementById('mark-done-sheet').style.display = 'flex';
+};
+window.closeDoneSheet = function() {
+  document.getElementById('mark-done-sheet').style.display = 'none';
+  _markDoneEventId = null;
+};
+window.confirmEventDone = function() {
+  if (!_markDoneEventId) return;
+  var note = (document.getElementById('mark-done-note') || {}).value || '';
+  var fuEvents = [];
+  try { fuEvents = JSON.parse(sessionStorage.getItem('follow_up_events') || '[]'); } catch(e) {}
+  fuEvents.forEach(function(e) {
+    if (e.id === _markDoneEventId) {
+      e.status = '已完成';
+      e.done_note = note.trim();
+      e.done_at = new Date().toISOString();
+    }
+  });
+  sessionStorage.setItem('follow_up_events', JSON.stringify(fuEvents));
+  window.closeDoneSheet();
+  location.reload();
+};
+window.postponeEvent = function() {
+  if (!_markDoneEventId) return;
+  var fuEvents = [];
+  try { fuEvents = JSON.parse(sessionStorage.getItem('follow_up_events') || '[]'); } catch(e) {}
+  fuEvents.forEach(function(e) {
+    if (e.id === _markDoneEventId) {
+      var d = new Date(e.follow_up_at || new Date()); d.setDate(d.getDate() + 3);
+      var pad = function(n) { return n < 10 ? '0' + n : '' + n; };
+      e.follow_up_at = d.getFullYear() + '-' + pad(d.getMonth()+1) + '-' + pad(d.getDate());
+      e.status = '跟进中';
+    }
+  });
+  sessionStorage.setItem('follow_up_events', JSON.stringify(fuEvents));
+  window.closeDoneSheet();
+  location.reload();
+};
+window.setEventFollowing = function(eventId) {
+  var fuEvents = [];
+  try { fuEvents = JSON.parse(sessionStorage.getItem('follow_up_events') || '[]'); } catch(e) {}
+  fuEvents.forEach(function(e) { if (e.id === eventId) e.status = '跟进中'; });
+  sessionStorage.setItem('follow_up_events', JSON.stringify(fuEvents));
   location.reload();
 };
 
@@ -907,6 +1070,23 @@ window.deleteContact = function(idx) {
 // 所有 window.* 函数定义完毕后，执行档案 tab 初始化
 window.renderContacts();
 </script>
+
+<!-- Mark Done Bottom Sheet -->
+<div id="mark-done-sheet" style="display:none" class="fixed inset-0 z-50 flex items-end justify-center" onclick="if(event.target===this)window.closeDoneSheet()">
+  <div class="absolute inset-0 bg-black/60"></div>
+  <div class="relative w-[393px] bg-[#1E2329] rounded-t-2xl p-5" style="padding-bottom:calc(1.25rem + env(safe-area-inset-bottom))">
+    <div class="flex items-center justify-between mb-4">
+      <span class="text-[15px] font-semibold text-[#EAECEF]">标记完成</span>
+      <button onclick="window.closeDoneSheet()" class="w-7 h-7 flex items-center justify-center text-[#848E9C] text-[18px]">✕</button>
+    </div>
+    <div class="text-[11px] text-[#848E9C] mb-1">备注（选填）</div>
+    <textarea id="mark-done-note" rows="3" class="w-full bg-[#2B3139] text-[#EAECEF] text-[13px] rounded-lg px-3 py-2.5 border border-[#2E3440] outline-none placeholder-[#474D57] resize-none mb-4" placeholder="记录一下结果..."></textarea>
+    <div class="flex gap-2">
+      <button onclick="window.confirmEventDone()" class="flex-1 py-3 rounded-xl text-[14px] font-semibold bg-[#F0B90B] text-[#0B0E11] active:opacity-80">确认完成</button>
+      <button onclick="window.postponeEvent()" class="py-3 px-4 rounded-xl text-[13px] border active:opacity-80" style="color:#4DA6FF;border-color:#4DA6FF">推迟3天</button>
+    </div>
+  </div>
+</div>
 
 </body>
 </html>
