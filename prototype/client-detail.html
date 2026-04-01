@@ -854,7 +854,7 @@
     + '<textarea id="client-notes" rows="6" class="w-full bg-[#2B3139] text-[#EAECEF] text-[12px] rounded-lg px-3 py-2 border border-[#2E3440] outline-none placeholder-[#474D57] resize-none leading-relaxed" placeholder="记录客户背景、沟通风格、历史关系等..."></textarea>'
     + '</div>';
 
-  // 初始化档案 tab
+  // 初始化档案 tab（renderContacts 在 IIFE 外定义，延迟调用）
   (function initProfile() {
     var nn = localStorage.getItem('nickname_' + uid) || '';
     var nnVal = document.getElementById('nickname-val');
@@ -864,7 +864,6 @@
       notesEl.value = localStorage.getItem('notes_' + uid) || '';
       notesEl.addEventListener('input', function() { localStorage.setItem('notes_' + uid, notesEl.value); });
     }
-    renderContacts();
   })();
 
 })();
@@ -1001,6 +1000,9 @@ window.deleteContact = function(idx) {
   localStorage.setItem('contacts_' + uid, JSON.stringify(contacts));
   renderContacts();
 };
+
+// 所有 window.* 函数定义完毕后，执行档案 tab 初始化
+window.renderContacts();
 </script>
 
 </body>
