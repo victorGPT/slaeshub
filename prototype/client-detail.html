@@ -96,13 +96,19 @@
             <!-- filled by JS: arrow icon + percentage + absolute change -->
           </div>
         </div>
-        <!-- 8w avg small reference -->
-        <div class="mt-1 text-[10px] text-[#474D57]">
-          8周均 <span id="deposit-avg" class="tabular-nums"></span>
+      </div>
+
+      <!-- Row 3: Welfare -->
+      <div class="px-4 pb-2">
+        <div class="flex items-center gap-2 text-[11px]">
+          <span class="text-[#474D57]">福利金</span>
+          <span class="text-[#0ECB81] font-medium">余 <span id="welfare-remaining"></span></span>
+          <span class="text-[#474D57]">|</span>
+          <span class="text-[#848E9C]">已投 <span id="welfare-sent"></span></span>
         </div>
       </div>
 
-      <!-- Row 3: Memo -->
+      <!-- Row 4: Memo -->
       <div class="px-4 pb-3">
         <input id="memo-input" type="text" class="w-full bg-[#2B3139] text-[#EAECEF] text-[11px] rounded-lg px-3 py-1.5 border border-[#2E3440] outline-none placeholder-[#474D57]" placeholder="备忘..." />
       </div>
@@ -294,7 +300,10 @@
 
   // Deposit hero
   document.getElementById('deposit-hero').textContent = c.thisWeekDisplay || '-';
-  document.getElementById('deposit-avg').textContent = c.depositDisplay;
+  // Welfare
+  var welf = c.welfare || {};
+  document.getElementById('welfare-remaining').textContent = welf.remainingDisplay || '$0';
+  document.getElementById('welfare-sent').textContent = welf.sentDisplay || '$0';
 
   // Delta: this week vs 8w avg
   var thisWeekVal = c.weeks[c.weeks.length - 1];
@@ -312,6 +321,8 @@
   deltaEl.innerHTML = '<div class="flex items-center gap-1 px-1.5 py-0.5 rounded" style="background:' + deltaBg + '">'
     + '<span class="text-[11px]" style="color:' + deltaColor + '">' + arrowChar + '</span>'
     + '<span class="text-[12px] font-bold tabular-nums" style="color:' + deltaColor + '">' + sign + deltaPct.toFixed(1) + '%</span>'
+    + '<span class="text-[10px] text-[#474D57] mx-0.5">|</span>'
+    + '<span class="text-[10px]">均</span>' + fmtAvg(platAvg.depositChg)
     + '</div>'
     + '<span class="text-[10px] tabular-nums" style="color:' + deltaColor + '">' + sign + fmtFlow(Math.round(deltaAbs)) + '</span>';
 
