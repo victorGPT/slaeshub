@@ -117,12 +117,18 @@
   <div class="absolute inset-0 bg-black/60"></div>
   <div class="relative w-[393px] bg-[#1E2329] rounded-t-2xl p-5" style="padding-bottom:calc(1.25rem + env(safe-area-inset-bottom))">
     <div class="flex items-center justify-between mb-4">
-      <span class="text-[15px] font-semibold text-[#EAECEF]">标记已结束</span>
+      <span class="text-[15px] font-semibold text-[#EAECEF]">完成任务</span>
       <button onclick="closeDoneSheet()" class="w-7 h-7 flex items-center justify-center text-[#848E9C] text-[18px]">✕</button>
     </div>
-    <div class="text-[11px] text-[#848E9C] mb-1">结束备注（选填）</div>
-    <textarea id="done-note" rows="3" class="w-full bg-[#2B3139] text-[#EAECEF] text-[13px] rounded-lg px-3 py-2.5 border border-[#2E3440] outline-none placeholder-[#474D57] resize-none mb-4" placeholder="记录一下最终结果..."></textarea>
-    <button onclick="confirmDone()" class="w-full py-3 rounded-xl text-[14px] font-semibold bg-[#0ECB81] text-[#0B0E11] active:opacity-80">确认已结束</button>
+    <div class="text-[11px] text-[#848E9C] mb-2">结果</div>
+    <div class="flex gap-2 mb-4">
+      <button id="done-outcome-success" onclick="selectOutcome('成功')" class="done-outcome-btn flex-1 py-2 rounded-xl text-[13px] border border-[#0ECB81] text-[#0ECB81] active:opacity-70" style="font-weight:600">成功</button>
+      <button id="done-outcome-fail" onclick="selectOutcome('失败')" class="done-outcome-btn flex-1 py-2 rounded-xl text-[13px] border border-[#2E3440] text-[#848E9C] active:opacity-70">失败</button>
+      <button id="done-outcome-other" onclick="selectOutcome('其他')" class="done-outcome-btn flex-1 py-2 rounded-xl text-[13px] border border-[#2E3440] text-[#848E9C] active:opacity-70">其他</button>
+    </div>
+    <div class="text-[11px] text-[#848E9C] mb-1">本次内容 + 说明（选填）</div>
+    <textarea id="done-note" rows="3" class="w-full bg-[#2B3139] text-[#EAECEF] text-[13px] rounded-lg px-3 py-2.5 border border-[#2E3440] outline-none placeholder-[#474D57] resize-none mb-4" placeholder="记录这次做了什么、结果如何..."></textarea>
+    <button onclick="confirmDone()" class="w-full py-3 rounded-xl text-[14px] font-semibold bg-[#0ECB81] text-[#0B0E11] active:opacity-80">确认完成</button>
   </div>
 </div>
 
@@ -289,7 +295,9 @@
       var timeLabel = timeAgo(a.occurred_at) || (a.occurred_at || '').slice(0, 10) || '';
       var body;
       if (a.type === '创建' || a.type === '跟进' || a.type === '结束') {
-        body = esc(a.note || (a.type === '创建' ? '创建了跟进任务' : a.type === '结束' ? '任务已结束' : ''));
+        var outcomeMap = { '成功': '#0ECB81', '失败': '#F6465D', '其他': '#848E9C' };
+        var outcomeTag = (a.type === '结束' && a.outcome) ? '<span style="color:' + (outcomeMap[a.outcome] || '#848E9C') + ';font-weight:600;margin-right:4px">' + esc(a.outcome) + '</span>' : '';
+        body = outcomeTag + esc(a.note || (a.type === '创建' ? '创建了跟进任务' : ''));
       } else {
         body = (a.channel || '') + (a.result ? ' · ' + a.result : '') + (a.summary ? '：' + esc(a.summary) : '');
       }
@@ -393,14 +401,17 @@
   function renderActionBar() {
     var bar = document.getElementById('action-bar');
     if (ev.status === '已结束') {
+      var outcomeColor = { '成功': '#0ECB81', '失败': '#F6465D', '其他': '#848E9C' };
+      var oc = ev.done_outcome || '';
+      var ocHtml = oc ? '<span style="color:' + (outcomeColor[oc] || '#848E9C') + ';font-weight:600;margin-right:4px">' + oc + '</span>' : '';
       bar.innerHTML = '<div class="text-center text-[12px] text-[#474D57] py-2">'
-        + '已结束' + (ev.done_note ? ' · "' + esc(ev.done_note) + '"' : '')
+        + '任务完成 · ' + ocHtml + (ev.done_note ? '"' + esc(ev.done_note) + '"' : '')
         + '</div>';
       return;
     }
     bar.innerHTML = '<div class="flex gap-2">'
       + '<button onclick="openFollowupSheet()" class="flex-1 py-3 rounded-xl text-[13px] font-semibold bg-[#4DA6FF] text-[#0B0E11] active:opacity-80">继续跟进</button>'
-      + '<button onclick="openDoneSheet()" class="flex-1 py-3 rounded-xl text-[13px] font-semibold bg-[#F0B90B] text-[#0B0E11] active:opacity-80">已结束</button>'
+      + '<button onclick="openDoneSheet()" class="flex-1 py-3 rounded-xl text-[13px] font-semibold bg-[#0ECB81] text-[#0B0E11] active:opacity-80">完成任务</button>'
       + '</div>';
   }
   renderActionBar();
@@ -429,8 +440,22 @@
   };
 
 
+  var _doneOutcome = '成功';
+  window.selectOutcome = function(val) {
+    _doneOutcome = val;
+    var colors = { '成功': '#0ECB81', '失败': '#F6465D', '其他': '#848E9C' };
+    var ids = { '成功': 'done-outcome-success', '失败': 'done-outcome-fail', '其他': 'done-outcome-other' };
+    ['成功','失败','其他'].forEach(function(v) {
+      var btn = document.getElementById(ids[v]);
+      if (!btn) return;
+      if (v === val) { btn.style.borderColor = colors[v]; btn.style.color = colors[v]; btn.style.fontWeight = '600'; }
+      else { btn.style.borderColor = '#2E3440'; btn.style.color = '#848E9C'; btn.style.fontWeight = '400'; }
+    });
+  };
   window.openDoneSheet = function() {
+    _doneOutcome = '成功';
     document.getElementById('done-note').value = '';
+    window.selectOutcome('成功');
     var sheet = document.getElementById('done-sheet');
     sheet.classList.remove('hidden');
     sheet.classList.add('flex');
@@ -442,16 +467,17 @@
   };
   window.confirmDone = function() {
     var note = document.getElementById('done-note').value.trim();
-    // Write [结束] activity record
-    var doneAct = { type: '结束', note: note, occurred_at: new Date().toISOString() };
+    var outcome = _doneOutcome;
+    var doneAct = { type: '结束', outcome: outcome, note: note, occurred_at: new Date().toISOString() };
     var all = [];
     try { all = JSON.parse(sessionStorage.getItem('follow_up_events') || '[]'); } catch(e) {}
     all.forEach(function(e) {
       if (e.id === ev.id) {
         if (!e.activities) e.activities = [];
         e.activities.push(doneAct);
-        e.status = '已结束'; e.done_note = note; e.done_at = doneAct.occurred_at;
-        ev.activities = e.activities; ev.status = e.status; ev.done_note = note;
+        e.status = '已结束'; e.done_note = note; e.done_outcome = outcome; e.done_at = doneAct.occurred_at;
+        ev.activities = e.activities; ev.status = e.status;
+        ev.done_note = note; ev.done_outcome = outcome;
       }
     });
     sessionStorage.setItem('follow_up_events', JSON.stringify(all));
