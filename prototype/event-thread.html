@@ -36,9 +36,15 @@
     .fixed-bar { position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); width: 393px; }
     .sheet-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 50; display: none; }
     .sheet-overlay.active { display: flex; align-items: flex-end; justify-content: center; }
-    .sheet-panel { width: 393px; max-height: 60vh; }
-    .collapsible-body { max-height: 0; overflow: hidden; transition: max-height 0.3s ease; }
-    .collapsible-body.open { max-height: 500px; }
+    .sheet-panel { width: 393px; max-height: 80vh; overflow-y: auto; }
+    .channel-btn, .result-btn {
+      padding: 6px 12px; border-radius: 8px; font-size: 12px; font-weight: 500;
+      background: #2B3139; color: #848E9C; border: 1px solid #2E3440; cursor: pointer;
+      transition: all 0.15s;
+    }
+    .channel-btn.selected, .result-btn.selected {
+      background: rgba(77,166,255,0.15); color: #4DA6FF; border-color: rgba(77,166,255,0.4);
+    }
   </style>
 </head>
 <body class="bg-[#0B0E11] text-[#EAECEF]">
@@ -60,7 +66,7 @@
       <i class="fa-solid fa-chevron-left text-[16px]"></i>
     </a>
     <h1 class="text-[16px] font-bold text-[#EAECEF]">事件详情</h1>
-    <div id="nav-status-badge" class="w-8 flex justify-end"></div>
+    <div id="nav-status-badge" class="w-16 flex justify-end"></div>
   </div>
 
   <!-- Scrollable Content -->
@@ -74,436 +80,344 @@
   <div class="h-[34px]"></div>
 </div>
 
-<!-- Bottom Sheet: Mark Processed -->
+<!-- Bottom Sheet: Add Activity -->
 <div id="sheet-overlay" class="sheet-overlay" onclick="closeSheet(event)">
   <div class="sheet-panel bg-[#1E2329] rounded-t-2xl border-t border-[#2E3440]" onclick="event.stopPropagation()">
-    <div class="flex items-center justify-between px-4 pt-4 pb-2">
-      <span class="text-[16px] font-bold text-[#EAECEF]">标记已处理</span>
+
+    <!-- Sheet Header -->
+    <div class="flex items-center justify-between px-4 pt-4 pb-3 border-b border-[#2E3440]">
+      <span class="text-[16px] font-bold text-[#EAECEF]">添加活动记录</span>
       <button onclick="closeSheet()" class="w-8 h-8 flex items-center justify-center text-[#848E9C]">
         <i class="fa-solid fa-xmark text-[18px]"></i>
       </button>
     </div>
-    <div class="px-4 pb-3">
-      <textarea id="sheet-note" rows="3" class="w-full bg-[#2B3139] text-[#EAECEF] text-[13px] rounded-lg px-3 py-2.5 border border-[#2E3440] outline-none placeholder-[#474D57] resize-none" placeholder="备注（选填）&#10;例：已电话沟通，客户确认属正常操作。"></textarea>
+
+    <div class="px-4 pt-3 pb-2">
+
+      <!-- 沟通渠道 -->
+      <div class="mb-4">
+        <div class="text-[12px] text-[#848E9C] mb-2">沟通渠道 <span class="text-[#F6465D]">*</span></div>
+        <div id="channel-options" class="flex flex-wrap gap-2">
+          <button class="channel-btn" onclick="selectChannel(this, 'Telegram')">Telegram</button>
+          <button class="channel-btn" onclick="selectChannel(this, 'WhatsApp')">WhatsApp</button>
+          <button class="channel-btn" onclick="selectChannel(this, '微信')">微信</button>
+          <button class="channel-btn" onclick="selectChannel(this, '电话')">电话</button>
+          <button class="channel-btn" onclick="selectChannel(this, '线下')">线下</button>
+          <button class="channel-btn" onclick="selectChannel(this, '邮件')">邮件</button>
+        </div>
+      </div>
+
+      <!-- 沟通结果 -->
+      <div class="mb-4">
+        <div class="text-[12px] text-[#848E9C] mb-2">沟通结果 <span class="text-[#F6465D]">*</span></div>
+        <div id="result-options" class="flex flex-wrap gap-2">
+          <button class="result-btn" onclick="selectResult(this, '已联系上')">已联系上</button>
+          <button class="result-btn" onclick="selectResult(this, '有回复')">有回复</button>
+          <button class="result-btn" onclick="selectResult(this, '已见面')">已见面</button>
+          <button class="result-btn" onclick="selectResult(this, '未接通')">未接通</button>
+          <button class="result-btn" onclick="selectResult(this, '未回复')">未回复</button>
+          <button class="result-btn" onclick="selectResult(this, '仅发送消息')">仅发送消息</button>
+        </div>
+      </div>
+
+      <!-- 备注 -->
+      <div class="mb-4">
+        <div class="text-[12px] text-[#848E9C] mb-2">备注（选填）</div>
+        <textarea id="sheet-summary" rows="3"
+          class="w-full bg-[#2B3139] text-[#EAECEF] text-[13px] rounded-lg px-3 py-2.5 border border-[#2E3440] outline-none placeholder-[#474D57] resize-none"
+          placeholder="这次聊了什么？"></textarea>
+      </div>
+
+      <!-- 更新下一步 -->
+      <div class="mb-4">
+        <div class="text-[12px] text-[#848E9C] mb-2">更新下一步（选填，留空则保持原有）</div>
+        <input id="sheet-next-action" type="text"
+          class="w-full bg-[#2B3139] text-[#EAECEF] text-[13px] rounded-lg px-3 py-2.5 border border-[#2E3440] outline-none placeholder-[#474D57]"
+          placeholder="例：下周发报价单" />
+      </div>
+
+      <!-- 更新跟进日期 -->
+      <div class="mb-5">
+        <div class="text-[12px] text-[#848E9C] mb-2">更新跟进日期（选填）</div>
+        <input id="sheet-follow-up-at" type="date"
+          class="w-full bg-[#2B3139] text-[#EAECEF] text-[13px] rounded-lg px-3 py-2.5 border border-[#2E3440] outline-none" />
+      </div>
+
+      <!-- 保存按钮 -->
+      <button onclick="saveActivity()"
+        class="w-full bg-[#F0B90B] text-[#0B0E11] font-semibold text-[14px] rounded-xl py-3 border-0 cursor-pointer mb-2 active:opacity-80">
+        保存活动记录
+      </button>
     </div>
-    <div class="flex gap-3 px-4 pb-6">
-      <button onclick="confirmProcessed(true)" class="flex-1 py-3 rounded-xl text-[14px] font-semibold bg-[#0ECB81] text-[#0B0E11] active:opacity-80">确认</button>
-      <button onclick="confirmProcessed(false)" class="flex-1 py-3 rounded-xl text-[14px] font-semibold text-[#848E9C] border border-[#2E3440] active:opacity-80">跳过，直接标记</button>
-    </div>
+
   </div>
 </div>
 
 <script src="mock-data.js"></script>
 <script>
 (function() {
-  var D = window.PROTOTYPE_DATA;
+
+  // ── Mock data init ─────────────────────────────────────────────
+  var MOCK_EVENTS = [
+    {
+      id: 'evt_001',
+      title: '拜访胡军 - 云算力意向跟进',
+      client_uid: '52339391',
+      status: '跟进中',
+      next_action: '发正式报价单',
+      follow_up_at: '2026-04-10',
+      created_at: '2026-04-04',
+      activities: [
+        { id: 'act_002', occurred_at: '2026-04-07', channel: '电话', result: '已联系上', summary: '客户确认有意向，需要报价单' },
+        { id: 'act_001', occurred_at: '2026-04-04', channel: '线下', result: '已见面', summary: '首次拜访，对云算力产品感兴趣' }
+      ]
+    },
+    {
+      id: 'evt_002',
+      title: '李强 - 理财产品推荐',
+      client_uid: '60122841',
+      status: '跟进中',
+      next_action: '确认是否收到产品资料',
+      follow_up_at: '2026-04-08',
+      created_at: '2026-04-05',
+      activities: [
+        { id: 'act_003', occurred_at: '2026-04-05', channel: 'Telegram', result: '仅发送消息', summary: '发送了理财产品介绍，等待回复' }
+      ]
+    }
+  ];
+
+  if (!localStorage.getItem('active_events')) {
+    localStorage.setItem('active_events', JSON.stringify(MOCK_EVENTS));
+  }
+
+  // ── State ──────────────────────────────────────────────────────
   var params = new URLSearchParams(window.location.search);
-  var eventId = params.get('id');
-  var evt = eventId ? D.events.find(function(e) { return e.id === eventId; }) : null;
-  var client = evt ? (D.clientsById[evt.client_uid] || null) : null;
+  var eventId = params.get('id') || 'evt_001';
 
-  if (!evt) {
-    document.getElementById('page-content').innerHTML =
-      '<div class="flex flex-col items-center justify-center py-20 text-[#848E9C]">'
-      + '<i class="fa-solid fa-circle-xmark text-[40px] mb-3 text-[#474D57]"></i>'
-      + '<span class="text-[14px]">未找到事件</span>'
-      + '</div>';
-    return;
+  var selectedChannel = '';
+  var selectedResult = '';
+
+  function loadEvent() {
+    var all = JSON.parse(localStorage.getItem('active_events') || '[]');
+    return all.find(function(e) { return e.id === eventId; }) || null;
   }
 
-  // === State ===
-  var processed = JSON.parse(sessionStorage.getItem('processed_events') || '[]');
-  var following = JSON.parse(sessionStorage.getItem('following_events') || '[]');
-  var ignored = JSON.parse(sessionStorage.getItem('ignored_events') || '[]');
-  var notes = JSON.parse(sessionStorage.getItem('event_notes') || '{}');
-
-  var currentStatus = 'pending'; // pending | following | processed | ignored
-  if (processed.indexOf(evt.id) !== -1) currentStatus = 'processed';
-  else if (following.indexOf(evt.id) !== -1) currentStatus = 'following';
-  else if (ignored.indexOf(evt.id) !== -1) currentStatus = 'ignored';
-
-  var isRisk = (evt.type === '风控触发');
-
-  // === Helpers ===
-  function esc(s) { return String(s).replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
-
-  function fmtFlow(v) {
-    var abs = Math.abs(v);
-    if (abs >= 10000) return '$' + Math.round(abs / 10000) + '万';
-    if (abs >= 1000) return '$' + (abs / 1000).toFixed(1) + '千';
-    return '$' + Math.round(abs);
+  function saveEvent(evt) {
+    var all = JSON.parse(localStorage.getItem('active_events') || '[]');
+    var idx = all.findIndex(function(e) { return e.id === evt.id; });
+    if (idx !== -1) all[idx] = evt;
+    else all.push(evt);
+    localStorage.setItem('active_events', JSON.stringify(all));
   }
 
-  var urgencyDot = { critical: '\uD83D\uDD34', warning: '\uD83D\uDFE1', info: '\uD83D\uDFE2' };
-  var dot = urgencyDot[evt.urgency] || '\u26AA';
+  // ── Helpers ───────────────────────────────────────────────────
+  function esc(s) { return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 
-  // === Build tags ===
-  function buildTags(c) {
-    var tags = [];
-    if (!c) return tags;
-    if (c.status === '流失') tags.push({ label: '流失风险', color: '#F6465D', bg: 'rgba(246,70,93,0.12)' });
-    if (c.status === '增长') tags.push({ label: '增长中', color: '#0ECB81', bg: 'rgba(14,203,129,0.12)' });
-    if (c.bizLines) {
-      var hasFutures = false;
-      c.bizLines.forEach(function(b) {
-        if (b === '合约' || b === 'Mini合约' || b.indexOf('合约') !== -1) hasFutures = true;
-      });
-      if (hasFutures) tags.push({ label: '合约偏好', color: '#F0B90B', bg: 'rgba(240,185,11,0.12)' });
-    }
-    // Risk preference from depositDist
-    if (c.depositDist) {
-      var dd = c.depositDist;
-      var total = (dd.futures||0) + (dd.leverage||0) + (dd.mini||0) + (dd.savings||0) + (dd.card||0) + (dd.cloud||0);
-      if (total > 0) {
-        var derivRatio = ((dd.futures||0) + (dd.leverage||0) + (dd.mini||0)) / total;
-        if (derivRatio > 0.5) tags.push({ label: '高风险偏好', color: '#F6465D', bg: 'rgba(246,70,93,0.12)' });
-      }
-    }
-    return tags;
+  function fmtDate(str) {
+    // Returns "M月D日" from "YYYY-MM-DD"
+    if (!str) return '';
+    var parts = str.split('-');
+    if (parts.length < 3) return str;
+    return parseInt(parts[1], 10) + '月' + parseInt(parts[2], 10) + '日';
   }
 
-  // === Deposit delta calculation ===
-  var thisWeekVal = 0, avg8w = 0, deltaPct = 0;
-  if (client && client.weeks && client.weeks.length > 1) {
-    thisWeekVal = client.weeks[client.weeks.length - 1];
-    var sum = 0;
-    for (var i = 0; i < client.weeks.length - 1; i++) sum += client.weeks[i];
-    avg8w = sum / (client.weeks.length - 1);
-    if (avg8w > 0) deltaPct = (thisWeekVal - avg8w) / avg8w * 100;
-  }
-  var isUp = deltaPct >= 0;
-  var deltaColor = isUp ? '#0ECB81' : '#F6465D';
-  var deltaBg = isUp ? 'rgba(14,203,129,0.12)' : 'rgba(246,70,93,0.12)';
-  var arrowChar = isUp ? '▲' : '▼';
-  var sign = isUp ? '+' : '';
-
-  // === Render ===
-  var html = '';
-
-  // ═══ SECTION 1: Client Info Card ═══
-  html += '<div class="mx-3 mt-3 bg-[#1E2329] rounded-2xl border border-[#2E3440] overflow-hidden">';
-
-  // Row 1: Fav + UID
-  html += '<div class="flex items-center gap-3 px-4 pt-3 pb-2">';
-  html +=   '<button id="fav-btn" onclick="toggleFav()" class="w-8 h-8 flex items-center justify-center rounded-full bg-[#2B3139] flex-shrink-0 active:scale-95 transition-transform">';
-  html +=     '<i id="fav-icon" class="fa-regular fa-star text-[14px] text-[#474D57]"></i>';
-  html +=   '</button>';
-  html +=   '<div class="flex-1 min-w-0">';
-  html +=     '<button id="uid-copy-btn" onclick="copyUid()" class="flex items-center gap-1.5 active:opacity-70">';
-  html +=       '<span class="text-[16px] font-bold text-[#EAECEF] tabular-nums tracking-wide">' + esc(client ? client.uid : evt.client_uid) + '</span>';
-  html +=       '<i class="fa-regular fa-copy text-[10px] text-[#474D57]"></i>';
-  html +=     '</button>';
-  html +=   '</div>';
-  html += '</div>';
-
-  // Row 2: 7日资沉 + vs 8周均
-  if (client) {
-    html += '<div class="px-4 pb-2">';
-    html +=   '<div class="flex items-end gap-3">';
-    html +=     '<div>';
-    html +=       '<div class="text-[10px] text-[#474D57] mb-0.5">7日资沉</div>';
-    html +=       '<span class="text-[28px] font-bold text-[#F0B90B] tracking-tight leading-none">' + (client.thisWeekDisplay || client.depositDisplay || '-') + '</span>';
-    html +=     '</div>';
-    html +=     '<div class="mb-1 flex items-center gap-1">';
-    html +=       '<div class="flex items-center gap-1 px-1.5 py-0.5 rounded" style="background:' + deltaBg + '">';
-    html +=         '<span class="text-[11px]" style="color:' + deltaColor + '">' + arrowChar + '</span>';
-    html +=         '<span class="text-[12px] font-bold tabular-nums" style="color:' + deltaColor + '">' + sign + deltaPct.toFixed(1) + '%</span>';
-    html +=       '</div>';
-    html +=       '<span class="text-[10px] text-[#474D57]">vs 8周均</span>';
-    html +=     '</div>';
-    html +=   '</div>';
-    html += '</div>';
+  function findClient(uid) {
+    var D = window.PROTOTYPE_DATA;
+    if (!D || !D.clients) return null;
+    return D.clients.find(function(c) { return c.uid === uid; }) || null;
   }
 
-  // Row 3: Memo
-  html += '<div class="px-4 pb-2">';
-  html +=   '<input id="memo-input" type="text" class="w-full bg-[#2B3139] text-[#EAECEF] text-[11px] rounded-lg px-3 py-1.5 border border-[#2E3440] outline-none placeholder-[#474D57]" placeholder="备忘..." />';
-  html += '</div>';
-
-  // Row 4: Tags
-  var tags = buildTags(client);
-  if (tags.length > 0) {
-    html += '<div class="px-4 pb-2 flex flex-wrap gap-1">';
-    tags.forEach(function(t) {
-      html += '<span class="text-[9px] px-1.5 py-[2px] rounded border font-medium" style="color:' + t.color + ';border-color:' + t.color + '30;background:' + t.bg + '">' + t.label + '</span>';
-    });
-    html += '</div>';
-  }
-
-  // Row 5: Link
-  html += '<div class="px-4 pb-3">';
-  html +=   '<a href="client-detail.html?uid=' + esc(client ? client.uid : evt.client_uid) + '&from=event" class="text-[13px] text-[#4DA6FF] font-medium">查看完整资料 &rarr;</a>';
-  html += '</div>';
-
-  html += '</div>'; // end section 1
-
-  // ═══ SECTION 2: Event Card ═══
-  function fieldRow(label, value, valueColor) {
-    return '<div class="flex items-center justify-between py-1.5">'
-      + '<span class="text-[12px] text-[#848E9C]">' + label + '</span>'
-      + '<span class="text-[13px] font-medium" style="color:' + (valueColor || '#EAECEF') + '">' + value + '</span>'
-      + '</div>';
-  }
-
-  html += '<div class="mx-3 mt-3 bg-[#1E2329] rounded-2xl border border-[#2E3440] overflow-hidden">';
-  // Header: dot + type
-  html +=   '<div class="flex items-center gap-2 px-4 pt-4 pb-3 border-b border-[#2E3440]">';
-  html +=     '<span class="text-[16px]">' + dot + '</span>';
-  html +=     '<span class="text-[15px] font-semibold text-[#EAECEF]">' + esc(evt.type) + (evt.sub_type ? ' &middot; ' + esc(evt.sub_type) : '') + '</span>';
-  html +=   '</div>';
-  // Fields
-  html += '<div class="px-4 py-2">';
-  if (isRisk) {
-    // Risk / 风控触发
-    html += fieldRow('问题类型', esc(evt.risk_type || evt.sub_type || '未知'));
-    html += fieldRow('触发原因', '异常登录');
-    html += fieldRow('影响范围', '交易+提现');
-    html += fieldRow('触发时间', esc(evt.time_ago));
-    html += fieldRow('自动解除', '否', '#F6465D');
-  } else {
-    // Non-risk: 大额提现/充值/出金 etc.
-    var isWithdraw = (evt.type.indexOf('提') !== -1 || evt.type.indexOf('出金') !== -1);
-    var isDeposit = (evt.type.indexOf('充') !== -1 || evt.type.indexOf('入金') !== -1);
-    var amountLabel = isWithdraw ? '提现金额' : (isDeposit ? '充值金额' : '金额');
-    var amountVal = (evt.amount_display || '-') + ' USDT';
-    html += fieldRow(amountLabel, esc(amountVal), evt.color || '#EAECEF');
-
-    // 占总资产
-    var assetPct = '—';
-    if (client && client.fMean > 0) {
-      assetPct = (Math.abs(evt.amount) / client.fMean * 100).toFixed(1) + '%';
-    }
-    html += fieldRow('占总资产', assetPct);
-
-    // 渠道
-    var channelText = isWithdraw ? '链上提现 · TRC-20' : '链上充值 · TRC-20';
-    html += fieldRow(isWithdraw ? '提现渠道' : '充值渠道', channelText);
-
-    // 目标 (only for withdraw)
-    if (isWithdraw) {
-      html += fieldRow('提现目标', '外部地址');
+  // ── Render ────────────────────────────────────────────────────
+  function render() {
+    var evt = loadEvent();
+    if (!evt) {
+      document.getElementById('page-content').innerHTML =
+        '<div class="flex flex-col items-center justify-center py-20 text-[#848E9C]">'
+        + '<i class="fa-solid fa-circle-xmark text-[40px] mb-3 text-[#474D57]"></i>'
+        + '<span class="text-[14px]">未找到事件</span>'
+        + '</div>';
+      return;
     }
 
-    // 触发时间
-    html += fieldRow('触发时间', esc(evt.time_ago));
+    var client = findClient(evt.client_uid);
+    var isDone = evt.status === '已完成';
 
-    // 触发原因
-    var reasonText = isWithdraw ? '单笔≥总资产20%' : '单笔≥30日日均×3';
-    html += fieldRow('触发原因', reasonText);
-  }
-  html += '</div>';
-  html += '</div>';
+    // ── Nav badge ──
+    var badgeEl = document.getElementById('nav-status-badge');
+    if (isDone) {
+      badgeEl.innerHTML = '<span class="text-[11px] px-2 py-0.5 rounded-full bg-[rgba(14,203,129,0.15)] text-[#0ECB81]">已完成</span>';
+    } else {
+      badgeEl.innerHTML = '<span class="text-[11px] px-2 py-0.5 rounded-full bg-[rgba(77,166,255,0.15)] text-[#4DA6FF]">跟进中</span>';
+    }
 
-  // ═══ SECTION 3: Action Toolkit ═══
-  if (currentStatus !== 'processed' && currentStatus !== 'ignored') {
-    html += '<div id="section-toolkit" class="mx-3 mt-3 bg-[#1E2329] rounded-2xl border border-[#2E3440] overflow-hidden">';
+    // ── Client display values ──
+    var clientLine = '';
+    if (client) {
+      var depDisplay = client.depositDisplay || client.thisWeekDisplay || '';
+      clientLine = esc(evt.client_uid) + ' (' + esc(client.name || '') + ')'
+        + (depDisplay ? '&nbsp;&nbsp;<span class="text-[#474D57]">' + esc(depDisplay) + '</span>' : '');
+    } else {
+      clientLine = esc(evt.client_uid);
+    }
 
-    // Action suggestion
-    html += '<div class="p-4 border-b border-[#2E3440]">';
-    html +=   '<div class="text-[11px] text-[#848E9C] mb-1 tracking-wide">建议行动</div>';
-    html +=   '<div class="text-[14px] text-[#EAECEF] font-medium">&rarr; ' + esc(evt.action) + '</div>';
-    html += '</div>';
+    var html = '';
 
-    if (isRisk) {
-      // Risk: UID + copy
-      html += '<div class="p-4">';
-      html +=   '<div class="flex items-center justify-between">';
-      html +=     '<span class="text-[13px] text-[#848E9C]">客户 UID</span>';
-      html +=     '<div class="flex items-center gap-2">';
-      html +=       '<span class="text-[14px] text-[#EAECEF] font-mono">' + esc(client ? client.uid : evt.client_uid) + '</span>';
-      html +=       '<button onclick="copyRiskUid()" id="btn-copy-uid" class="text-[12px] px-2 py-1 rounded bg-[#2B3139] text-[#848E9C] active:opacity-70">复制</button>';
-      html +=     '</div>';
-      html +=   '</div>';
+    // ── Event Info Card ──
+    html += '<div class="bg-[#1E2329] rounded-xl border border-[#2E3440] mx-4 mt-3 p-4">';
+
+    // Title
+    html += '<div class="text-[15px] font-bold text-[#EAECEF]">' + esc(evt.title) + '</div>';
+
+    // Client row
+    html += '<div class="text-[11px] text-[#848E9C] mt-1.5">客户：' + clientLine + '</div>';
+
+    // Next action
+    if (evt.next_action) {
+      html += '<div class="mt-2 pt-2 border-t border-[#2E3440]">';
+      html +=   '<span class="text-[11px] text-[#848E9C]">下一步</span>';
+      html +=   '<span class="text-[11px] text-[#F0B90B] ml-1">' + esc(fmtDate(evt.follow_up_at)) + '</span>';
+      html +=   '<span class="text-[12px] text-[#EAECEF] mt-0.5 block">' + esc(evt.next_action) + '</span>';
       html += '</div>';
-    } else {
-      // Script collapsible
-      if (evt.script) {
-        html += '<div class="border-b border-[#2E3440]">';
-        html +=   '<button onclick="toggleScript()" class="w-full p-4 flex items-center justify-between text-left">';
-        html +=     '<span class="text-[11px] text-[#848E9C] tracking-wide">话术参考</span>';
-        html +=     '<i id="script-chevron" class="fa-solid fa-chevron-down text-[10px] text-[#474D57] transition-transform"></i>';
-        html +=   '</button>';
-        html +=   '<div id="script-body" class="collapsible-body">';
-        html +=     '<div class="px-4 pb-4">';
-        html +=       '<div class="text-[13px] text-[#EAECEF] leading-relaxed mb-3 bg-[#2B3139] rounded-lg p-3">&ldquo;' + esc(evt.script) + '&rdquo;</div>';
-        html +=       '<button onclick="copyScript()" id="btn-copy-script" class="w-full py-2.5 rounded-lg text-[13px] font-semibold bg-[#F0B90B]/15 text-[#F0B90B] border border-[#F0B90B]/30 active:opacity-70">复制话术</button>';
-        html +=     '</div>';
-        html +=   '</div>';
-        html += '</div>';
-      }
     }
 
-    html += '</div>'; // end section 3
-  }
+    html += '</div>'; // end event info card
 
-  // ═══ Processed note (if processed and has note) ═══
-  if (currentStatus === 'processed' && notes[evt.id]) {
-    html += '<div class="mx-3 mt-3 bg-[#1E2329] rounded-2xl border border-[#2E3440] p-4">';
-    html +=   '<div class="flex gap-2">';
-    html +=     '<span class="text-[20px] text-[#474D57] leading-none">&ldquo;</span>';
-    html +=     '<div>';
-    html +=       '<div class="text-[13px] text-[#EAECEF] leading-relaxed">' + esc(notes[evt.id]) + '</div>';
-    html +=       '<div class="text-[11px] text-[#474D57] mt-1">处理备注</div>';
-    html +=     '</div>';
-    html +=   '</div>';
+    // ── Activity Timeline ──
+    var acts = evt.activities || [];
+    html += '<div class="mx-4 mt-3 mb-2">';
+
+    // Title row
+    html += '<div class="flex items-center gap-2">';
+    html +=   '<span class="text-[13px] font-semibold text-[#EAECEF]">活动记录</span>';
+    html +=   '<span class="text-[11px] text-[#474D57]">' + acts.length + ' 条</span>';
     html += '</div>';
-  }
 
-  document.getElementById('page-content').innerHTML = html;
-
-  // === Nav status badge ===
-  var badgeEl = document.getElementById('nav-status-badge');
-  if (currentStatus === 'following') {
-    badgeEl.innerHTML = '<span class="text-[10px] px-2 py-0.5 rounded-full bg-[#4DA6FF]/15 text-[#4DA6FF] font-medium">跟进中</span>';
-  } else if (currentStatus === 'processed') {
-    badgeEl.innerHTML = '<span class="text-[10px] px-2 py-0.5 rounded-full bg-[#0ECB81]/15 text-[#0ECB81] font-medium">已处理</span>';
-  } else if (currentStatus === 'ignored') {
-    badgeEl.innerHTML = '<span class="text-[10px] px-2 py-0.5 rounded-full bg-[#474D57]/30 text-[#848E9C] font-medium">已忽略</span>';
-  }
-
-  // === Bottom bar ===
-  var bottomBar = document.getElementById('bottom-bar');
-  var bottomInner = document.getElementById('bottom-bar-inner');
-
-  if (currentStatus === 'pending') {
-    bottomBar.style.display = 'block';
-    bottomInner.innerHTML =
-      '<button onclick="doFollow()" class="flex-1 py-3 rounded-xl text-[14px] font-semibold text-[#4DA6FF] border border-[#4DA6FF]/40 active:opacity-80">跟进</button>'
-      + '<button onclick="doIgnore()" class="flex-1 py-3 rounded-xl text-[14px] font-semibold text-[#848E9C] border border-[#2E3440] active:opacity-80">忽略</button>'
-      + '<button onclick="openSheet()" class="flex-1 py-3 rounded-xl text-[14px] font-semibold bg-[#0ECB81] text-[#0B0E11] active:opacity-80"><i class="fa-solid fa-check mr-1"></i>标记已处理</button>';
-  } else if (currentStatus === 'following') {
-    bottomBar.style.display = 'block';
-    bottomInner.innerHTML =
-      '<button onclick="openSheet()" class="w-full py-3 rounded-xl text-[14px] font-semibold bg-[#0ECB81] text-[#0B0E11] active:opacity-80"><i class="fa-solid fa-check mr-1"></i>标记已处理</button>';
-  }
-  // processed / ignored: no bottom bar
-
-  // === Favorite ===
-  var uid = client ? client.uid : evt.client_uid;
-  var favKey = 'fav_' + uid;
-  var isFav = localStorage.getItem(favKey) === '1';
-  function renderFav() {
-    var icon = document.getElementById('fav-icon');
-    if (!icon) return;
-    icon.className = isFav
-      ? 'fa-solid fa-star text-[14px] text-[#F0B90B]'
-      : 'fa-regular fa-star text-[14px] text-[#474D57]';
-  }
-  renderFav();
-  window.toggleFav = function() {
-    isFav = !isFav;
-    localStorage.setItem(favKey, isFav ? '1' : '0');
-    renderFav();
-  };
-
-  // === Memo ===
-  var memoKey = 'memo_' + uid;
-  var memoInput = document.getElementById('memo-input');
-  if (memoInput) {
-    memoInput.value = localStorage.getItem(memoKey) || '';
-    memoInput.addEventListener('input', function() {
-      localStorage.setItem(memoKey, memoInput.value);
-    });
-  }
-
-  // === Copy UID ===
-  window.copyUid = function() {
-    navigator.clipboard.writeText(uid).then(function() {
-      var btn = document.getElementById('uid-copy-btn');
-      if (!btn) return;
-      var icon = btn.querySelector('i');
-      var span = btn.querySelector('span');
-      var origText = span.textContent;
-      icon.className = 'fa-solid fa-check text-[9px] text-[#0ECB81]';
-      span.textContent = origText + ' 已复制\u2713';
-      setTimeout(function() {
-        icon.className = 'fa-regular fa-copy text-[10px] text-[#474D57]';
-        span.textContent = origText;
-      }, 1200);
-    });
-  };
-
-  // === Copy risk UID ===
-  window.copyRiskUid = function() {
-    navigator.clipboard.writeText(uid).then(function() {
-      var btn = document.getElementById('btn-copy-uid');
-      if (!btn) return;
-      btn.textContent = '已复制\u2713';
-      setTimeout(function() { btn.textContent = '复制'; }, 1500);
-    });
-  };
-
-  // === Copy script ===
-  window.copyScript = function() {
-    navigator.clipboard.writeText(evt.script).then(function() {
-      var btn = document.getElementById('btn-copy-script');
-      if (!btn) return;
-      btn.textContent = '已复制 \u2713';
-      setTimeout(function() { btn.textContent = '复制话术'; }, 1500);
-    });
-  };
-
-  // === Toggle script collapsible ===
-  window.toggleScript = function() {
-    var body = document.getElementById('script-body');
-    var chevron = document.getElementById('script-chevron');
-    if (!body) return;
-    body.classList.toggle('open');
-    if (body.classList.contains('open')) {
-      chevron.style.transform = 'rotate(180deg)';
+    if (acts.length === 0) {
+      html += '<div class="py-8 text-center text-[#474D57] text-[12px]">还没有活动记录<br>点击下方按钮记录第一次沟通</div>';
     } else {
-      chevron.style.transform = '';
+      html += '<div class="border-l-2 border-[#2E3440] ml-1 pl-4 mt-3">';
+      acts.forEach(function(act) {
+        var hasSummary = act.summary && act.summary.trim().length > 0;
+        var dotColor = hasSummary ? '#4DA6FF' : '#474D57';
+        html += '<div class="relative mb-5 last:mb-1">';
+        // Timeline dot
+        html += '<div class="absolute -left-[21px] top-[3px] w-2.5 h-2.5 rounded-full border-2 border-[#0B0E11]" style="background:' + dotColor + '"></div>';
+        // Date
+        html += '<div class="text-[10px] text-[#848E9C] mb-0.5">' + esc(fmtDate(act.occurred_at)) + '</div>';
+        // Channel · result
+        html += '<div class="text-[13px] text-[#EAECEF] font-medium">' + esc(act.channel) + ' · ' + esc(act.result) + '</div>';
+        // Summary
+        if (hasSummary) {
+          html += '<div class="text-[11px] text-[#848E9C] mt-0.5">' + esc(act.summary) + '</div>';
+        }
+        html += '</div>';
+      });
+      html += '</div>'; // end timeline
     }
-  };
 
-  // === Follow ===
-  window.doFollow = function() {
-    var list = JSON.parse(sessionStorage.getItem('following_events') || '[]');
-    if (list.indexOf(evt.id) === -1) list.push(evt.id);
-    sessionStorage.setItem('following_events', JSON.stringify(list));
-    location.reload();
-  };
+    html += '</div>'; // end activity section
 
-  // === Ignore ===
-  window.doIgnore = function() {
-    var list = JSON.parse(sessionStorage.getItem('ignored_events') || '[]');
-    if (list.indexOf(evt.id) === -1) list.push(evt.id);
-    sessionStorage.setItem('ignored_events', JSON.stringify(list));
-    location.reload();
-  };
+    // ── Completed timestamp (if done) ──
+    if (isDone && evt.completed_at) {
+      html += '<div class="mx-4 mt-2 mb-4 text-center text-[11px] text-[#474D57]">';
+      html +=   '已于 ' + esc(fmtDate(evt.completed_at)) + ' 标记完成';
+      html += '</div>';
+    }
 
-  // === Sheet ===
-  window.openSheet = function() {
+    document.getElementById('page-content').innerHTML = html;
+
+    // ── Bottom bar ──
+    var bottomBar = document.getElementById('bottom-bar');
+    var bottomInner = document.getElementById('bottom-bar-inner');
+    if (isDone) {
+      bottomBar.style.display = 'none';
+    } else {
+      bottomBar.style.display = 'block';
+      bottomInner.innerHTML =
+        '<button onclick="openActivitySheet()" class="flex-1 bg-[#F0B90B] text-[#0B0E11] font-semibold text-[13px] rounded-xl py-3 border-0 cursor-pointer active:opacity-80">+ 添加活动记录</button>'
+        + '<button onclick="markComplete()" class="px-4 bg-[#2E3440] text-[#848E9C] text-[13px] rounded-xl py-3 border-0 cursor-pointer active:opacity-80">标记已完成</button>';
+    }
+  }
+
+  // ── Sheet controls ─────────────────────────────────────────────
+  window.openActivitySheet = function() {
+    // Reset form state
+    selectedChannel = '';
+    selectedResult = '';
+    document.querySelectorAll('.channel-btn').forEach(function(b) { b.classList.remove('selected'); });
+    document.querySelectorAll('.result-btn').forEach(function(b) { b.classList.remove('selected'); });
+    document.getElementById('sheet-summary').value = '';
+    document.getElementById('sheet-next-action').value = '';
+    document.getElementById('sheet-follow-up-at').value = '';
     document.getElementById('sheet-overlay').classList.add('active');
   };
+
   window.closeSheet = function(e) {
     if (e && e.target !== document.getElementById('sheet-overlay')) return;
     document.getElementById('sheet-overlay').classList.remove('active');
   };
-  window.confirmProcessed = function(withNote) {
-    var noteText = '';
-    if (withNote) {
-      noteText = document.getElementById('sheet-note').value.trim();
-    }
-    // Save processed
-    var list = JSON.parse(sessionStorage.getItem('processed_events') || '[]');
-    if (list.indexOf(evt.id) === -1) list.push(evt.id);
-    sessionStorage.setItem('processed_events', JSON.stringify(list));
-    // Remove from following if present
-    var fList = JSON.parse(sessionStorage.getItem('following_events') || '[]');
-    var fIdx = fList.indexOf(evt.id);
-    if (fIdx !== -1) { fList.splice(fIdx, 1); sessionStorage.setItem('following_events', JSON.stringify(fList)); }
-    // Save note
-    if (noteText) {
-      var allNotes = JSON.parse(sessionStorage.getItem('event_notes') || '{}');
-      allNotes[evt.id] = noteText;
-      sessionStorage.setItem('event_notes', JSON.stringify(allNotes));
-    }
-    // Visual feedback
-    document.getElementById('sheet-overlay').classList.remove('active');
-    bottomInner.innerHTML = '<div class="w-full py-3 text-center text-[14px] font-semibold text-[#0ECB81]"><i class="fa-solid fa-circle-check mr-2"></i>已处理</div>';
-    setTimeout(function() { history.back(); }, 600);
+
+  window.selectChannel = function(btn, val) {
+    document.querySelectorAll('.channel-btn').forEach(function(b) { b.classList.remove('selected'); });
+    btn.classList.add('selected');
+    selectedChannel = val;
   };
+
+  window.selectResult = function(btn, val) {
+    document.querySelectorAll('.result-btn').forEach(function(b) { b.classList.remove('selected'); });
+    btn.classList.add('selected');
+    selectedResult = val;
+  };
+
+  window.saveActivity = function() {
+    if (!selectedChannel || !selectedResult) {
+      alert('请选择沟通渠道和沟通结果');
+      return;
+    }
+
+    var evt = loadEvent();
+    if (!evt) return;
+
+    var today = new Date();
+    var pad = function(n) { return n < 10 ? '0' + n : '' + n; };
+    var todayStr = today.getFullYear() + '-' + pad(today.getMonth() + 1) + '-' + pad(today.getDate());
+
+    var newActivity = {
+      id: 'act_' + Date.now(),
+      occurred_at: todayStr,
+      channel: selectedChannel,
+      result: selectedResult,
+      summary: document.getElementById('sheet-summary').value.trim()
+    };
+
+    evt.activities = evt.activities || [];
+    evt.activities.unshift(newActivity);
+
+    var newNextAction = document.getElementById('sheet-next-action').value.trim();
+    var newFollowUpAt = document.getElementById('sheet-follow-up-at').value;
+    if (newNextAction) evt.next_action = newNextAction;
+    if (newFollowUpAt) evt.follow_up_at = newFollowUpAt;
+
+    saveEvent(evt);
+    document.getElementById('sheet-overlay').classList.remove('active');
+    render();
+  };
+
+  // ── Mark complete ──────────────────────────────────────────────
+  window.markComplete = function() {
+    if (!confirm('确认标记此事件为已完成？')) return;
+    var evt = loadEvent();
+    if (!evt) return;
+    evt.status = '已完成';
+    var today = new Date();
+    var pad = function(n) { return n < 10 ? '0' + n : '' + n; };
+    evt.completed_at = today.getFullYear() + '-' + pad(today.getMonth() + 1) + '-' + pad(today.getDate());
+    saveEvent(evt);
+    render();
+  };
+
+  // ── Init ──────────────────────────────────────────────────────
+  render();
 
 })();
 </script>
