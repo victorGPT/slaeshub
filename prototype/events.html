@@ -61,9 +61,9 @@
   <!-- Filter Pills -->
   <div class="filter-scroll px-4 py-3 flex gap-2" id="filter-bar">
     <button data-filter="全部" class="filter-pill active flex-shrink-0 px-3 py-1.5 rounded-full text-[12px] font-medium whitespace-nowrap transition-colors">全部</button>
-    <button data-filter="待处理" class="filter-pill flex-shrink-0 px-3 py-1.5 rounded-full text-[12px] font-medium whitespace-nowrap transition-colors">待处理</button>
+    <button data-filter="未开始" class="filter-pill flex-shrink-0 px-3 py-1.5 rounded-full text-[12px] font-medium whitespace-nowrap transition-colors">未开始</button>
     <button data-filter="跟进中" class="filter-pill flex-shrink-0 px-3 py-1.5 rounded-full text-[12px] font-medium whitespace-nowrap transition-colors">跟进中</button>
-    <button data-filter="已完成" class="filter-pill flex-shrink-0 px-3 py-1.5 rounded-full text-[12px] font-medium whitespace-nowrap transition-colors">已完成</button>
+    <button data-filter="已结束" class="filter-pill flex-shrink-0 px-3 py-1.5 rounded-full text-[12px] font-medium whitespace-nowrap transition-colors">已结束</button>
     <button data-filter="已忽略" class="filter-pill flex-shrink-0 px-3 py-1.5 rounded-full text-[12px] font-medium whitespace-nowrap transition-colors">已忽略</button>
   </div>
 
@@ -101,9 +101,9 @@
 <script>
 (function() {
   var STATUS_COLORS = {
-    '待处理': { bg: 'rgba(240,185,11,0.15)',   text: '#F0B90B' },
+    '未开始': { bg: 'rgba(240,185,11,0.15)',   text: '#F0B90B' },
     '跟进中': { bg: 'rgba(77,166,255,0.15)',   text: '#4DA6FF' },
-    '已完成': { bg: 'rgba(14,203,129,0.15)',   text: '#0ECB81' },
+    '已结束': { bg: 'rgba(14,203,129,0.15)',   text: '#0ECB81' },
     '已忽略': { bg: 'rgba(132,142,156,0.15)',  text: '#848E9C' }
   };
   var todayStr = new Date().toISOString().split('T')[0];
@@ -125,8 +125,8 @@
   }
 
   function sortScore(ev) {
-    // 逾期最前，已完成/已忽略最后
-    if (ev.status === '已完成' || ev.status === '已忽略') return 99999;
+    // 逾期最前，已结束/已忽略最后
+    if (ev.status === '已结束' || ev.status === '已忽略') return 99999;
     var d = Math.round((new Date(ev.follow_up_at) - new Date(todayStr)) / 86400000);
     return d; // 逾期为负（最小值 = 最前）
   }
@@ -139,12 +139,12 @@
   function renderStats(events) {
     var pending = 0, following = 0, total = events.length;
     events.forEach(function(e) {
-      if (e.status === '待处理') pending++;
+      if (e.status === '未开始') pending++;
       if (e.status === '跟进中') following++;
     });
     document.getElementById('stats-bar').innerHTML =
       '共 ' + total + ' 个跟进事件 · '
-      + '<span style="color:#F0B90B">' + pending + ' 待处理</span> · '
+      + '<span style="color:#F0B90B">' + pending + ' 未开始</span> · '
       + '<span style="color:#4DA6FF">' + following + ' 跟进中</span>';
   }
 
@@ -163,7 +163,7 @@
     container.innerHTML = events.map(function(ev) {
       var sc = STATUS_COLORS[ev.status] || STATUS_COLORS['已忽略'];
       var dl = daysLabel(ev.follow_up_at);
-      var isDone = ev.status === '已完成' || ev.status === '已忽略';
+      var isDone = ev.status === '已结束' || ev.status === '已忽略';
       return '<div class="px-4 py-3 border-b border-[#2E3440]">'
         + '<div class="flex items-start justify-between gap-2">'
         + '<a href="follow-up-thread.html?fuId=' + ev.id + '" class="flex-1 min-w-0 active:opacity-70">'
@@ -179,7 +179,7 @@
         + '</a>'
         + (!isDone
           ? '<div style="display:flex;flex-direction:column;gap:4px;flex-shrink:0">'
-            + (ev.status === '待处理' ? '<button onclick="setFollowing(\'' + ev.id + '\')" style="font-size:11px;padding:4px 8px;border-radius:6px;border:1px solid #2E3440;color:#848E9C;background:none;cursor:pointer">跟进</button>' : '')
+            + (ev.status === '未开始' ? '<button onclick="setFollowing(\'' + ev.id + '\')" style="font-size:11px;padding:4px 8px;border-radius:6px;border:1px solid #2E3440;color:#848E9C;background:none;cursor:pointer">跟进</button>' : '')
             + '<button onclick="openDoneSheet(\'' + ev.id + '\')" style="font-size:11px;padding:4px 8px;border-radius:6px;border:1px solid #0ECB81;color:#0ECB81;background:none;cursor:pointer">完成</button>'
             + '</div>'
           : '')
@@ -227,7 +227,7 @@
     var note = document.getElementById('mark-done-note').value.trim();
     var evs = loadEvents();
     evs.forEach(function(e) {
-      if (e.id === _markDoneId) { e.status = '已完成'; e.done_note = note; e.done_at = new Date().toISOString(); }
+      if (e.id === _markDoneId) { e.status = '已结束'; e.done_note = note; e.done_at = new Date().toISOString(); }
     });
     sessionStorage.setItem('follow_up_events', JSON.stringify(evs));
     window.closeDoneSheet();

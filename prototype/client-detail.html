@@ -463,6 +463,8 @@
     var tagHtml = '';
     if (r.event_id && r.event_title) {
       tagHtml = '<a href="follow-up-thread.html?fuId=' + r.event_id + '" class="inline-block text-[10px] px-1.5 py-0.5 rounded mr-1 active:opacity-70" style="background:rgba(77,166,255,0.12);color:#4DA6FF">' + esc(r.event_title) + '</a>';
+    } else if (r.title) {
+      tagHtml = '<span class="inline-block text-[10px] px-1.5 py-0.5 rounded mr-1" style="background:rgba(132,142,156,0.15);color:#848E9C">' + esc(r.title) + '</span>';
     }
     return { date: displayDate, bd: r.bd || 'BD', text: text, tagHtml: tagHtml };
   });
@@ -473,7 +475,7 @@
   var allFollowUpEvents = [];
   try { allFollowUpEvents = JSON.parse(sessionStorage.getItem('follow_up_events') || '[]'); } catch(e) {}
   var clientActiveEvents = allFollowUpEvents.filter(function(e) {
-    return e.client_uid === uid && e.status !== '已完成' && e.status !== '已忽略';
+    return e.client_uid === uid && e.status !== '已结束' && e.status !== '已忽略';
   });
   var clientAllEvents = allFollowUpEvents.filter(function(e) {
     return e.client_uid === uid;
@@ -528,11 +530,11 @@
   } else {
     eventsHtml += '<div class="space-y-2">';
     clientAllEvents.forEach(function(ev) {
-      var isDone = ev.status === '已完成' || ev.status === '已忽略';
+      var isDone = ev.status === '已结束' || ev.status === '已忽略';
       var dl = isDone ? { text: ev.status, color: '#474D57' } : fuDaysLabel(ev.follow_up_at);
       var stateBg, stateColor;
       if (ev.status === '跟进中')      { stateBg = 'rgba(77,166,255,0.12)';  stateColor = '#4DA6FF'; }
-      else if (ev.status === '已完成') { stateBg = 'rgba(14,203,129,0.12)';  stateColor = '#0ECB81'; }
+      else if (ev.status === '已结束') { stateBg = 'rgba(14,203,129,0.12)';  stateColor = '#0ECB81'; }
       else if (ev.status === '已忽略') { stateBg = 'rgba(132,142,156,0.1)';  stateColor = '#474D57'; }
       else                             { stateBg = 'rgba(240,185,11,0.12)';  stateColor = '#F0B90B'; }
       var titleText = ev.title ? esc(ev.title) : esc(ev.follow_up_note || '—');
@@ -900,18 +902,19 @@ window.submitComm = function() {
   var text = channel + ' · ' + result;
   if (summary) text += '：' + summary;
   // 创建跟进事件（如勾选）— 先建事件拿到 ID，再写 comm_record
+  var commTitleVal = ((document.getElementById('comm-follow-up-title') || {}).value || '').trim();
   var fuCheckEl = document.getElementById('comm-follow-up');
   var newEventId = null, newEventTitle = null;
   if (fuCheckEl && fuCheckEl.checked) {
     var fuAt    = (document.getElementById('comm-follow-up-at')    || {}).value || '';
-    var fuTitle = ((document.getElementById('comm-follow-up-title') || {}).value || '').trim();
+    var fuTitle = commTitleVal;
     var fuNote  = ((document.getElementById('comm-follow-up-note')  || {}).value || '').trim();
     if (fuAt) {
       var fuEvents = [];
       try { fuEvents = JSON.parse(sessionStorage.getItem('follow_up_events') || '[]'); } catch(e) {}
       fuEvents.forEach(function(e) {
-        if (e.client_uid === uid && e.status !== '已完成' && e.status !== '已忽略') {
-          e.status = '已完成'; e.done_note = '被新跟进替代'; e.done_at = new Date().toISOString();
+        if (e.client_uid === uid && e.status !== '已结束' && e.status !== '已忽略') {
+          e.status = '已结束'; e.done_note = '被新跟进替代'; e.done_at = new Date().toISOString();
         }
       });
       var clientNameEl = document.getElementById('client-uid');
@@ -920,8 +923,9 @@ window.submitComm = function() {
       fuEvents.push({
         id: newEventId, client_uid: uid,
         client_name: clientNameEl ? clientNameEl.textContent : uid,
-        status: '待处理', created_at: new Date().toISOString(),
-        title: newEventTitle, follow_up_at: fuAt, follow_up_note: fuNote, activities: []
+        status: '未开始', created_at: new Date().toISOString(),
+        title: newEventTitle, follow_up_at: fuAt, follow_up_note: fuNote,
+        activities: [{ type: '创建', note: text, occurred_at: new Date().toISOString() }]
       });
       sessionStorage.setItem('follow_up_events', JSON.stringify(fuEvents));
     }
@@ -932,6 +936,7 @@ window.submitComm = function() {
   var records = [];
   try { records = JSON.parse(sessionStorage.getItem(commKey) || '[]'); } catch(e) {}
   var rec = { date: occurredAt, bd: 'BD', channel: channel, result: result, occurred_at: occurredAt, summary: summary, text: text };
+  if (commTitleVal) { rec.title = commTitleVal; }
   if (newEventId) { rec.event_id = newEventId; rec.event_title = newEventTitle; }
   records.unshift(rec);
   sessionStorage.setItem(commKey, JSON.stringify(records));
@@ -971,7 +976,7 @@ window.confirmEventDone = function() {
   try { fuEvents = JSON.parse(sessionStorage.getItem('follow_up_events') || '[]'); } catch(e) {}
   fuEvents.forEach(function(e) {
     if (e.id === _markDoneEventId) {
-      e.status = '已完成';
+      e.status = '已结束';
       e.done_note = note.trim();
       e.done_at = new Date().toISOString();
     }
