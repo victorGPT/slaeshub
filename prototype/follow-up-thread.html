@@ -481,6 +481,19 @@
       }
     });
     sessionStorage.setItem('follow_up_events', JSON.stringify(all));
+
+    // Write to comm_records timeline
+    var commKey = 'comm_records_' + ev.client_uid;
+    var crs = [];
+    try { crs = JSON.parse(sessionStorage.getItem(commKey) || '[]'); } catch(e) {}
+    var bodyText = '[结束] ' + outcome + (note ? ' · ' + note : '');
+    crs.unshift({
+      occurred_at: doneAct.occurred_at, date: doneAct.occurred_at, bd: 'BD',
+      title: ev.title, text: bodyText,
+      event_id: ev.id, event_title: ev.title || ''
+    });
+    sessionStorage.setItem(commKey, JSON.stringify(crs));
+
     closeDoneSheet();
     var ss2 = STATUS_STYLE['已结束'];
     badge.textContent = '已结束'; badge.style.background = ss2.bg; badge.style.color = ss2.color;
