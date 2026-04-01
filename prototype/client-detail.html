@@ -455,14 +455,30 @@
   var commRecords = [];
   try { commRecords = JSON.parse(sessionStorage.getItem('comm_records_' + uid) || '[]'); } catch(e) {}
 
+  // 按 occurred_at 降序排列（最新在前）
+  var sortedRecords = commRecords.slice().sort(function(a, b) {
+    return new Date(b.occurred_at || b.date || 0) - new Date(a.occurred_at || a.date || 0);
+  });
+
+  // 构建 event status 查询 map
+  var fuEventsMap = {};
+  try {
+    JSON.parse(sessionStorage.getItem('follow_up_events') || '[]').forEach(function(e) { fuEventsMap[e.id] = e; });
+  } catch(e) {}
+
+  var statusBadgeColors = { '跟进中': '#4DA6FF', '已结束': '#0ECB81' };
+
   // 主动沟通记录转时间线条目
-  var commFollowups = commRecords.map(function(r) {
+  var commFollowups = sortedRecords.map(function(r) {
     var dateLabel = r.occurred_at || r.date || '';
     var displayDate = timeAgo(dateLabel) || dateLabel;
     var text = r.text || ((r.channel || '') + (r.result ? ' · ' + r.result : '') + (r.summary ? '：' + r.summary : ''));
     var tagHtml = '';
     if (r.event_id && r.event_title) {
-      tagHtml = '<a href="follow-up-thread.html?fuId=' + r.event_id + '" class="inline-block text-[10px] px-1.5 py-0.5 rounded mr-1 active:opacity-70" style="background:rgba(77,166,255,0.12);color:#4DA6FF">' + esc(r.event_title) + '</a>';
+      var evStatus = (fuEventsMap[r.event_id] || {}).status || '';
+      var sColor = statusBadgeColors[evStatus] || '#848E9C';
+      var statusSpan = evStatus ? '<span style="color:' + sColor + ';margin-left:3px;font-size:9px">' + evStatus + '</span>' : '';
+      tagHtml = '<a href="follow-up-thread.html?fuId=' + r.event_id + '" class="inline-flex items-center text-[10px] px-1.5 py-0.5 rounded mr-1 active:opacity-70" style="background:rgba(77,166,255,0.12);color:#4DA6FF">' + esc(r.event_title) + statusSpan + '</a>';
     } else if (r.title) {
       tagHtml = '<span class="inline-block text-[10px] px-1.5 py-0.5 rounded mr-1" style="background:rgba(132,142,156,0.15);color:#848E9C">' + esc(r.title) + '</span>';
     }
