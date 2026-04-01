@@ -110,6 +110,9 @@
         </div>
         <input id="memo-input" type="text" class="hidden w-full bg-[#2B3139] text-[#EAECEF] text-[11px] rounded-lg px-3 py-1.5 border border-[#F0B90B]/30 outline-none placeholder-[#474D57]" placeholder="输入备忘后点击其他区域保存..." />
       </div>
+
+      <!-- Row 5: Last Contact -->
+      <div id="last-contact-row" class="px-4 pb-3 flex items-center justify-between"></div>
     </div>
 
     <!-- Tab Bar -->
@@ -446,86 +449,11 @@
   // === TAB 1: EVENTS ===
   var eventsHtml = '';
 
-  // Module: Current Events
-  var events = (D.eventsByClientUid && D.eventsByClientUid[uid]) || [];
-  var processedSet = {};
-  var followingSet = {};
-  var ignoredSet = {};
-  try {
-    var processed = JSON.parse(sessionStorage.getItem('processed_events') || '[]');
-    processed.forEach(function(id) { processedSet[id] = true; });
-    var followingList = JSON.parse(sessionStorage.getItem('following_events') || '[]');
-    followingList.forEach(function(id) { followingSet[id] = true; });
-    var ignoredList = JSON.parse(sessionStorage.getItem('ignored_events') || '[]');
-    ignoredList.forEach(function(id) { ignoredSet[id] = true; });
-  } catch(e) {}
-  var pendingEvents = events.filter(function(ev) { return !processedSet[ev.id] && !ignoredSet[ev.id]; });
-
-  eventsHtml += '<div class="mx-4 mt-3 bg-[#1E2329] rounded-xl border border-[#2E3440] p-3">'
-    + '<div class="text-[13px] font-semibold text-[#EAECEF] mb-2">当前事件</div>'
-    + '<div class="space-y-2.5">';
-  if (pendingEvents.length === 0) {
-    eventsHtml += '<div class="flex items-center justify-center gap-2 py-4 text-[#848E9C]">'
-      + '<i class="fa-solid fa-circle-check text-[#0ECB81]"></i>'
-      + '<span class="text-[12px]">暂无待处理事件</span>'
-      + '</div>';
-  } else {
-    pendingEvents.forEach(function(ev) {
-      var isFollowing = followingSet[ev.id];
-      var stateLabel = isFollowing ? '跟进中' : '未处理';
-      var stateColor = isFollowing ? '#4DA6FF' : '#F0B90B';
-      eventsHtml += '<a href="event-thread.html?id=' + ev.id + '" class="flex items-start gap-2 block">'
-        + '<span class="w-2 h-2 rounded-full flex-shrink-0 mt-1.5" style="background:' + ev.color + '"></span>'
-        + '<div class="flex-1 min-w-0">'
-        + '<div class="flex items-center gap-1.5 flex-wrap">'
-        + '<span class="text-[12px] text-[#EAECEF]">' + ev.type + (ev.sub_type ? ' · ' + ev.sub_type : '') + '</span>'
-        + '<span class="text-[10px] px-1.5 py-0.5 rounded-full" style="background:rgba(255,255,255,0.06);color:' + stateColor + '">' + stateLabel + '</span>'
-        + '</div>'
-        + '<div class="flex items-center gap-2 mt-0.5">'
-        + '<span class="text-[11px] font-medium" style="color:' + ev.color + '">' + ev.amount_display + '</span>'
-        + '<span class="text-[10px] text-[#474D57]">' + ev.time_ago + '</span>'
-        + '</div>'
-        + '</div>'
-        + '<i class="fa-solid fa-chevron-right text-[10px] text-[#474D57] mt-1.5"></i>'
-        + '</a>';
-    });
-  }
-  eventsHtml += '</div></div>';
-
   // Module: Follow-up Records（跟进记录）
-  // 先读取主动沟通记录（从 worktree-2 引入）
   var commRecords = [];
   try { commRecords = JSON.parse(sessionStorage.getItem('comm_records_' + uid) || '[]'); } catch(e) {}
 
-  var eventNotes = {};
-  try { eventNotes = JSON.parse(sessionStorage.getItem('event_notes') || '{}'); } catch(e) {}
-
-  // 动态跟进条目：事件触发、已处理、已忽略
-  var dynamicFollowups = [];
-  events.forEach(function(ev) {
-    dynamicFollowups.push({
-      date: ev.time_ago,
-      bd: '系统',
-      text: '[' + ev.type + '] 触发' + (ev.amount_display ? ' — ' + ev.amount_display : '')
-    });
-    if (processedSet[ev.id]) {
-      var note = eventNotes[ev.id];
-      dynamicFollowups.push({
-        date: '刚刚',
-        bd: 'BD',
-        text: '[' + ev.type + '] 已处理' + (note ? ' — "' + note + '"' : '')
-      });
-    }
-    if (ignoredSet[ev.id]) {
-      dynamicFollowups.push({
-        date: '刚刚',
-        bd: 'BD',
-        text: '[' + ev.type + '] 已忽略'
-      });
-    }
-  });
-
-  // 主动沟通记录转时间线条目（worktree-2，排在最前）
+  // 主动沟通记录转时间线条目
   var commFollowups = commRecords.map(function(r) {
     var dateLabel = r.occurred_at || r.date || '';
     var displayDate = timeAgo(dateLabel) || dateLabel;
@@ -533,50 +461,25 @@
     return { date: displayDate, bd: r.bd || 'BD', text: text };
   });
 
-  // 静态 mock 历史数据
-  function getStaticFollowups() {
-    if (c.status === '流失') {
-      return [
-        { date: '03-28 14:30', bd: 'BD 李明远', text: '电话回访，客户表示近期有大额出金计划' },
-        { date: '03-25 10:00', bd: 'BD 李明远', text: '发送续存权益说明，客户已读' },
-        { date: '03-20 16:45', bd: '系统', text: '触发资沉流失预警' }
-      ];
-    } else if (c.status === '增长') {
-      return [
-        { date: '03-28 11:00', bd: 'BD 李明远', text: '推荐理财产品组合，客户表示感兴趣' },
-        { date: '03-24 15:30', bd: 'BD 李明远', text: '祝贺客户资沉增长，沟通后续理财配置' },
-        { date: '03-19 09:00', bd: '系统', text: '触发资沉增长提示' }
-      ];
+  var allFollowups = commFollowups;
+
+  // Row 5: 上次联系（写入顶部固定头部，不进 eventsHtml）
+  var lastContactEl = document.getElementById('last-contact-row');
+  if (lastContactEl) {
+    if (commRecords.length > 0) {
+      var lc = commRecords[0];
+      var lcText = (lc.channel && lc.result) ? lc.channel + ' · ' + lc.result : (lc.text || '');
+      var lcTime = timeAgo(lc.occurred_at || lc.date) || lc.date || '';
+      lastContactEl.innerHTML = '<span class="text-[11px] text-[#848E9C]">上次联系</span>'
+        + '<span class="text-[12px] flex items-center gap-1.5">'
+        + '<span class="font-semibold" style="color:#F0B90B">' + lcTime + '</span>'
+        + '<span class="text-[#848E9C]">' + lcText + '</span>'
+        + '</span>';
+    } else {
+      lastContactEl.innerHTML = '<span class="text-[11px] text-[#848E9C]">上次联系</span>'
+        + '<span class="text-[12px] text-[#474D57]">暂无记录</span>';
     }
-    return [
-      { date: '03-27 16:00', bd: 'BD 李明远', text: '例行回访，客户状态正常，无特殊需求' },
-      { date: '03-20 10:30', bd: 'BD 李明远', text: '发送月度资产报告，客户已读' },
-      { date: '03-15 14:00', bd: '系统', text: '定期回访提醒' }
-    ];
   }
-
-  // 合并顺序：主动沟通（最新）→ 动态事件记录 → 静态历史
-  var allFollowups = commFollowups.concat(dynamicFollowups).concat(getStaticFollowups());
-
-  // 上次联系行（从 worktree-1 引入）
-  var lastContactRowHtml = '';
-  if (commRecords.length > 0) {
-    var lc = commRecords[0];
-    var lcText = (lc.channel && lc.result) ? lc.channel + ' · ' + lc.result : (lc.text || '');
-    var lcTime = timeAgo(lc.occurred_at || lc.date) || lc.date || '';
-    lastContactRowHtml = '<div class="mx-4 mt-2 mb-1 flex items-center justify-between">'
-      + '<span class="text-[11px] text-[#848E9C]">上次联系</span>'
-      + '<span class="text-[12px] flex items-center gap-1.5">'
-      + '<span class="font-semibold" style="color:#F0B90B">' + lcTime + '</span>'
-      + '<span class="text-[#848E9C]">' + lcText + '</span>'
-      + '</span></div>';
-  } else {
-    lastContactRowHtml = '<div class="mx-4 mt-2 mb-1 flex items-center justify-between">'
-      + '<span class="text-[11px] text-[#848E9C]">上次联系</span>'
-      + '<span class="text-[12px] text-[#474D57]">暂无记录</span>'
-      + '</div>';
-  }
-  eventsHtml += lastContactRowHtml;
 
   eventsHtml += '<div class="mx-4 mt-3 mb-2 bg-[#1E2329] rounded-xl border border-[#2E3440] p-3">'
     + '<div class="text-[13px] font-semibold text-[#EAECEF] mb-2">跟进记录</div>'
