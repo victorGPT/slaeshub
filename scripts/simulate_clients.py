@@ -42,7 +42,7 @@ FIELDS = [
     "reason_tag","suggested_action",
     "has_futures","has_leverage","has_savings","has_card","has_cloud","has_mini",
     # Deposit distribution (6 business modules)
-    "dd_futures","dd_leverage","dd_savings","dd_card","dd_cloud","dd_mini",
+    "dd_futures","dd_leverage","dd_savings","dd_card","dd_cloud","dd_mini","dd_spot",
     # Net contribution
     "nc_total","nc_futures","nc_leverage","nc_mini","nc_card","nc_cloud",
     "nc_savings_interest","nc_rebate","nc_wow",
@@ -55,15 +55,19 @@ FIELDS = [
 
 
 def _deposit_distribution(f_mean, biz_flags):
-    """Distribute total deposits across 6 business modules.
+    """Distribute total deposits across 7 business modules.
 
     Only modules the client participates in (biz_flags) get non-zero allocation.
-    Keys: futures, leverage, savings, card, cloud, mini.
+    Spot (现货) is always available to all clients.
+    Keys: futures, leverage, savings, card, cloud, mini, spot.
     """
-    modules = ['futures', 'leverage', 'savings', 'card', 'cloud', 'mini']
+    modules = ['futures', 'leverage', 'savings', 'card', 'cloud', 'mini', 'spot']
     weights = {}
     for m in modules:
-        if biz_flags.get(f"has_{m}", False):
+        if m == 'spot':
+            # All clients can hold spot assets
+            weights[m] = random.uniform(0.01, 0.8)
+        elif biz_flags.get(f"has_{m}", False):
             weights[m] = random.uniform(0.01, 1.0)
         else:
             weights[m] = 0.0
@@ -230,6 +234,7 @@ def generate():
             "dd_card": dd["card"],
             "dd_cloud": dd["cloud"],
             "dd_mini": dd["mini"],
+            "dd_spot": dd["spot"],
             # Net contribution
             **nc,
             # Client P&L

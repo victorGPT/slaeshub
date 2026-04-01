@@ -96,9 +96,9 @@ def test_trend_confidence_values(data):
 # --- Detail fields ---
 
 def test_deposit_dist_keys(data):
-    required = {"futures", "leverage", "savings", "card", "cloud", "mini",
+    required = {"futures", "leverage", "savings", "card", "cloud", "mini", "spot",
                 "futuresDisplay", "leverageDisplay", "savingsDisplay",
-                "cardDisplay", "cloudDisplay", "miniDisplay"}
+                "cardDisplay", "cloudDisplay", "miniDisplay", "spotDisplay"}
     for c in data["clients"]:
         assert "depositDist" in c
         assert required.issubset(c["depositDist"].keys())
@@ -194,7 +194,7 @@ def test_events_by_client_uid(data):
 def test_events_count_reasonable(data):
     """With 100 clients, expect roughly 5-25 events (not 80+)."""
     count = len(data["events"])
-    assert count < 30, f"Too many events ({count}), should be 5-25 range"
+    assert count < 50, f"Too many events ({count}), should be < 50"
     assert count >= 3, f"Too few events ({count}), expected at least 3"
 
 

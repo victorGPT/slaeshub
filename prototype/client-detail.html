@@ -302,7 +302,7 @@
 
   // 维度1: 风险偏好 (互斥取1)
   var dd = c.depositDist;
-  var ddTotal = (dd.futures||0) + (dd.leverage||0) + (dd.mini||0) + (dd.savings||0) + (dd.card||0) + (dd.cloud||0);
+  var ddTotal = (dd.futures||0) + (dd.leverage||0) + (dd.mini||0) + (dd.savings||0) + (dd.card||0) + (dd.cloud||0) + (dd.spot||0);
   if (ddTotal > 0) {
     var derivRatio = ((dd.futures||0) + (dd.leverage||0) + (dd.mini||0)) / ddTotal;
     var safeRatio = ((dd.savings||0) + (dd.cloud||0)) / ddTotal;
@@ -455,11 +455,17 @@
   // Module 4: Current Events
   var events = (D.eventsByClientUid && D.eventsByClientUid[uid]) || [];
   var processedSet = {};
+  var followingSet = {};
+  var ignoredSet = {};
   try {
     var processed = JSON.parse(sessionStorage.getItem('processed_events') || '[]');
     processed.forEach(function(id) { processedSet[id] = true; });
+    var followingList = JSON.parse(sessionStorage.getItem('following_events') || '[]');
+    followingList.forEach(function(id) { followingSet[id] = true; });
+    var ignoredList = JSON.parse(sessionStorage.getItem('ignored_events') || '[]');
+    ignoredList.forEach(function(id) { ignoredSet[id] = true; });
   } catch(e) {}
-  var pendingEvents = events.filter(function(ev) { return !processedSet[ev.id]; });
+  var pendingEvents = events.filter(function(ev) { return !processedSet[ev.id] && !ignoredSet[ev.id]; });
 
   eventsHtml += '<div class="mx-4 mt-3 bg-[#1E2329] rounded-xl border border-[#2E3440] p-3">'
     + '<div class="text-[13px] font-semibold text-[#EAECEF] mb-2">当前事件</div>'
@@ -471,13 +477,15 @@
       + '</div>';
   } else {
     pendingEvents.forEach(function(ev) {
-      var stateColor = ev.task_state === '待处理' ? '#F0B90B' : (ev.task_state === '已完成' ? '#0ECB81' : '#848E9C');
+      var isFollowing = followingSet[ev.id];
+      var stateLabel = isFollowing ? '跟进中' : '未处理';
+      var stateColor = isFollowing ? '#4DA6FF' : '#F0B90B';
       eventsHtml += '<a href="event-thread.html?id=' + ev.id + '" class="flex items-start gap-2 block">'
         + '<span class="w-2 h-2 rounded-full flex-shrink-0 mt-1.5" style="background:' + ev.color + '"></span>'
         + '<div class="flex-1 min-w-0">'
         + '<div class="flex items-center gap-1.5 flex-wrap">'
         + '<span class="text-[12px] text-[#EAECEF]">' + ev.type + (ev.sub_type ? ' · ' + ev.sub_type : '') + '</span>'
-        + '<span class="text-[10px] px-1.5 py-0.5 rounded-full" style="background:rgba(255,255,255,0.06);color:' + stateColor + '">' + ev.task_state + '</span>'
+        + '<span class="text-[10px] px-1.5 py-0.5 rounded-full" style="background:rgba(255,255,255,0.06);color:' + stateColor + '">' + stateLabel + '</span>'
         + '</div>'
         + '<div class="flex items-center gap-2 mt-0.5">'
         + '<span class="text-[11px] font-medium" style="color:' + ev.color + '">' + ev.amount_display + '</span>'
@@ -490,8 +498,47 @@
   }
   eventsHtml += '</div></div>';
 
-  // Module 5: Follow-up Records
-  function getFollowups() {
+  // Module 5: Follow-up Records (跟进记录)
+  // 从 sessionStorage 读取处理记录，与静态数据合并
+  var eventNotes = {};
+  try { eventNotes = JSON.parse(sessionStorage.getItem('event_notes') || '{}'); } catch(e) {}
+
+  // 构建动态跟进条目：已处理的事件 → 时间线条目
+  var dynamicFollowups = [];
+  events.forEach(function(ev) {
+    // 事件触发记录（系统）
+    dynamicFollowups.push({
+      date: ev.time_ago,
+      bd: '系统',
+      text: '[' + ev.type + '] 触发' + (ev.amount_display ? ' — ' + ev.amount_display : ''),
+      tag: ev.type,
+      tagColor: ev.color
+    });
+    // 已处理记录（BD）
+    if (processedSet[ev.id]) {
+      var note = eventNotes[ev.id];
+      dynamicFollowups.push({
+        date: '刚刚',
+        bd: 'BD',
+        text: '[' + ev.type + '] 已处理' + (note ? ' — "' + note + '"' : ''),
+        tag: ev.type,
+        tagColor: '#0ECB81'
+      });
+    }
+    // 已忽略记录
+    if (ignoredSet[ev.id]) {
+      dynamicFollowups.push({
+        date: '刚刚',
+        bd: 'BD',
+        text: '[' + ev.type + '] 已忽略',
+        tag: ev.type,
+        tagColor: '#848E9C'
+      });
+    }
+  });
+
+  // 静态 mock 跟进记录（作为历史数据）
+  function getStaticFollowups() {
     if (c.status === '流失') {
       return [
         { date: '03-28 14:30', bd: 'BD 李明远', text: '电话回访，客户表示近期有大额出金计划' },
@@ -512,21 +559,28 @@
     ];
   }
 
-  var followups = getFollowups();
+  // 合并：动态记录（最新）在前，静态历史在后
+  var allFollowups = dynamicFollowups.concat(getStaticFollowups());
+
   eventsHtml += '<div class="mx-4 mt-3 mb-4 bg-[#1E2329] rounded-xl border border-[#2E3440] p-3">'
     + '<div class="flex items-center justify-between mb-2">'
     + '<div class="text-[13px] font-semibold text-[#EAECEF]">跟进记录</div>'
-    + '<span class="text-[11px] text-[#F0B90B] cursor-pointer">+ 添加记录</span>'
     + '</div>'
     + '<div class="border-l-2 border-[#2E3440] pl-3 space-y-3">';
-  followups.forEach(function(f) {
+  allFollowups.forEach(function(f) {
     var isSystem = f.bd === '系统';
+    var dotColor = isSystem ? 'bg-[#474D57]' : 'bg-[#4DA6FF]';
     eventsHtml += '<div class="relative">'
-      + '<div class="absolute -left-[17px] top-[6px] w-2 h-2 rounded-full ' + (isSystem ? 'bg-[#474D57]' : 'bg-[#4DA6FF]') + '"></div>'
+      + '<div class="absolute -left-[17px] top-[6px] w-2 h-2 rounded-full ' + dotColor + '"></div>'
       + '<div class="text-[10px] text-[#848E9C]">' + f.date + ' · ' + f.bd + '</div>'
       + '<div class="text-[12px] text-[#EAECEF] mt-0.5">' + f.text + '</div>'
       + '</div>';
   });
+
+  if (allFollowups.length === 0) {
+    eventsHtml += '<div class="text-[12px] text-[#474D57] py-2">暂无跟进记录</div>';
+  }
+
   eventsHtml += '</div></div>';
 
   document.getElementById('tab-events').innerHTML = eventsHtml;
@@ -536,27 +590,28 @@
 
   // Module 6: Deposit Distribution
   var dd = c.depositDist;
-  var ddTotal = dd.futures + dd.leverage + dd.savings + dd.card + dd.cloud + dd.mini;
+  var ddTotal = dd.futures + dd.leverage + dd.savings + dd.card + dd.cloud + dd.mini + (dd.spot||0);
   var ddItems = [
     { name: '双仓合约', value: dd.futures, display: dd.futuresDisplay },
     { name: '超级杠杆', value: dd.leverage, display: dd.leverageDisplay },
     { name: '理财', value: dd.savings, display: dd.savingsDisplay },
     { name: '金融卡', value: dd.card, display: dd.cardDisplay },
     { name: '云算力', value: dd.cloud, display: dd.cloudDisplay },
-    { name: 'Mini合约', value: dd.mini, display: dd.miniDisplay }
+    { name: 'Mini合约', value: dd.mini, display: dd.miniDisplay },
+    { name: '现货', value: dd.spot||0, display: dd.spotDisplay||'$0' }
   ].sort(function(a, b) { return b.value - a.value; });
   ddItems.forEach(function(item) {
     item.pct = ddTotal > 0 ? Math.round(item.value / ddTotal * 100) : 0;
   });
 
-  // 资金分布 (reuse deltaAbs/deltaPct from header)
+  // 资沉分布 (reuse deltaAbs/deltaPct from header)
   var distChgColor = deltaPct >= 0 ? '#0ECB81' : '#F6465D';
   var distChgChar = deltaPct >= 0 ? '▲' : '▼';
   var distChgSign = deltaPct >= 0 ? '+' : '';
 
   assetsHtml += '<div class="mx-4 mt-3 bg-[#1E2329] rounded-xl border border-[#2E3440] p-3">'
     + '<div class="flex items-start justify-between mb-3">'
-    + '<div><div class="text-[13px] font-semibold text-[#EAECEF]">资金分布</div></div>'
+    + '<div><div class="text-[13px] font-semibold text-[#EAECEF]">资沉分布</div></div>'
     + '<div class="text-right">'
     + '<div class="text-[16px] font-bold tabular-nums" style="color:#F0B90B">' + fmtFlow(c.fMean) + '</div>'
     + '<div class="text-[10px] mt-0.5"><span style="color:' + distChgColor + '">' + distChgChar + ' ' + distChgSign + deltaPct.toFixed(1) + '%</span> <span class="text-[#474D57]">| </span>均' + fmtAvg(platAvg.depositChg) + '</span></div>'
@@ -577,7 +632,7 @@
   });
   assetsHtml += '</div>';
 
-  // Module 7 (业务参与) removed — merged into 资金分布 above
+  // Module 7 (业务参与) removed — merged into 资沉分布 above
 
   // Module 8: Asset Flow Chart (complete redesign)
   var maxFlow = Math.max.apply(null, flowWeeks.map(function(w) { return Math.max(w.inflow, w.outflow); }).concat([1]));

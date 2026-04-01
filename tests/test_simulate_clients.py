@@ -14,8 +14,8 @@ REQUIRED_FIELDS = [
     "churn_score","growth_score","status",
     "reason_tag","suggested_action",
     "has_futures","has_leverage","has_savings","has_card","has_cloud","has_mini",
-    # Deposit distribution (6 business modules)
-    "dd_futures","dd_leverage","dd_savings","dd_card","dd_cloud","dd_mini",
+    # Deposit distribution (7 business modules)
+    "dd_futures","dd_leverage","dd_savings","dd_card","dd_cloud","dd_mini","dd_spot",
     # Net contribution
     "nc_total","nc_futures","nc_leverage","nc_mini","nc_card","nc_cloud",
     "nc_savings_interest","nc_rebate","nc_wow",
@@ -115,13 +115,13 @@ def test_deposit_distribution_sums_to_f_mean():
     for row in _load():
         f_mean = float(row["f_mean"])
         dd_sum = sum(float(row[k]) for k in [
-            "dd_futures","dd_leverage","dd_savings","dd_card","dd_cloud","dd_mini"])
+            "dd_futures","dd_leverage","dd_savings","dd_card","dd_cloud","dd_mini","dd_spot"])
         assert abs(dd_sum - f_mean) < 1.0, f"DD sum {dd_sum} != f_mean {f_mean}"
 
 
 def test_deposit_distribution_non_negative():
     for row in _load():
-        for k in ["dd_futures","dd_leverage","dd_savings","dd_card","dd_cloud","dd_mini"]:
+        for k in ["dd_futures","dd_leverage","dd_savings","dd_card","dd_cloud","dd_mini","dd_spot"]:
             assert float(row[k]) >= 0
 
 

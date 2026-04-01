@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>客户详情 D+E 区块示意</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            'hub-bg':'#0B0E11','hub-card':'#1E2329','hub-border':'#2E3440',
+            'hub-card-hover':'#2B3139',
+            'hub-gold':'#F0B90B','hub-red':'#F6465D','hub-green':'#0ECB81',
+            'hub-blue':'#4DA6FF','hub-text':'#EAECEF','hub-muted':'#848E9C',
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body { font-family: 'PingFang SC','Helvetica Neue',sans-serif; background:#0B0E11; }
+    html, body { width:393px !important; margin:0 auto !important; }
+  </style>
+</head>
+<body class="bg-[#0B0E11] text-[#EAECEF] p-4">
+
+  <!-- 区块 D: 资金分布（主 — 默认展开） -->
+  <div class="mb-3">
+    <div class="text-[14px] font-semibold text-[#EAECEF] mb-2">资金分布</div>
+    <div class="bg-[#1E2329] rounded-xl border border-[#2E3440] p-4">
+      <!-- 总资沉 -->
+      <div class="flex items-baseline justify-between mb-4">
+        <div>
+          <div class="text-[11px] text-[#848E9C] mb-0.5">总资沉</div>
+          <div class="text-[24px] font-bold text-[#EAECEF]">$ 1,200 万</div>
+        </div>
+        <div class="text-[11px] text-[#848E9C]">这个客户主要玩什么</div>
+      </div>
+
+      <div class="space-y-3">
+        <!-- 理财 — 最大 -->
+        <div>
+          <div class="flex items-center justify-between mb-1">
+            <span class="text-[12px] text-[#EAECEF]">理财</span>
+            <div class="flex items-center gap-2">
+              <span class="text-[12px] font-semibold text-[#EAECEF]">$960 万</span>
+              <span class="text-[10px] text-[#848E9C] w-[36px] text-right">80.0%</span>
+            </div>
+          </div>
+          <div class="w-full h-[6px] bg-[#2B3139] rounded-full overflow-hidden">
+            <div class="h-full rounded-full bg-[#F0B90B]" style="width:80%"></div>
+          </div>
+        </div>
+
+        <!-- 合约保证金 -->
+        <div>
+          <div class="flex items-center justify-between mb-1">
+            <span class="text-[12px] text-[#EAECEF]">合约保证金</span>
+            <div class="flex items-center gap-2">
+              <span class="text-[12px] font-semibold text-[#EAECEF]">$144 万</span>
+              <span class="text-[10px] text-[#848E9C] w-[36px] text-right">12.0%</span>
+            </div>
+          </div>
+          <div class="w-full h-[6px] bg-[#2B3139] rounded-full overflow-hidden">
+            <div class="h-full rounded-full bg-[#F0B90B]" style="width:12%"></div>
+          </div>
+        </div>
+
+        <!-- 现货钱包 -->
+        <div>
+          <div class="flex items-center justify-between mb-1">
+            <span class="text-[12px] text-[#EAECEF]">现货钱包</span>
+            <div class="flex items-center gap-2">
+              <span class="text-[12px] font-semibold text-[#EAECEF]">$60 万</span>
+              <span class="text-[10px] text-[#848E9C] w-[36px] text-right">5.0%</span>
+            </div>
+          </div>
+          <div class="w-full h-[6px] bg-[#2B3139] rounded-full overflow-hidden">
+            <div class="h-full rounded-full bg-[#4DA6FF]" style="width:5%"></div>
+          </div>
+        </div>
+
+        <!-- 金融卡 -->
+        <div>
+          <div class="flex items-center justify-between mb-1">
+            <span class="text-[12px] text-[#EAECEF]">金融卡</span>
+            <div class="flex items-center gap-2">
+              <span class="text-[12px] font-semibold text-[#EAECEF]">$24 万</span>
+              <span class="text-[10px] text-[#848E9C] w-[36px] text-right">2.0%</span>
+            </div>
+          </div>
+          <div class="w-full h-[6px] bg-[#2B3139] rounded-full overflow-hidden">
+            <div class="h-full rounded-full bg-[#4DA6FF]" style="width:2%"></div>
+          </div>
+        </div>
+
+        <!-- 云算力 -->
+        <div>
+          <div class="flex items-center justify-between mb-1">
+            <span class="text-[12px] text-[#EAECEF]">云算力</span>
+            <div class="flex items-center gap-2">
+              <span class="text-[12px] font-semibold text-[#EAECEF]">$12 万</span>
+              <span class="text-[10px] text-[#848E9C] w-[36px] text-right">1.0%</span>
+            </div>
+          </div>
+          <div class="w-full h-[6px] bg-[#2B3139] rounded-full overflow-hidden">
+            <div class="h-full rounded-full bg-[#4DA6FF]" style="width:1%"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 区块 E: 净利润构成（辅 — 折叠） -->
+  <div class="mb-3">
+    <button onclick="toggleProfit()" class="w-full flex items-center justify-between py-2">
+      <div class="flex items-center gap-2">
+        <span class="text-[14px] font-semibold text-[#EAECEF]">综合净贡献</span>
+        <span class="text-[14px] font-bold text-[#F0B90B]">$ 71,280</span>
+      </div>
+      <span id="profit-arrow" class="text-[12px] text-[#848E9C] transition-transform">▼</span>
+    </button>
+
+    <div id="profit-panel" class="hidden">
+      <div class="bg-[#1E2329] rounded-xl border border-[#2E3440] p-4">
+
+        <!-- 周环比 -->
+        <div class="flex items-center justify-between mb-3 pb-3 border-b border-[#2E3440]">
+          <span class="text-[11px] text-[#848E9C]">近90天集团净利润贡献</span>
+          <div class="flex items-center gap-1">
+            <span class="text-[11px] text-[#848E9C]">周环比</span>
+            <span class="text-[12px] font-semibold text-[#0ECB81]">+12.3%</span>
+          </div>
+        </div>
+
+        <div class="space-y-2.5">
+          <!-- 收入项（绿色） -->
+          <div>
+            <div class="flex items-center justify-between mb-1">
+              <span class="text-[12px] text-[#EAECEF]">双仓合约</span>
+              <span class="text-[12px] font-semibold text-[#0ECB81]">+$38,500</span>
+            </div>
+            <div class="w-full h-[4px] bg-[#2B3139] rounded-full overflow-hidden">
+              <div class="h-full rounded-full bg-[#0ECB81]" style="width:54%"></div>
+            </div>
+          </div>
+
+          <div>
+            <div class="flex items-center justify-between mb-1">
+              <span class="text-[12px] text-[#EAECEF]">超级杠杆</span>
+              <span class="text-[12px] font-semibold text-[#0ECB81]">+$18,200</span>
+            </div>
+            <div class="w-full h-[4px] bg-[#2B3139] rounded-full overflow-hidden">
+              <div class="h-full rounded-full bg-[#0ECB81]" style="width:25.5%"></div>
+            </div>
+          </div>
+
+          <div>
+            <div class="flex items-center justify-between mb-1">
+              <span class="text-[12px] text-[#EAECEF]">Mini合约</span>
+              <span class="text-[12px] font-semibold text-[#0ECB81]">+$8,600</span>
+            </div>
+            <div class="w-full h-[4px] bg-[#2B3139] rounded-full overflow-hidden">
+              <div class="h-full rounded-full bg-[#0ECB81]" style="width:12.1%"></div>
+            </div>
+          </div>
+
+          <div>
+            <div class="flex items-center justify-between mb-1">
+              <span class="text-[12px] text-[#EAECEF]">金融卡</span>
+              <span class="text-[12px] font-semibold text-[#0ECB81]">+$5,100</span>
+            </div>
+            <div class="w-full h-[4px] bg-[#2B3139] rounded-full overflow-hidden">
+              <div class="h-full rounded-full bg-[#0ECB81]" style="width:7.2%"></div>
+            </div>
+          </div>
+
+          <div>
+            <div class="flex items-center justify-between mb-1">
+              <span class="text-[12px] text-[#EAECEF]">云算力</span>
+              <span class="text-[12px] font-semibold text-[#0ECB81]">+$2,880</span>
+            </div>
+            <div class="w-full h-[4px] bg-[#2B3139] rounded-full overflow-hidden">
+              <div class="h-full rounded-full bg-[#0ECB81]" style="width:4%"></div>
+            </div>
+          </div>
+
+          <!-- 分隔 -->
+          <div class="border-t border-[#2E3440] pt-2.5"></div>
+
+          <!-- 成本项（红色） -->
+          <div>
+            <div class="flex items-center justify-between mb-1">
+              <span class="text-[12px] text-[#EAECEF]">理财利息</span>
+              <span class="text-[12px] font-semibold text-[#F6465D]">-$1,200</span>
+            </div>
+            <div class="w-full h-[4px] bg-[#2B3139] rounded-full overflow-hidden">
+              <div class="h-full rounded-full bg-[#F6465D]" style="width:1.7%"></div>
+            </div>
+          </div>
+
+          <div>
+            <div class="flex items-center justify-between mb-1">
+              <span class="text-[12px] text-[#EAECEF]">返佣支出</span>
+              <span class="text-[12px] font-semibold text-[#F6465D]">-$800</span>
+            </div>
+            <div class="w-full h-[4px] bg-[#2B3139] rounded-full overflow-hidden">
+              <div class="h-full rounded-full bg-[#F6465D]" style="width:1.1%"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function toggleProfit() {
+      var panel = document.getElementById('profit-panel');
+      var arrow = document.getElementById('profit-arrow');
+      if (panel.classList.contains('hidden')) {
+        panel.classList.remove('hidden');
+        arrow.textContent = '▲';
+      } else {
+        panel.classList.add('hidden');
+        arrow.textContent = '▼';
+      }
+    }
+  </script>
+
+</body>
+</html>
