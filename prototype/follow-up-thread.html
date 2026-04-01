@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Sales Hub — 跟进详情</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            'hub-bg': '#0B0E11', 'hub-card': '#1E2329', 'hub-border': '#2E3440',
+            'hub-gold': '#F0B90B', 'hub-red': '#F6465D', 'hub-green': '#0ECB81',
+            'hub-blue': '#4DA6FF', 'hub-text': '#EAECEF', 'hub-muted': '#848E9C',
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body { font-family: 'PingFang SC', 'Helvetica Neue', sans-serif; background: #0B0E11; }
+    ::-webkit-scrollbar { display: none; }
+    html { background: #000; }
+    html, body { width: 393px !important; margin: 0 auto !important; overflow-x: hidden; }
+    .fixed-bar { position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); width: 393px; }
+    .pill-btn { padding: 5px 12px; border-radius: 999px; font-size: 12px; background: #2B3139; color: #848E9C; border: 1px solid #2E3440; cursor: pointer; white-space: nowrap; }
+    .pill-btn.active { background: #F0B90B; color: #0B0E11; font-weight: 600; border-color: #F0B90B; }
+  </style>
+</head>
+<body class="bg-[#0B0E11] text-[#EAECEF]">
+<div class="w-full pb-[140px]">
+
+  <!-- iOS Status Bar -->
+  <div class="h-[44px] bg-[#0B0E11] flex items-center justify-between px-6 flex-shrink-0">
+    <span class="text-[12px] font-semibold text-[#EAECEF]">9:41</span>
+    <div class="flex items-center gap-1.5 text-[#EAECEF]">
+      <i class="fa-solid fa-signal text-[12px]"></i>
+      <i class="fa-solid fa-wifi text-[12px]"></i>
+      <i class="fa-solid fa-battery-full text-[13px]"></i>
+    </div>
+  </div>
+
+  <!-- Top Nav -->
+  <div class="h-[52px] sticky top-0 z-20 bg-[#0B0E11] border-b border-[#2E3440] flex items-center px-4 gap-3">
+    <button onclick="history.back()" class="w-8 h-8 flex items-center justify-center">
+      <i class="fa-solid fa-chevron-left text-[16px] text-[#EAECEF]"></i>
+    </button>
+    <h1 class="flex-1 text-[16px] font-bold text-[#EAECEF]">跟进详情</h1>
+    <span id="status-badge" class="text-[11px] px-2.5 py-1 rounded-full font-medium"></span>
+  </div>
+
+  <!-- ① 客户信息卡 -->
+  <div id="client-card" class="mx-3 mt-3 bg-[#1E2329] rounded-2xl border border-[#2E3440] overflow-hidden">
+    <div class="flex items-center gap-3 px-4 pt-3 pb-2">
+      <div class="w-8 h-8 flex items-center justify-center rounded-full bg-[#2B3139] flex-shrink-0">
+        <i id="fav-icon" class="fa-regular fa-star text-[13px] text-[#474D57]"></i>
+      </div>
+      <div class="flex-1 min-w-0">
+        <div class="flex items-center gap-2">
+          <button id="uid-btn" onclick="copyUid()" class="flex items-center gap-1.5 active:opacity-70">
+            <span id="client-uid" class="text-[16px] font-bold text-[#EAECEF] tabular-nums tracking-wide"></span>
+            <i class="fa-regular fa-copy text-[10px] text-[#474D57]"></i>
+          </button>
+          <span id="client-nickname" class="text-[12px] text-[#848E9C]"></span>
+        </div>
+      </div>
+    </div>
+    <div class="px-4 pb-2">
+      <div class="text-[10px] text-[#474D57] mb-0.5">周资沉</div>
+      <div class="flex items-end gap-3">
+        <span id="deposit-hero" class="text-[26px] font-bold text-[#EAECEF] tracking-tight leading-none"></span>
+        <div id="deposit-delta" class="mb-0.5 flex items-center gap-1"></div>
+      </div>
+    </div>
+    <div class="px-4 pb-2">
+      <span id="memo-text" class="text-[11px] text-[#474D57]">暂无备忘</span>
+    </div>
+    <div class="px-4 pb-3 flex items-center justify-between">
+      <span class="text-[11px] text-[#848E9C]">上次联系</span>
+      <span id="last-contact" class="text-[12px] text-[#474D57]">暂无记录</span>
+    </div>
+    <div class="px-4 pb-3 border-t border-[#2E3440] pt-2">
+      <a id="full-profile-link" href="#" class="text-[12px] text-[#4DA6FF]">查看完整资料 →</a>
+    </div>
+  </div>
+
+  <!-- ② 事件内容卡 -->
+  <div class="mx-3 mt-3 bg-[#1E2329] rounded-2xl border border-[#2E3440] p-4">
+    <div class="flex items-start justify-between mb-3">
+      <div>
+        <div class="text-[11px] text-[#848E9C] mb-1">跟进目标</div>
+        <div id="event-goal" class="text-[15px] font-semibold text-[#EAECEF]"></div>
+      </div>
+      <div class="text-right flex-shrink-0 ml-3">
+        <div class="text-[11px] text-[#848E9C] mb-1">截止日期</div>
+        <div id="due-label" class="text-[13px] font-semibold"></div>
+        <div id="due-date" class="text-[10px] text-[#474D57] mt-0.5"></div>
+      </div>
+    </div>
+    <!-- 活动记录 -->
+    <div class="border-t border-[#2E3440] pt-3">
+      <div class="text-[12px] text-[#848E9C] mb-2">活动记录</div>
+      <div id="activities-list" class="border-l-2 border-[#2E3440] pl-3 space-y-3 mb-3"></div>
+    </div>
+    <!-- 添加记录表单 -->
+    <div id="add-activity-btn-wrap">
+      <button onclick="openActivityForm()" class="w-full py-2.5 border border-dashed border-[#2E3440] text-[#848E9C] text-[13px] rounded-xl active:opacity-70">+ 记录本次跟进</button>
+    </div>
+    <div id="activity-form" class="hidden">
+      <div class="text-[11px] text-[#848E9C] mb-1">渠道</div>
+      <div class="flex gap-2 overflow-x-auto pb-1 mb-3" style="scrollbar-width:none">
+        <button class="pill-btn active" data-group="channel" data-val="Telegram" onclick="selectPill(this)">Telegram</button>
+        <button class="pill-btn" data-group="channel" data-val="WhatsApp" onclick="selectPill(this)">WhatsApp</button>
+        <button class="pill-btn" data-group="channel" data-val="微信" onclick="selectPill(this)">微信</button>
+        <button class="pill-btn" data-group="channel" data-val="电话" onclick="selectPill(this)">电话</button>
+        <button class="pill-btn" data-group="channel" data-val="线下" onclick="selectPill(this)">线下</button>
+        <button class="pill-btn" data-group="channel" data-val="邮件" onclick="selectPill(this)">邮件</button>
+      </div>
+      <div class="text-[11px] text-[#848E9C] mb-1">结果</div>
+      <div class="flex gap-2 overflow-x-auto pb-1 mb-3" style="scrollbar-width:none">
+        <button class="pill-btn active" data-group="result" data-val="已联系上" onclick="selectPill(this)">已联系上</button>
+        <button class="pill-btn" data-group="result" data-val="有回复" onclick="selectPill(this)">有回复</button>
+        <button class="pill-btn" data-group="result" data-val="已见面" onclick="selectPill(this)">已见面</button>
+        <button class="pill-btn" data-group="result" data-val="未接通" onclick="selectPill(this)">未接通</button>
+        <button class="pill-btn" data-group="result" data-val="未回复" onclick="selectPill(this)">未回复</button>
+        <button class="pill-btn" data-group="result" data-val="仅发送消息" onclick="selectPill(this)">仅发送消息</button>
+      </div>
+      <div class="text-[11px] text-[#848E9C] mb-1">摘要（选填）</div>
+      <textarea id="activity-summary" rows="2" class="w-full bg-[#2B3139] text-[#EAECEF] text-[12px] rounded-lg px-3 py-2 border border-[#2E3440] outline-none placeholder-[#474D57] resize-none mb-3" placeholder="简要说明聊了什么"></textarea>
+      <!-- 更新截止日期 -->
+      <label class="flex items-center gap-2 mb-2 cursor-pointer">
+        <input type="checkbox" id="update-followup" onchange="toggleUpdateFollowup()" class="w-4 h-4 accent-[#F0B90B]">
+        <span class="text-[12px] text-[#848E9C]">更新下次跟进日期</span>
+      </label>
+      <div id="update-followup-fields" class="hidden bg-[#2B3139] rounded-lg p-3 mb-3">
+        <div class="text-[11px] text-[#848E9C] mb-1">新截止日期</div>
+        <input type="date" id="new-followup-at" class="w-full bg-[#0B0E11] text-[#EAECEF] text-[12px] rounded-lg px-3 py-2 border border-[#2E3440] outline-none mb-2" style="color-scheme:dark">
+        <div class="text-[11px] text-[#848E9C] mb-1">新跟进要点（选填）</div>
+        <input type="text" id="new-followup-note" class="w-full bg-[#0B0E11] text-[#EAECEF] text-[12px] rounded-lg px-3 py-2 border border-[#2E3440] outline-none placeholder-[#474D57]" placeholder="下次要做什么">
+      </div>
+      <div class="flex gap-2">
+        <button onclick="submitActivity()" class="flex-1 py-2.5 rounded-xl text-[13px] font-semibold bg-[#F0B90B] text-[#0B0E11] active:opacity-80">保存记录</button>
+        <button onclick="closeActivityForm()" class="py-2.5 px-4 rounded-xl text-[13px] text-[#848E9C] border border-[#2E3440] active:opacity-80">取消</button>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ③ 底部操作栏 -->
+<div id="action-bar" class="fixed-bar bg-[#0B0E11] border-t border-[#2E3440] z-30 px-4 pt-3" style="padding-bottom:calc(0.75rem + env(safe-area-inset-bottom))">
+</div>
+
+<!-- 标记完成 Bottom Sheet -->
+<div id="done-sheet" class="fixed inset-0 z-50 hidden items-end justify-center" onclick="if(event.target===this)closeDoneSheet()">
+  <div class="absolute inset-0 bg-black/60"></div>
+  <div class="relative w-[393px] bg-[#1E2329] rounded-t-2xl p-5" style="padding-bottom:calc(1.25rem + env(safe-area-inset-bottom))">
+    <div class="flex items-center justify-between mb-4">
+      <span class="text-[15px] font-semibold text-[#EAECEF]">标记完成</span>
+      <button onclick="closeDoneSheet()" class="w-7 h-7 flex items-center justify-center text-[#848E9C] text-[18px]">✕</button>
+    </div>
+    <div class="text-[11px] text-[#848E9C] mb-1">备注（选填）</div>
+    <textarea id="done-note" rows="3" class="w-full bg-[#2B3139] text-[#EAECEF] text-[13px] rounded-lg px-3 py-2.5 border border-[#2E3440] outline-none placeholder-[#474D57] resize-none mb-4" placeholder="记录一下最终结果..."></textarea>
+    <div class="flex gap-2">
+      <button onclick="confirmDone()" class="flex-1 py-3 rounded-xl text-[14px] font-semibold bg-[#F0B90B] text-[#0B0E11] active:opacity-80">确认完成</button>
+      <button onclick="postpone()" class="py-3 px-4 rounded-xl text-[13px] border active:opacity-80" style="color:#4DA6FF;border-color:#4DA6FF">推迟3天</button>
+    </div>
+  </div>
+</div>
+
+<script src="mock-data.js"></script>
+<script>
+(function() {
+  var params = new URLSearchParams(location.search);
+  var fuId = params.get('fuId');
+
+  // Load event
+  var fuEvents = [];
+  try { fuEvents = JSON.parse(sessionStorage.getItem('follow_up_events') || '[]'); } catch(e) {}
+  var ev = fuEvents.find(function(e) { return e.id === fuId; });
+
+  if (!ev) {
+    document.getElementById('client-card').innerHTML =
+      '<div class="p-8 text-center text-[#848E9C] text-[13px]">未找到跟进事件</div>';
+    return;
+  }
+
+  // Load client
+  var D = window.PROTOTYPE_DATA;
+  var c = D && D.clientsById ? D.clientsById[ev.client_uid] : null;
+
+  function esc(s) { return String(s || '').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
+
+  function pad(n) { return n < 10 ? '0' + n : '' + n; }
+
+  function timeAgo(isoStr) {
+    if (!isoStr) return '';
+    var now = new Date(), then = new Date(isoStr);
+    if (isNaN(then)) return '';
+    var diff = Math.floor((now - then) / 1000);
+    if (diff < 3600) return '刚刚';
+    if (diff < 86400) return Math.floor(diff / 3600) + '小时前';
+    var days = Math.floor(diff / 86400);
+    if (days < 7) return days + '天前';
+    if (days < 30) return Math.floor(days / 7) + '周前';
+    return (then.getMonth() + 1) + '月' + then.getDate() + '日';
+  }
+
+  var todayStr = new Date().toISOString().split('T')[0];
+
+  function daysInfo(fuAt) {
+    if (!fuAt) return { text: '未设定', color: '#474D57' };
+    var d = Math.round((new Date(fuAt) - new Date(todayStr)) / 86400000);
+    if (d < 0) return { text: '逾期' + Math.abs(d) + '天', color: '#F6465D' };
+    if (d === 0) return { text: '今天', color: '#F0B90B' };
+    if (d === 1) return { text: '明天', color: '#F0B90B' };
+    return { text: d + '天后', color: '#4DA6FF' };
+  }
+
+  // ── Status badge ──
+  var STATUS_STYLE = {
+    '待处理': { bg: 'rgba(240,185,11,0.15)', color: '#F0B90B' },
+    '跟进中': { bg: 'rgba(77,166,255,0.15)', color: '#4DA6FF' },
+    '已完成': { bg: 'rgba(14,203,129,0.15)', color: '#0ECB81' },
+    '已忽略': { bg: 'rgba(132,142,156,0.15)', color: '#848E9C' },
+  };
+  var ss = STATUS_STYLE[ev.status] || STATUS_STYLE['已忽略'];
+  var badge = document.getElementById('status-badge');
+  badge.textContent = ev.status;
+  badge.style.background = ss.bg;
+  badge.style.color = ss.color;
+
+  // ── ① Client header ──
+  document.getElementById('client-uid').textContent = ev.client_uid;
+  document.getElementById('full-profile-link').href = 'client-detail.html?uid=' + ev.client_uid;
+
+  if (c) {
+    var nickname = localStorage.getItem('nickname_' + c.uid) || '';
+    document.getElementById('client-nickname').textContent = nickname;
+    document.getElementById('deposit-hero').textContent = c.thisWeekDisplay || '-';
+
+    var thisW = c.weeks[c.weeks.length - 1], avg = c.fMean;
+    var pct = avg > 0 ? ((thisW - avg) / avg * 100) : 0;
+    var isUp = pct >= 0;
+    var dColor = isUp ? '#0ECB81' : '#F6465D';
+    document.getElementById('deposit-delta').innerHTML =
+      '<div class="flex items-center gap-1 px-1.5 py-0.5 rounded" style="background:' + (isUp ? 'rgba(14,203,129,0.12)' : 'rgba(246,70,93,0.12)') + '">'
+      + '<span style="color:' + dColor + ';font-size:11px">' + (isUp ? '▲' : '▼') + '</span>'
+      + '<span style="color:' + dColor + ';font-size:12px;font-weight:700">' + (isUp ? '+' : '') + pct.toFixed(1) + '%</span>'
+      + '</div>';
+
+    var memo = localStorage.getItem('memo_' + c.uid) || '';
+    var memoEl = document.getElementById('memo-text');
+    memoEl.textContent = memo || '暂无备忘';
+    memoEl.style.color = memo ? '#EAECEF' : '#474D57';
+
+    // Fav
+    var isFav = localStorage.getItem('fav_' + c.uid) === '1';
+    var favIcon = document.getElementById('fav-icon');
+    favIcon.className = isFav
+      ? 'fa-solid fa-star text-[13px] text-[#F0B90B]'
+      : 'fa-regular fa-star text-[13px] text-[#474D57]';
+  }
+
+  // Last contact
+  var commRecords = [];
+  try { commRecords = JSON.parse(sessionStorage.getItem('comm_records_' + ev.client_uid) || '[]'); } catch(e) {}
+  var lcEl = document.getElementById('last-contact');
+  if (commRecords.length > 0) {
+    var lc = commRecords[0];
+    var lcTime = timeAgo(lc.occurred_at || lc.date) || '';
+    var lcText = (lc.channel && lc.result) ? lc.channel + ' · ' + lc.result : (lc.text || '');
+    lcEl.innerHTML = '<span style="color:#F0B90B;font-weight:600">' + lcTime + '</span>'
+      + ' <span style="color:#848E9C">' + lcText + '</span>';
+  }
+
+  // Copy UID
+  window.copyUid = function() {
+    navigator.clipboard.writeText(ev.client_uid).then(function() {
+      var icon = document.querySelector('#uid-btn i');
+      icon.className = 'fa-solid fa-check text-[9px] text-[#0ECB81]';
+      setTimeout(function() { icon.className = 'fa-regular fa-copy text-[10px] text-[#474D57]'; }, 1200);
+    });
+  };
+
+  // ── ② Event content ──
+  var di = daysInfo(ev.follow_up_at);
+  document.getElementById('event-goal').textContent = ev.follow_up_note || '—';
+  document.getElementById('due-label').textContent = di.text;
+  document.getElementById('due-label').style.color = di.color;
+  document.getElementById('due-date').textContent = ev.follow_up_at || '';
+
+  function renderActivities() {
+    var list = document.getElementById('activities-list');
+    var acts = ev.activities || [];
+    if (acts.length === 0) {
+      list.innerHTML = '<div class="text-[12px] text-[#474D57] py-1">暂无活动记录</div>';
+      return;
+    }
+    list.innerHTML = acts.slice().reverse().map(function(a) {
+      var timeLabel = timeAgo(a.occurred_at) || a.occurred_at || '';
+      var header = timeLabel + ' · BD';
+      var body = a.channel + ' · ' + a.result;
+      if (a.summary) body += '：' + esc(a.summary);
+      var nextInfo = a.next_follow_up_at
+        ? '<div style="font-size:10px;color:#4DA6FF;margin-top:2px">下次跟进：' + a.next_follow_up_at + (a.next_follow_up_note ? ' — ' + esc(a.next_follow_up_note) : '') + '</div>'
+        : '';
+      return '<div class="relative">'
+        + '<div class="absolute -left-[17px] top-[6px] w-2 h-2 rounded-full bg-[#4DA6FF]"></div>'
+        + '<div class="text-[10px] text-[#848E9C]">' + header + '</div>'
+        + '<div class="text-[12px] text-[#EAECEF] mt-0.5">' + body + '</div>'
+        + nextInfo
+        + '</div>';
+    }).join('');
+  }
+  renderActivities();
+
+  // ── Activity form ──
+  window.selectPill = function(btn) {
+    var group = btn.getAttribute('data-group');
+    document.querySelectorAll('[data-group="' + group + '"]').forEach(function(b) {
+      b.classList.remove('active');
+    });
+    btn.classList.add('active');
+  };
+
+  window.openActivityForm = function() {
+    document.getElementById('add-activity-btn-wrap').classList.add('hidden');
+    document.getElementById('activity-form').classList.remove('hidden');
+    // default date: tomorrow
+    var d = new Date(); d.setDate(d.getDate() + 1);
+    document.getElementById('new-followup-at').value =
+      d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate());
+  };
+
+  window.closeActivityForm = function() {
+    document.getElementById('add-activity-btn-wrap').classList.remove('hidden');
+    document.getElementById('activity-form').classList.add('hidden');
+    document.getElementById('update-followup').checked = false;
+    document.getElementById('update-followup-fields').classList.add('hidden');
+    document.getElementById('activity-summary').value = '';
+    document.getElementById('new-followup-note').value = '';
+  };
+
+  window.toggleUpdateFollowup = function() {
+    var checked = document.getElementById('update-followup').checked;
+    document.getElementById('update-followup-fields').classList.toggle('hidden', !checked);
+  };
+
+  window.submitActivity = function() {
+    var channel = (document.querySelector('[data-group="channel"].active') || {}).getAttribute('data-val') || 'Telegram';
+    var result  = (document.querySelector('[data-group="result"].active')  || {}).getAttribute('data-val') || '已联系上';
+    var summary = document.getElementById('activity-summary').value.trim();
+    var updateFu = document.getElementById('update-followup').checked;
+    var newFuAt   = updateFu ? document.getElementById('new-followup-at').value : null;
+    var newFuNote = updateFu ? document.getElementById('new-followup-note').value.trim() : null;
+
+    var activity = {
+      occurred_at: new Date().toISOString(),
+      channel: channel,
+      result: result,
+      summary: summary,
+    };
+    if (newFuAt) {
+      activity.next_follow_up_at = newFuAt;
+      activity.next_follow_up_note = newFuNote || '';
+    }
+
+    // Persist
+    var all = [];
+    try { all = JSON.parse(sessionStorage.getItem('follow_up_events') || '[]'); } catch(e) {}
+    all.forEach(function(e) {
+      if (e.id === ev.id) {
+        if (!e.activities) e.activities = [];
+        e.activities.push(activity);
+        if (newFuAt) {
+          e.follow_up_at = newFuAt;
+          if (newFuNote) e.follow_up_note = newFuNote;
+          e.status = '跟进中';
+        }
+        // sync local ref
+        ev.activities = e.activities;
+        ev.follow_up_at = e.follow_up_at;
+        ev.follow_up_note = e.follow_up_note;
+        ev.status = e.status;
+      }
+    });
+    sessionStorage.setItem('follow_up_events', JSON.stringify(all));
+
+    // Also write to comm_records for timeline
+    var commKey = 'comm_records_' + ev.client_uid;
+    var crs = [];
+    try { crs = JSON.parse(sessionStorage.getItem(commKey) || '[]'); } catch(e) {}
+    crs.unshift({
+      occurred_at: activity.occurred_at,
+      date: activity.occurred_at,
+      bd: 'BD',
+      channel: channel,
+      result: result,
+      summary: summary,
+      text: channel + ' · ' + result + (summary ? '：' + summary : '')
+    });
+    sessionStorage.setItem(commKey, JSON.stringify(crs));
+
+    // Re-render
+    renderActivities();
+    // Update due date display
+    var newDi = daysInfo(ev.follow_up_at);
+    document.getElementById('event-goal').textContent = ev.follow_up_note || '—';
+    document.getElementById('due-label').textContent = newDi.text;
+    document.getElementById('due-label').style.color = newDi.color;
+    document.getElementById('due-date').textContent = ev.follow_up_at || '';
+    closeActivityForm();
+  };
+
+  // ── ③ Action bar ──
+  function renderActionBar() {
+    var bar = document.getElementById('action-bar');
+    var isDone = ev.status === '已完成' || ev.status === '已忽略';
+    if (isDone) {
+      bar.innerHTML = '<div class="text-center text-[12px] text-[#474D57] py-2">'
+        + (ev.status === '已完成' ? '已完成' + (ev.done_note ? ' · "' + esc(ev.done_note) + '"' : '') : '已忽略')
+        + '</div>';
+      return;
+    }
+    var followBtn = ev.status === '待处理'
+      ? '<button onclick="setFollowing()" class="flex-1 py-3 rounded-xl text-[13px] font-medium border border-[#2E3440] text-[#848E9C] active:opacity-70">跟进</button>'
+      : '';
+    var ignoreBtn = ev.status === '待处理'
+      ? '<button onclick="setIgnored()" class="flex-1 py-3 rounded-xl text-[13px] font-medium border border-[#2E3440] text-[#848E9C] active:opacity-70">忽略</button>'
+      : '';
+    bar.innerHTML = '<div class="flex gap-2">'
+      + followBtn
+      + ignoreBtn
+      + '<button onclick="openDoneSheet()" class="flex-1 py-3 rounded-xl text-[13px] font-semibold bg-[#F0B90B] text-[#0B0E11] active:opacity-80">✓ 标记完成</button>'
+      + '</div>';
+  }
+  renderActionBar();
+
+  function saveStatus(status, doneNote) {
+    var all = [];
+    try { all = JSON.parse(sessionStorage.getItem('follow_up_events') || '[]'); } catch(e) {}
+    all.forEach(function(e) {
+      if (e.id === ev.id) {
+        e.status = status;
+        if (doneNote !== undefined) { e.done_note = doneNote; e.done_at = new Date().toISOString(); }
+        ev.status = e.status;
+        ev.done_note = e.done_note;
+      }
+    });
+    sessionStorage.setItem('follow_up_events', JSON.stringify(all));
+  }
+
+  window.setFollowing = function() {
+    saveStatus('跟进中');
+    var ss2 = STATUS_STYLE['跟进中'];
+    badge.textContent = '跟进中';
+    badge.style.background = ss2.bg;
+    badge.style.color = ss2.color;
+    renderActionBar();
+  };
+
+  window.setIgnored = function() {
+    saveStatus('已忽略');
+    var ss2 = STATUS_STYLE['已忽略'];
+    badge.textContent = '已忽略';
+    badge.style.background = ss2.bg;
+    badge.style.color = ss2.color;
+    renderActionBar();
+    document.getElementById('add-activity-btn-wrap').classList.add('hidden');
+  };
+
+  window.openDoneSheet = function() {
+    document.getElementById('done-note').value = '';
+    var sheet = document.getElementById('done-sheet');
+    sheet.classList.remove('hidden');
+    sheet.classList.add('flex');
+  };
+  window.closeDoneSheet = function() {
+    var sheet = document.getElementById('done-sheet');
+    sheet.classList.add('hidden');
+    sheet.classList.remove('flex');
+  };
+  window.confirmDone = function() {
+    var note = document.getElementById('done-note').value.trim();
+    saveStatus('已完成', note);
+    closeDoneSheet();
+    var ss2 = STATUS_STYLE['已完成'];
+    badge.textContent = '已完成';
+    badge.style.background = ss2.bg;
+    badge.style.color = ss2.color;
+    renderActionBar();
+    document.getElementById('add-activity-btn-wrap').classList.add('hidden');
+  };
+  window.postpone = function() {
+    var all = [];
+    try { all = JSON.parse(sessionStorage.getItem('follow_up_events') || '[]'); } catch(e) {}
+    all.forEach(function(e) {
+      if (e.id === ev.id) {
+        var d = new Date(e.follow_up_at || new Date()); d.setDate(d.getDate() + 3);
+        e.follow_up_at = d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate());
+        e.status = '跟进中';
+        ev.follow_up_at = e.follow_up_at;
+        ev.status = e.status;
+      }
+    });
+    sessionStorage.setItem('follow_up_events', JSON.stringify(all));
+    closeDoneSheet();
+    var newDi = daysInfo(ev.follow_up_at);
+    document.getElementById('due-label').textContent = newDi.text;
+    document.getElementById('due-label').style.color = newDi.color;
+    document.getElementById('due-date').textContent = ev.follow_up_at;
+    var ss2 = STATUS_STYLE['跟进中'];
+    badge.textContent = '跟进中';
+    badge.style.background = ss2.bg;
+    badge.style.color = ss2.color;
+    renderActionBar();
+  };
+
+})();
+</script>
+
+</body>
+</html>

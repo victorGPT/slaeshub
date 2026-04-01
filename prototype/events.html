@@ -166,7 +166,7 @@
       var isDone = ev.status === '已完成' || ev.status === '已忽略';
       return '<div class="px-4 py-3 border-b border-[#2E3440]">'
         + '<div class="flex items-start justify-between gap-2">'
-        + '<a href="client-detail.html?uid=' + ev.client_uid + '" class="flex-1 min-w-0 active:opacity-70">'
+        + '<a href="follow-up-thread.html?fuId=' + ev.id + '" class="flex-1 min-w-0 active:opacity-70">'
         + '<div class="flex items-center gap-1.5 mb-1">'
         + '<span style="background:#4DA6FF;width:7px;height:7px;border-radius:50%;display:inline-block;flex-shrink:0"></span>'
         + '<span style="font-size:13px;font-weight:600;color:#EAECEF">' + ev.client_name + '</span>'

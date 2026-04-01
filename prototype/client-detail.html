@@ -522,7 +522,7 @@
       var dl = fuDaysLabel(ev.follow_up_at);
       var stateBg = ev.status === '跟进中' ? 'rgba(77,166,255,0.12)' : 'rgba(240,185,11,0.12)';
       var stateColor = ev.status === '跟进中' ? '#4DA6FF' : '#F0B90B';
-      eventsHtml += '<div class="flex items-start justify-between gap-2">'
+      eventsHtml += '<a href="follow-up-thread.html?fuId=' + ev.id + '" class="flex items-start justify-between gap-2 block active:opacity-70">'
         + '<div class="flex-1 min-w-0">'
         + '<div class="flex items-center gap-1.5 mb-0.5">'
         + '<span class="text-[10px] px-1.5 py-0.5 rounded-full" style="background:' + stateBg + ';color:' + stateColor + '">' + ev.status + '</span>'
@@ -530,11 +530,8 @@
         + '</div>'
         + '<div class="text-[12px] text-[#EAECEF]">' + esc(ev.follow_up_note || '—') + '</div>'
         + '</div>'
-        + '<div class="flex flex-col gap-1 flex-shrink-0">'
-        + (ev.status === '待处理' ? '<button onclick="window.setEventFollowing(\'' + ev.id + '\')" class="text-[11px] px-2 py-1 rounded-lg border border-[#2E3440] text-[#848E9C] active:opacity-70">跟进</button>' : '')
-        + '<button onclick="window.markEventDone(\'' + ev.id + '\')" class="text-[11px] px-2 py-1 rounded-lg border active:opacity-70" style="color:#0ECB81;border-color:#0ECB81">完成</button>'
-        + '</div>'
-        + '</div>';
+        + '<i class="fa-solid fa-chevron-right text-[10px] text-[#474D57] mt-1 flex-shrink-0"></i>'
+        + '</a>';
     });
     eventsHtml += '</div></div>';
   }
