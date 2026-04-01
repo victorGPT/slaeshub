@@ -475,7 +475,7 @@
   var allFollowUpEvents = [];
   try { allFollowUpEvents = JSON.parse(sessionStorage.getItem('follow_up_events') || '[]'); } catch(e) {}
   var clientActiveEvents = allFollowUpEvents.filter(function(e) {
-    return e.client_uid === uid && e.status !== '已结束' && e.status !== '已忽略';
+    return e.client_uid === uid && e.status !== '已结束';
   });
   var clientAllEvents = allFollowUpEvents.filter(function(e) {
     return e.client_uid === uid;
@@ -530,12 +530,11 @@
   } else {
     eventsHtml += '<div class="space-y-2">';
     clientAllEvents.forEach(function(ev) {
-      var isDone = ev.status === '已结束' || ev.status === '已忽略';
-      var dl = isDone ? { text: ev.status, color: '#474D57' } : fuDaysLabel(ev.follow_up_at);
+      var isDone = ev.status === '已结束';
+      var dl = isDone ? { text: '已结束', color: '#474D57' } : fuDaysLabel(ev.follow_up_at);
       var stateBg, stateColor;
       if (ev.status === '跟进中')      { stateBg = 'rgba(77,166,255,0.12)';  stateColor = '#4DA6FF'; }
       else if (ev.status === '已结束') { stateBg = 'rgba(14,203,129,0.12)';  stateColor = '#0ECB81'; }
-      else if (ev.status === '已忽略') { stateBg = 'rgba(132,142,156,0.1)';  stateColor = '#474D57'; }
       else                             { stateBg = 'rgba(240,185,11,0.12)';  stateColor = '#F0B90B'; }
       var titleText = ev.title ? esc(ev.title) : esc(ev.follow_up_note || '—');
       eventsHtml += '<a href="follow-up-thread.html?fuId=' + ev.id + '" class="flex items-center gap-2 py-1 block active:opacity-70">'
@@ -572,50 +571,7 @@
 
   // Module: 主动沟通表单（从 worktree-2 引入）
   eventsHtml += '<div class="mx-4 mb-6">'
-    + '<div id="comm-default">'
     + '<button onclick="openCommForm()" class="w-full h-[44px] border border-[#2E3440] text-[#848E9C] font-medium text-[14px] rounded-lg active:opacity-80 transition">+ 记录主动沟通</button>'
-    + '</div>'
-    + '<div id="comm-form" style="display:none" class="bg-[#1E2329] rounded-xl p-4 border border-[#2E3440]">'
-    + '<div class="text-[13px] font-semibold text-[#EAECEF] mb-3">主动沟通</div>'
-    + '<div class="text-[11px] text-[#848E9C] mb-1">事件名称</div>'
-    + '<input type="text" id="comm-follow-up-title" class="w-full bg-[#2B3139] text-[#EAECEF] text-[12px] rounded-lg px-3 py-2 border border-[#2E3440] outline-none placeholder-[#474D57] mb-3" placeholder="如：客户维护、理财拜访">'
-    + '<div class="text-[11px] text-[#848E9C] mb-1">渠道</div>'
-    + '<div class="flex gap-2 overflow-x-auto pb-1 mb-3" style="scrollbar-width:none">'
-    + '<button class="comm-pill-channel flex-shrink-0 rounded-full px-3 py-1 text-[12px] bg-[#F0B90B] text-[#0B0E11] font-semibold" data-val="Telegram" onclick="selectPill(this,\'channel\')">Telegram</button>'
-    + '<button class="comm-pill-channel flex-shrink-0 rounded-full px-3 py-1 text-[12px] bg-[#2B3139] text-[#848E9C] border border-[#2E3440]" data-val="WhatsApp" onclick="selectPill(this,\'channel\')">WhatsApp</button>'
-    + '<button class="comm-pill-channel flex-shrink-0 rounded-full px-3 py-1 text-[12px] bg-[#2B3139] text-[#848E9C] border border-[#2E3440]" data-val="微信" onclick="selectPill(this,\'channel\')">微信</button>'
-    + '<button class="comm-pill-channel flex-shrink-0 rounded-full px-3 py-1 text-[12px] bg-[#2B3139] text-[#848E9C] border border-[#2E3440]" data-val="电话" onclick="selectPill(this,\'channel\')">电话</button>'
-    + '<button class="comm-pill-channel flex-shrink-0 rounded-full px-3 py-1 text-[12px] bg-[#2B3139] text-[#848E9C] border border-[#2E3440]" data-val="线下" onclick="selectPill(this,\'channel\')">线下</button>'
-    + '<button class="comm-pill-channel flex-shrink-0 rounded-full px-3 py-1 text-[12px] bg-[#2B3139] text-[#848E9C] border border-[#2E3440]" data-val="邮件" onclick="selectPill(this,\'channel\')">邮件</button>'
-    + '</div>'
-    + '<div class="text-[11px] text-[#848E9C] mb-1">结果</div>'
-    + '<div class="flex gap-2 overflow-x-auto pb-1 mb-3" style="scrollbar-width:none">'
-    + '<button class="comm-pill-result flex-shrink-0 rounded-full px-3 py-1 text-[12px] bg-[#F0B90B] text-[#0B0E11] font-semibold" data-val="已联系上" onclick="selectPill(this,\'result\')">已联系上</button>'
-    + '<button class="comm-pill-result flex-shrink-0 rounded-full px-3 py-1 text-[12px] bg-[#2B3139] text-[#848E9C] border border-[#2E3440]" data-val="有回复" onclick="selectPill(this,\'result\')">有回复</button>'
-    + '<button class="comm-pill-result flex-shrink-0 rounded-full px-3 py-1 text-[12px] bg-[#2B3139] text-[#848E9C] border border-[#2E3440]" data-val="已见面" onclick="selectPill(this,\'result\')">已见面</button>'
-    + '<button class="comm-pill-result flex-shrink-0 rounded-full px-3 py-1 text-[12px] bg-[#2B3139] text-[#848E9C] border border-[#2E3440]" data-val="未接通" onclick="selectPill(this,\'result\')">未接通</button>'
-    + '<button class="comm-pill-result flex-shrink-0 rounded-full px-3 py-1 text-[12px] bg-[#2B3139] text-[#848E9C] border border-[#2E3440]" data-val="未回复" onclick="selectPill(this,\'result\')">未回复</button>'
-    + '<button class="comm-pill-result flex-shrink-0 rounded-full px-3 py-1 text-[12px] bg-[#2B3139] text-[#848E9C] border border-[#2E3440]" data-val="仅发送消息" onclick="selectPill(this,\'result\')">仅发送消息</button>'
-    + '</div>'
-    + '<div class="text-[11px] text-[#848E9C] mb-1">联系时间</div>'
-    + '<input type="datetime-local" id="comm-occurred-at" class="w-full bg-[#2B3139] text-[#EAECEF] text-[12px] rounded-lg px-3 py-2 border border-[#2E3440] outline-none mb-3" style="color-scheme:dark" />'
-    + '<div class="text-[11px] text-[#848E9C] mb-1">内容摘要（选填）</div>'
-    + '<textarea id="comm-summary" rows="2" class="w-full bg-[#2B3139] text-[#EAECEF] text-[12px] rounded-lg px-3 py-2 border border-[#2E3440] outline-none placeholder-[#474D57] resize-none mb-3" placeholder="简要说明聊了什么"></textarea>'
-    + '<label class="flex items-center gap-2 mb-2 cursor-pointer">'
-    + '<input type="checkbox" id="comm-follow-up" onchange="window.toggleFollowUp()" class="w-4 h-4 accent-[#F0B90B]">'
-    + '<span class="text-[12px] text-[#848E9C]">需要后续跟进</span>'
-    + '</label>'
-    + '<div id="follow-up-fields" style="display:none" class="bg-[#2B3139] rounded-lg p-3 mb-3">'
-    + '<div class="text-[11px] text-[#848E9C] mb-1">截止日期</div>'
-    + '<input type="date" id="comm-follow-up-at" class="w-full bg-[#0B0E11] text-[#EAECEF] text-[12px] rounded-lg px-3 py-2 border border-[#2E3440] outline-none mb-2" style="color-scheme:dark">'
-    + '<div class="text-[11px] text-[#848E9C] mb-1">跟进要点（选填）</div>'
-    + '<input type="text" id="comm-follow-up-note" class="w-full bg-[#0B0E11] text-[#EAECEF] text-[12px] rounded-lg px-3 py-2 border border-[#2E3440] outline-none placeholder-[#474D57]" placeholder="下次要做什么">'
-    + '</div>'
-    + '<div class="flex gap-2">'
-    + '<button onclick="submitComm()" class="flex-1 py-2 rounded-lg text-[13px] font-semibold bg-[#F0B90B] text-[#0B0E11] active:opacity-80">创建</button>'
-    + '<button onclick="closeCommForm()" class="py-2 px-4 rounded-lg text-[13px] text-[#848E9C] border border-[#2E3440] active:opacity-80">取消</button>'
-    + '</div>'
-    + '</div>'
     + '</div>';
 
   document.getElementById('tab-events').innerHTML = eventsHtml;
@@ -857,8 +813,9 @@
 
 // === 主动沟通 JS（从 worktree-2 引入）===
 window.openCommForm = function() {
-  document.getElementById('comm-default').style.display = 'none';
-  document.getElementById('comm-form').style.display = 'block';
+  window._commStatus = '跟进中';
+  var sheet = document.getElementById('comm-sheet');
+  sheet.style.display = 'flex';
   var now = new Date();
   var pad = function(n) { return n < 10 ? '0' + n : n; };
   var dt = now.getFullYear() + '-' + pad(now.getMonth()+1) + '-' + pad(now.getDate())
@@ -867,8 +824,7 @@ window.openCommForm = function() {
 };
 
 window.closeCommForm = function() {
-  document.getElementById('comm-form').style.display = 'none';
-  document.getElementById('comm-default').style.display = 'block';
+  document.getElementById('comm-sheet').style.display = 'none';
 };
 
 window.selectPill = function(el, group) {
@@ -901,35 +857,34 @@ window.submitComm = function() {
   var summary = summaryEl ? summaryEl.value.trim() : '';
   var text = channel + ' · ' + result;
   if (summary) text += '：' + summary;
-  // 创建跟进事件（如勾选）— 先建事件拿到 ID，再写 comm_record
+  // 创建跟进事件（始终创建）— 先建事件拿到 ID，再写 comm_record
   var commTitleVal = ((document.getElementById('comm-follow-up-title') || {}).value || '').trim();
-  var fuCheckEl = document.getElementById('comm-follow-up');
-  var newEventId = null, newEventTitle = null;
-  if (fuCheckEl && fuCheckEl.checked) {
-    var fuAt    = (document.getElementById('comm-follow-up-at')    || {}).value || '';
-    var fuTitle = commTitleVal;
-    var fuNote  = ((document.getElementById('comm-follow-up-note')  || {}).value || '').trim();
-    if (fuAt) {
-      var fuEvents = [];
-      try { fuEvents = JSON.parse(sessionStorage.getItem('follow_up_events') || '[]'); } catch(e) {}
-      fuEvents.forEach(function(e) {
-        if (e.client_uid === uid && e.status !== '已结束' && e.status !== '已忽略') {
-          e.status = '已结束'; e.done_note = '被新跟进替代'; e.done_at = new Date().toISOString();
-        }
-      });
-      var clientNameEl = document.getElementById('client-uid');
-      newEventId    = 'fu_' + uid + '_' + Date.now();
-      newEventTitle = fuTitle || fuNote || '跟进';
-      fuEvents.push({
-        id: newEventId, client_uid: uid,
-        client_name: clientNameEl ? clientNameEl.textContent : uid,
-        status: '未开始', created_at: new Date().toISOString(),
-        title: newEventTitle, follow_up_at: fuAt, follow_up_note: fuNote,
-        activities: [{ type: '创建', note: text, occurred_at: new Date().toISOString() }]
-      });
-      sessionStorage.setItem('follow_up_events', JSON.stringify(fuEvents));
+  var newEventStatus = window._commStatus || '跟进中';
+  var fuAt   = (document.getElementById('comm-follow-up-at')   || {}).value || '';
+  var fuNote = ((document.getElementById('comm-follow-up-note') || {}).value || '').trim();
+  var fuEvents = [];
+  try { fuEvents = JSON.parse(sessionStorage.getItem('follow_up_events') || '[]'); } catch(e) {}
+  // 关闭该客户现有活跃事件
+  fuEvents.forEach(function(e) {
+    if (e.client_uid === uid && e.status === '跟进中') {
+      e.status = '已结束'; e.done_note = '被新事件替代'; e.done_at = new Date().toISOString();
     }
+  });
+  var clientNameEl = document.getElementById('client-uid');
+  var newEventId    = 'fu_' + uid + '_' + Date.now();
+  var newEventTitle = commTitleVal || fuNote || '跟进记录';
+  var initActivities = [{ type: '创建', note: text, occurred_at: new Date().toISOString() }];
+  if (newEventStatus === '已结束') {
+    initActivities.push({ type: '结束', note: '', occurred_at: new Date().toISOString() });
   }
+  fuEvents.push({
+    id: newEventId, client_uid: uid,
+    client_name: clientNameEl ? clientNameEl.textContent : uid,
+    status: newEventStatus, created_at: new Date().toISOString(),
+    title: newEventTitle, follow_up_at: fuAt, follow_up_note: fuNote,
+    activities: initActivities
+  });
+  sessionStorage.setItem('follow_up_events', JSON.stringify(fuEvents));
 
   // 写 comm_record（带 event 关联）
   var commKey = 'comm_records_' + uid;
@@ -937,7 +892,7 @@ window.submitComm = function() {
   try { records = JSON.parse(sessionStorage.getItem(commKey) || '[]'); } catch(e) {}
   var rec = { date: occurredAt, bd: 'BD', channel: channel, result: result, occurred_at: occurredAt, summary: summary, text: text };
   if (commTitleVal) { rec.title = commTitleVal; }
-  if (newEventId) { rec.event_id = newEventId; rec.event_title = newEventTitle; }
+  rec.event_id = newEventId; rec.event_title = newEventTitle;
   records.unshift(rec);
   sessionStorage.setItem(commKey, JSON.stringify(records));
   sessionStorage.setItem('last_contact_' + uid, new Date().toISOString());
@@ -945,17 +900,26 @@ window.submitComm = function() {
   location.reload();
 };
 
-// === 跟进事件操作 ===
-window.toggleFollowUp = function() {
-  var el = document.getElementById('comm-follow-up');
+// === 主动沟通状态选择 ===
+window._commStatus = '跟进中';
+window.selectCommStatus = function(status) {
+  window._commStatus = status;
+  var styles = {
+    '跟进中': { bg: 'rgba(77,166,255,0.15)',  color: '#4DA6FF', border: '#4DA6FF' },
+    '已结束': { bg: 'rgba(14,203,129,0.12)',  color: '#0ECB81', border: '#0ECB81' },
+  };
+  ['跟进中','已结束'].forEach(function(s) {
+    var idMap = { '跟进中': 'comm-status-following', '已结束': 'comm-status-done' };
+    var btn = document.getElementById(idMap[s]);
+    if (!btn) return;
+    if (s === status) {
+      btn.style.background = styles[s].bg; btn.style.color = styles[s].color; btn.style.borderColor = styles[s].border; btn.style.fontWeight = '600';
+    } else {
+      btn.style.background = '#1E2329'; btn.style.color = '#848E9C'; btn.style.borderColor = '#2E3440'; btn.style.fontWeight = '400';
+    }
+  });
   var fields = document.getElementById('follow-up-fields');
-  if (!el || !fields) return;
-  fields.style.display = el.checked ? 'block' : 'none';
-  if (el.checked && !document.getElementById('comm-follow-up-at').value) {
-    var d = new Date(); d.setDate(d.getDate() + 1);
-    var pad = function(n) { return n < 10 ? '0' + n : '' + n; };
-    document.getElementById('comm-follow-up-at').value = d.getFullYear() + '-' + pad(d.getMonth()+1) + '-' + pad(d.getDate());
-  }
+  if (fields) fields.style.display = status === '跟进中' ? 'block' : 'none';
 };
 
 var _markDoneEventId = null;
@@ -1090,6 +1054,53 @@ window.deleteContact = function(idx) {
 // 所有 window.* 函数定义完毕后，执行档案 tab 初始化
 window.renderContacts();
 </script>
+
+<!-- 主动沟通 Bottom Sheet -->
+<div id="comm-sheet" style="display:none;position:fixed;inset:0;z-index:50;align-items:flex-end;justify-content:center" onclick="if(event.target===this)window.closeCommForm()">
+  <div style="position:absolute;inset:0;background:rgba(0,0,0,0.6)"></div>
+  <div style="position:relative;width:393px;background:#1E2329;border-radius:16px 16px 0 0;padding:20px;padding-bottom:calc(20px + env(safe-area-inset-bottom));max-height:88vh;overflow-y:auto">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+      <span style="font-size:15px;font-weight:600;color:#EAECEF">记录主动沟通</span>
+      <button onclick="window.closeCommForm()" style="width:28px;height:28px;display:flex;align-items:center;justify-content:center;color:#848E9C;font-size:18px;background:none;border:0;cursor:pointer">✕</button>
+    </div>
+    <div style="font-size:11px;color:#848E9C;margin-bottom:4px">事件名称</div>
+    <input type="text" id="comm-follow-up-title" style="width:100%;background:#2B3139;color:#EAECEF;font-size:12px;border-radius:8px;padding:8px 12px;border:1px solid #2E3440;outline:none;margin-bottom:12px;box-sizing:border-box;font-family:inherit" placeholder="如：客户维护、理财拜访">
+    <div style="font-size:11px;color:#848E9C;margin-bottom:4px">渠道</div>
+    <div style="display:flex;gap:8px;overflow-x:auto;padding-bottom:4px;margin-bottom:12px;scrollbar-width:none">
+      <button class="comm-pill-channel" data-val="Telegram" onclick="selectPill(this,'channel')" style="flex-shrink:0;border-radius:999px;padding:4px 12px;font-size:12px;background:#F0B90B;color:#0B0E11;font-weight:600;border:none;cursor:pointer">Telegram</button>
+      <button class="comm-pill-channel" data-val="WhatsApp" onclick="selectPill(this,'channel')" style="flex-shrink:0;border-radius:999px;padding:4px 12px;font-size:12px;background:#2B3139;color:#848E9C;border:1px solid #2E3440;cursor:pointer">WhatsApp</button>
+      <button class="comm-pill-channel" data-val="微信" onclick="selectPill(this,'channel')" style="flex-shrink:0;border-radius:999px;padding:4px 12px;font-size:12px;background:#2B3139;color:#848E9C;border:1px solid #2E3440;cursor:pointer">微信</button>
+      <button class="comm-pill-channel" data-val="电话" onclick="selectPill(this,'channel')" style="flex-shrink:0;border-radius:999px;padding:4px 12px;font-size:12px;background:#2B3139;color:#848E9C;border:1px solid #2E3440;cursor:pointer">电话</button>
+      <button class="comm-pill-channel" data-val="线下" onclick="selectPill(this,'channel')" style="flex-shrink:0;border-radius:999px;padding:4px 12px;font-size:12px;background:#2B3139;color:#848E9C;border:1px solid #2E3440;cursor:pointer">线下</button>
+      <button class="comm-pill-channel" data-val="邮件" onclick="selectPill(this,'channel')" style="flex-shrink:0;border-radius:999px;padding:4px 12px;font-size:12px;background:#2B3139;color:#848E9C;border:1px solid #2E3440;cursor:pointer">邮件</button>
+    </div>
+    <div style="font-size:11px;color:#848E9C;margin-bottom:4px">结果</div>
+    <div style="display:flex;gap:8px;overflow-x:auto;padding-bottom:4px;margin-bottom:12px;scrollbar-width:none">
+      <button class="comm-pill-result" data-val="已联系上" onclick="selectPill(this,'result')" style="flex-shrink:0;border-radius:999px;padding:4px 12px;font-size:12px;background:#F0B90B;color:#0B0E11;font-weight:600;border:none;cursor:pointer">已联系上</button>
+      <button class="comm-pill-result" data-val="有回复" onclick="selectPill(this,'result')" style="flex-shrink:0;border-radius:999px;padding:4px 12px;font-size:12px;background:#2B3139;color:#848E9C;border:1px solid #2E3440;cursor:pointer">有回复</button>
+      <button class="comm-pill-result" data-val="已见面" onclick="selectPill(this,'result')" style="flex-shrink:0;border-radius:999px;padding:4px 12px;font-size:12px;background:#2B3139;color:#848E9C;border:1px solid #2E3440;cursor:pointer">已见面</button>
+      <button class="comm-pill-result" data-val="未接通" onclick="selectPill(this,'result')" style="flex-shrink:0;border-radius:999px;padding:4px 12px;font-size:12px;background:#2B3139;color:#848E9C;border:1px solid #2E3440;cursor:pointer">未接通</button>
+      <button class="comm-pill-result" data-val="未回复" onclick="selectPill(this,'result')" style="flex-shrink:0;border-radius:999px;padding:4px 12px;font-size:12px;background:#2B3139;color:#848E9C;border:1px solid #2E3440;cursor:pointer">未回复</button>
+      <button class="comm-pill-result" data-val="仅发送消息" onclick="selectPill(this,'result')" style="flex-shrink:0;border-radius:999px;padding:4px 12px;font-size:12px;background:#2B3139;color:#848E9C;border:1px solid #2E3440;cursor:pointer">仅发送消息</button>
+    </div>
+    <div style="font-size:11px;color:#848E9C;margin-bottom:4px">联系时间</div>
+    <input type="datetime-local" id="comm-occurred-at" style="width:100%;background:#2B3139;color:#EAECEF;font-size:12px;border-radius:8px;padding:8px 12px;border:1px solid #2E3440;outline:none;margin-bottom:12px;box-sizing:border-box;color-scheme:dark">
+    <div style="font-size:11px;color:#848E9C;margin-bottom:4px">内容摘要（选填）</div>
+    <textarea id="comm-summary" rows="2" style="width:100%;background:#2B3139;color:#EAECEF;font-size:12px;border-radius:8px;padding:8px 12px;border:1px solid #2E3440;outline:none;resize:none;margin-bottom:12px;box-sizing:border-box;font-family:inherit" placeholder="简要说明聊了什么"></textarea>
+    <div style="font-size:11px;color:#848E9C;margin-bottom:4px">状态</div>
+    <div style="display:flex;gap:8px;margin-bottom:12px">
+      <button id="comm-status-following" data-val="跟进中" onclick="selectCommStatus('跟进中')" style="flex:1;border-radius:8px;padding:6px 8px;font-size:12px;font-weight:600;background:rgba(77,166,255,0.15);color:#4DA6FF;border:1px solid #4DA6FF;cursor:pointer">跟进中</button>
+      <button id="comm-status-done" data-val="已结束" onclick="selectCommStatus('已结束')" style="flex:1;border-radius:8px;padding:6px 8px;font-size:12px;background:#1E2329;color:#848E9C;border:1px solid #2E3440;cursor:pointer">已结束</button>
+    </div>
+    <div id="follow-up-fields" style="margin-bottom:12px">
+      <div style="font-size:11px;color:#848E9C;margin-bottom:4px">截止日期（选填）</div>
+      <input type="date" id="comm-follow-up-at" style="width:100%;background:#2B3139;color:#EAECEF;font-size:12px;border-radius:8px;padding:8px 12px;border:1px solid #2E3440;outline:none;margin-bottom:8px;box-sizing:border-box;color-scheme:dark">
+      <div style="font-size:11px;color:#848E9C;margin-bottom:4px">跟进要点（选填）</div>
+      <input type="text" id="comm-follow-up-note" style="width:100%;background:#2B3139;color:#EAECEF;font-size:12px;border-radius:8px;padding:8px 12px;border:1px solid #2E3440;outline:none;box-sizing:border-box;font-family:inherit" placeholder="下次要做什么">
+    </div>
+    <button onclick="window.submitComm()" style="width:100%;padding:12px;border-radius:12px;font-size:14px;font-weight:600;background:#F0B90B;color:#0B0E11;border:0;cursor:pointer">创建</button>
+  </div>
+</div>
 
 <!-- Mark Done Bottom Sheet -->
 <div id="mark-done-sheet" style="display:none" class="fixed inset-0 z-50 flex items-end justify-center" onclick="if(event.target===this)window.closeDoneSheet()">

@@ -133,7 +133,7 @@
   function getFollowUpDot(uid) {
     var dot = null;
     _fuEvents.forEach(function(e) {
-      if (e.client_uid === uid && e.status !== '已完成' && e.status !== '已忽略') {
+      if (e.client_uid === uid && e.status !== '已结束') {
         dot = (e.follow_up_at < _todayStr) ? '#F6465D' : '#4DA6FF';
       }
     });
