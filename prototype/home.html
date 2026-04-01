@@ -49,7 +49,12 @@
     </div>
   </div>
 
-  <!-- 1. Search Bar (~48px) -->
+  <!-- Top Nav -->
+  <div class="flex-shrink-0 h-[52px] bg-[#0B0E11] border-b border-[#2E3440] flex items-center justify-center px-4">
+    <h1 class="text-[17px] font-bold text-[#EAECEF] tracking-wide">首页</h1>
+  </div>
+
+  <!-- Search Bar -->
   <div class="flex-shrink-0 bg-[#0B0E11] px-4 py-1.5 relative z-20">
     <div class="flex items-center bg-[#1E2329] rounded-lg px-3 py-2 border border-[#2E3440]">
       <i class="fa-solid fa-magnifying-glass text-[12px] text-[#848E9C] mr-2"></i>
@@ -64,19 +69,10 @@
     <div id="search-dropdown" class="hidden absolute left-0 right-0 top-full z-40 mx-4 bg-[#1E2329] rounded-b-lg border border-t-0 border-[#2E3440] max-h-[320px] overflow-y-auto shadow-lg"></div>
   </div>
 
-  <!-- 2. Summary Row (~28px) -->
-  <div id="summary-row" class="flex-shrink-0 px-4 py-1"></div>
+  <!-- Scrollable Content -->
+  <div class="overflow-y-auto flex-1 py-2" id="main-content"></div>
 
-  <!-- 3. Hero Card (~140px) -->
-  <div id="hero-card" class="flex-shrink-0 px-4 py-1.5"></div>
-
-  <!-- 4. Small Rows x4 (~224px) -->
-  <div id="small-rows" class="flex-shrink-0 flex-1 min-h-0"></div>
-
-  <!-- 5. Progress Bar (~48px) -->
-  <div id="progress-bar" class="flex-shrink-0 px-4 py-2"></div>
-
-  <!-- 6. Bottom Tab Bar + safe area (~90px) -->
+  <!-- Bottom Tab Bar -->
   <div class="flex-shrink-0 bg-[#0B0E11] border-t border-[#2E3440]">
     <div class="flex items-center justify-around h-[56px]">
       <a href="home.html" class="flex flex-col items-center gap-0.5">
@@ -106,217 +102,168 @@
 (function() {
   var D = window.PROTOTYPE_DATA;
 
-  var URGENCY_ORDER = { critical: 0, warning: 1, info: 2 };
-  var TASK_COLORS = {
-    '待处理': { bg: 'rgba(246,70,93,0.15)', text: '#F6465D' },
-    '跟进中': { bg: 'rgba(77,166,255,0.15)', text: '#4DA6FF' },
-    '已完成': { bg: 'rgba(14,203,129,0.15)', text: '#0ECB81' },
-    '已忽略': { bg: 'rgba(132,142,156,0.15)', text: '#848E9C' }
-  };
+  // ---------- Data helpers ----------
 
-  // Build watchlist: top 30 clients by fMean
-  var watchlistUids = D.clients.slice().sort(function(a, b) {
-    return b.fMean - a.fMean;
-  }).slice(0, 30).map(function(c) { return c.uid; });
+  // 取本周净变化：weeks 最后两项之差
+  function weekDelta(client) {
+    var w = client.weeks;
+    if (!w || w.length < 2) return 0;
+    return w[w.length - 1] - w[w.length - 2];
+  }
 
-  var watchlistSet = {};
-  watchlistUids.forEach(function(uid) { watchlistSet[uid] = true; });
+  // 金额格式化（入金/出金列使用）
+  function fmtWan(val) {
+    var abs = Math.abs(val);
+    if (abs >= 10000) return (val > 0 ? '+' : '-') + (abs / 10000).toFixed(1) + '万';
+    return (val > 0 ? '+' : '') + Math.round(val).toLocaleString();
+  }
 
-  // Client lookup by uid
-  var clientMap = {};
-  D.clients.forEach(function(c) { clientMap[c.uid] = c; });
+  // ---------- 排序 ----------
 
-  // Read processed events from sessionStorage (written by event-thread.html)
-  var processedList = JSON.parse(sessionStorage.getItem('processed_events') || '[]');
-  var processedSet = {};
-  processedList.forEach(function(id) { processedSet[id] = true; });
+  // 1. 资沉前五：fMean 降序
+  var top5Deposit = D.clients.slice().sort(function(a, b) {
+    return (b.fMean || 0) - (a.fMean || 0);
+  }).slice(0, 5);
 
-  // Filter: watchlist + active states + not processed, sort by urgency
-  var activeEvents = D.events.filter(function(e) {
-    return watchlistSet[e.client_uid] &&
-           (e.task_state === '待处理' || e.task_state === '跟进中') &&
-           !processedSet[e.id];
+  // 2. 本周入金前五：本周净变化 > 0，降序
+  var top5Inflow = D.clients.slice().filter(function(c) {
+    return weekDelta(c) > 0;
   }).sort(function(a, b) {
-    return (URGENCY_ORDER[a.urgency] || 9) - (URGENCY_ORDER[b.urgency] || 9);
+    return weekDelta(b) - weekDelta(a);
+  }).slice(0, 5);
+
+  // 3. 本周出金前五：本周净变化 < 0，绝对值降序
+  var top5Outflow = D.clients.slice().filter(function(c) {
+    return weekDelta(c) < 0;
+  }).sort(function(a, b) {
+    return Math.abs(weekDelta(b)) - Math.abs(weekDelta(a));
+  }).slice(0, 5);
+
+  // 4. 利润贡献前五：netContribution.total 降序
+  var top5Profit = D.clients.slice().sort(function(a, b) {
+    var va = (a.netContribution && a.netContribution.total) ? a.netContribution.total : 0;
+    var vb = (b.netContribution && b.netContribution.total) ? b.netContribution.total : 0;
+    return vb - va;
+  }).slice(0, 5);
+
+  // ---------- Render helpers ----------
+
+  function rankBadge(rank) {
+    var bg = rank === 1 ? '#F0B90B' : '#2E3440';
+    var color = rank === 1 ? '#0B0E11' : '#848E9C';
+    return '<span style="display:inline-flex;align-items:center;justify-content:center;width:16px;height:16px;border-radius:4px;background:' + bg + ';color:' + color + ';font-size:10px;font-weight:700;flex-shrink:0">' + rank + '</span>';
+  }
+
+  function lastContact(c) {
+    var evts = D.eventsByClientUid[c.uid];
+    if (!evts || evts.length === 0) return { label: '未联系', color: '#F6465D' };
+    var minH = Infinity;
+    evts.forEach(function(e) { if (e.age_hours < minH) minH = e.age_hours; });
+    var label = minH < 24 ? '今天联系' : Math.floor(minH / 24) + '天前联系';
+    var color = minH >= 720 ? '#F6465D' : minH >= 168 ? '#F0B90B' : '#0ECB81';
+    return { label: label, color: color };
+  }
+
+  // section 卡片包装：mx-4 mb-3
+  function buildSection(iconClass, iconColor, title, sortParam, rows) {
+    var header = '<div style="display:flex;align-items:center;padding:12px 16px 12px 16px;border-bottom:1px solid #2E3440">'
+      + '<i class="' + iconClass + '" style="color:' + iconColor + ';font-size:14px;margin-right:8px"></i>'
+      + '<span style="font-size:14px;font-weight:700;color:#EAECEF;flex:1">' + title + '</span>'
+      + '<a href="clients.html?sort=' + sortParam + '" style="font-size:11px;color:#848E9C;text-decoration:none">查看更多 →</a>'
+      + '</div>';
+
+    var rowsHtml = rows.map(function(r, idx) {
+      var border = (idx < rows.length - 1) ? 'border-bottom:1px solid #2E3440;' : '';
+      var lc = lastContact(r.client);
+      var label = r.client.name ? r.client.uid + ' (' + r.client.name + ')' : r.client.uid;
+      return '<a href="' + r.href + '" style="display:flex;align-items:center;gap:10px;padding:11px 16px;' + border + 'text-decoration:none">'
+        + rankBadge(idx + 1)
+        + '<span style="flex:1;font-size:13px;color:#EAECEF;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + label + '</span>'
+        + '<span style="font-size:13px;font-weight:700;color:' + r.rightColor + ';flex-shrink:0;margin-left:8px">' + r.right + '</span>'
+        + '<span style="font-size:11px;color:' + lc.color + ';flex-shrink:0;margin-left:8px;min-width:30px;text-align:right">' + lc.label + '</span>'
+        + '</a>';
+    }).join('');
+
+    return '<div style="background:#1E2329;border-radius:12px;border:1px solid #2E3440;margin:0 16px 12px 16px;overflow:hidden">'
+      + header
+      + rowsHtml
+      + '</div>';
+  }
+
+  // ---------- 构建每个 section 的行数据 ----------
+
+  var sec1Rows = top5Deposit.map(function(c) {
+    return { client: c, href: c.detailHref || ('client-detail.html?uid=' + c.uid), right: c.depositDisplay, rightColor: '#F0B90B' };
   });
 
-  // Count handled: mock data handled + sessionStorage processed
-  var handledCount = D.events.filter(function(e) {
-    return watchlistSet[e.client_uid] &&
-           (e.task_state === '已完成' || e.task_state === '已忽略' || processedSet[e.id]);
-  }).length;
+  var sec2Rows = top5Inflow.map(function(c) {
+    return { client: c, href: c.detailHref || ('client-detail.html?uid=' + c.uid), right: fmtWan(weekDelta(c)), rightColor: '#0ECB81' };
+  });
 
-  var totalEvents = activeEvents.length + handledCount;
-  var pendingCount = activeEvents.length;
-  var ongoingCount = activeEvents.filter(function(e) { return e.task_state === '跟进中'; }).length;
+  var sec3Rows = top5Outflow.map(function(c) {
+    return { client: c, href: c.detailHref || ('client-detail.html?uid=' + c.uid), right: fmtWan(weekDelta(c)), rightColor: '#F6465D' };
+  });
 
-  // ---------- 2. Summary Row ----------
-  function renderSummary() {
-    var el = document.getElementById('summary-row');
-    el.innerHTML =
-      '<div class="flex items-center justify-between text-[12px]">'
-      + '<div class="flex items-center gap-1.5">'
-      +   '<span class="text-[#EAECEF] font-medium">关注客户</span>'
-      +   '<span class="text-[#848E9C]">&middot;</span>'
-      +   '<span class="text-[#F6465D]">' + pendingCount + ' 待处理</span>'
-      +   '<span class="text-[#848E9C]">&middot;</span>'
-      +   '<span class="text-[#4DA6FF]">' + ongoingCount + ' 跟进中</span>'
-      + '</div>'
-      + '<a href="events.html" class="text-[#848E9C]">全部事件 ›</a>'
+  var sec4Rows = top5Profit.map(function(c) {
+    var total = (c.netContribution && c.netContribution.total) ? c.netContribution.total : 0;
+    var display = c.netContribution && c.netContribution.totalDisplay
+      ? c.netContribution.totalDisplay
+      : (total >= 10000 ? (total / 10000).toFixed(1) + '万' : Math.round(total).toLocaleString());
+    return { client: c, href: c.detailHref || ('client-detail.html?uid=' + c.uid), right: display, rightColor: '#4DA6FF' };
+  });
+
+  // ---------- 收藏 section ----------
+
+  function buildFavsSection() {
+    var FAV_KEY = 'slaeshub_favs';
+    var favUids = [];
+    try { favUids = JSON.parse(localStorage.getItem(FAV_KEY) || '[]'); } catch(e) {}
+    var favClients = favUids.map(function(uid) {
+      return D.clients.filter(function(c) { return c.uid === uid; })[0];
+    }).filter(Boolean).sort(function(a, b) { return b.fMean - a.fMean; });
+
+    var header = '<div style="display:flex;align-items:center;padding:12px 16px;border-bottom:1px solid #2E3440">'
+      + '<i class="fa-solid fa-star" style="color:#F0B90B;font-size:14px;margin-right:8px"></i>'
+      + '<span style="font-size:14px;font-weight:700;color:#EAECEF;flex:1">我的收藏</span>'
+      + '<a href="clients.html?sort=favs" style="font-size:11px;color:#848E9C;text-decoration:none">查看全部 →</a>'
       + '</div>';
-  }
 
-  // ---------- 3. Hero Card ----------
-  function renderHeroCard() {
-    var el = document.getElementById('hero-card');
-
-    if (activeEvents.length === 0) {
-      // Empty state
-      el.innerHTML =
-        '<div class="bg-[#1E2329] rounded-xl border border-[#2E3440] p-5 flex flex-col items-center justify-center" style="height:140px">'
-        + '<i class="fa-solid fa-circle-check text-[36px] text-[#0ECB81] mb-2"></i>'
-        + '<span class="text-[15px] font-medium text-[#EAECEF]">所有事件已处理</span>'
-        + '</div>';
-      return;
-    }
-
-    var evt = activeEvents[0];
-    var client = clientMap[evt.client_uid];
-    var tc = TASK_COLORS[evt.task_state] || TASK_COLORS['已忽略'];
-    var urgencyDot = evt.urgency === 'critical' ? '#F6465D' : evt.urgency === 'warning' ? '#F0B90B' : '#4DA6FF';
-
-    el.innerHTML =
-      '<a href="event-thread.html?id=' + evt.id + '" class="block bg-[#1E2329] rounded-xl border border-[#2E3440] p-4 active:bg-[#2B3139]" style="height:140px">'
-      // Row 1: type + urgency dot + time
-      + '<div class="flex items-center justify-between mb-2">'
-      +   '<div class="flex items-center gap-2">'
-      +     '<span class="w-2.5 h-2.5 rounded-full flex-shrink-0" style="background:' + urgencyDot + '"></span>'
-      +     '<span class="text-[13px] font-medium text-[#848E9C]">' + evt.type + (evt.sub_type ? ' · ' + evt.sub_type : '') + '</span>'
-      +   '</div>'
-      +   '<span class="text-[11px] text-[#848E9C]">' + evt.time_ago + '</span>'
-      + '</div>'
-      // Row 2: client name + deposit
-      + '<div class="flex items-center gap-2 mb-1.5">'
-      +   '<span class="text-[15px] font-bold text-[#EAECEF]">' + evt.client_name + '</span>'
-      +   (client ? '<span class="text-[11px] text-[#848E9C]">资沉 ' + client.depositDisplay + '</span>' : '')
-      + '</div>'
-      // Row 3: amount (big)
-      + '<div class="text-[24px] font-bold mb-1.5" style="color:' + evt.color + ';line-height:1.1">' + evt.amount_display + '</div>'
-      // Row 4: suggested action
-      + '<div class="flex items-center justify-between">'
-      +   '<span class="text-[12px] text-[#F0B90B] truncate mr-2"><i class="fa-solid fa-bolt mr-1"></i>' + (evt.action || '') + '</span>'
-      +   '<span class="text-[10px] px-2 py-0.5 rounded-full flex-shrink-0" style="background:' + tc.bg + ';color:' + tc.text + '">' + evt.task_state + '</span>'
-      + '</div>'
-      + '</a>';
-  }
-
-  // ---------- 4. Small Rows x4 ----------
-  function renderSmallRows() {
-    var el = document.getElementById('small-rows');
-
-    if (activeEvents.length === 0) {
-      // Empty: recommend clients with oldest last event
-      var staleClients = watchlistUids.map(function(uid) {
-        var evts = D.eventsByClientUid[uid] || [];
-        var lastTime = evts.length > 0 ? evts[0].time_ago : '无事件';
-        return { uid: uid, name: (clientMap[uid] || {}).name || uid, deposit: (clientMap[uid] || {}).depositDisplay || '', lastTime: lastTime, evtCount: evts.length };
-      }).sort(function(a, b) {
-        // fewer/no events = more stale
-        return a.evtCount - b.evtCount;
-      }).slice(0, 3);
-
-      var html = '<div class="px-4 pt-1">';
-      staleClients.forEach(function(c) {
-        html +=
-          '<a href="client-detail.html?uid=' + c.uid + '" class="flex items-center justify-between py-3 border-b border-[#2E3440] active:bg-[#2B3139]">'
-          + '<div class="flex items-center gap-2 min-w-0">'
-          +   '<span class="text-[10px] px-1.5 py-0.5 rounded bg-[rgba(77,166,255,0.15)] text-[#4DA6FF] flex-shrink-0">推荐</span>'
-          +   '<span class="text-[13px] text-[#EAECEF] truncate">' + c.name + '</span>'
-          +   '<span class="text-[11px] text-[#848E9C]">' + c.deposit + '</span>'
-          + '</div>'
-          + '<span class="text-[11px] text-[#474D57] flex-shrink-0">' + c.lastTime + '</span>'
+    var body;
+    if (favClients.length === 0) {
+      body = '<div style="padding:20px 16px;text-align:center;color:#848E9C;font-size:13px">还没有收藏的客户<br><span style="font-size:11px">在客户列表点击 ☆ 添加</span></div>';
+    } else {
+      body = favClients.map(function(c, idx) {
+        var border = idx < favClients.length - 1 ? 'border-bottom:1px solid #2E3440;' : '';
+        var lc = lastContact(c);
+        var label = c.name ? c.uid + ' (' + c.name + ')' : c.uid;
+        return '<a href="' + (c.detailHref || 'client-detail.html?uid=' + c.uid) + '" style="display:flex;align-items:center;gap:10px;padding:11px 16px;' + border + 'text-decoration:none">'
+          + '<span style="flex:1;font-size:13px;color:#EAECEF;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + label + '</span>'
+          + '<span style="font-size:13px;font-weight:700;color:#F0B90B;flex-shrink:0;margin-left:8px">' + c.depositDisplay + '</span>'
+          + '<span style="font-size:11px;color:' + lc.color + ';flex-shrink:0;margin-left:8px;min-width:42px;text-align:right">' + lc.label + '</span>'
           + '</a>';
-      });
-      // pad remaining rows to keep layout stable
-      var remaining = 4 - staleClients.length;
-      for (var i = 0; i < remaining; i++) {
-        html += '<div class="py-3 border-b border-[#2E3440]">&nbsp;</div>';
-      }
-      html += '</div>';
-      el.innerHTML = html;
-      return;
+      }).join('');
     }
 
-    var rows = activeEvents.slice(1, 5);
-    var html = '<div class="px-4">';
-
-    rows.forEach(function(evt) {
-      var tc = TASK_COLORS[evt.task_state] || TASK_COLORS['已忽略'];
-      html +=
-        '<a href="event-thread.html?id=' + evt.id + '" class="flex items-center justify-between py-2.5 border-b border-[#2E3440] active:bg-[#2B3139]">'
-        + '<div class="flex items-center gap-2 min-w-0 flex-1">'
-        +   '<span class="w-1.5 h-1.5 rounded-full flex-shrink-0" style="background:' + evt.color + '"></span>'
-        +   '<span class="text-[13px] font-medium text-[#EAECEF] truncate">' + evt.client_name + '</span>'
-        +   '<span class="text-[11px] text-[#848E9C] flex-shrink-0">' + evt.type + '</span>'
-        + '</div>'
-        + '<div class="flex items-center gap-2 flex-shrink-0 ml-2">'
-        +   '<span class="text-[13px] font-bold" style="color:' + evt.color + '">' + evt.amount_display + '</span>'
-        +   '<span class="text-[10px] px-1.5 py-0.5 rounded-full" style="background:' + tc.bg + ';color:' + tc.text + '">' + evt.task_state + '</span>'
-        + '</div>'
-        + '</a>';
-    });
-
-    // pad if fewer than 4
-    var remaining = 4 - rows.length;
-    for (var i = 0; i < remaining; i++) {
-      html += '<div class="py-2.5 border-b border-[#2E3440]">&nbsp;</div>';
-    }
-    html += '</div>';
-    el.innerHTML = html;
+    return '<div style="background:#1E2329;border-radius:12px;border:1px solid #2E3440;margin:0 16px 12px 16px;overflow:hidden">'
+      + header + body + '</div>';
   }
 
-  // ---------- 5. Progress Bar ----------
-  function renderProgress() {
-    var el = document.getElementById('progress-bar');
+  // ---------- 注入页面 ----------
 
-    if (activeEvents.length === 0) {
-      // All done
-      el.innerHTML =
-        '<div class="flex items-center gap-3">'
-        + '<div class="flex-1 h-1.5 rounded-full bg-[#2E3440] overflow-hidden">'
-        +   '<div class="h-full rounded-full bg-[#0ECB81]" style="width:100%"></div>'
-        + '</div>'
-        + '<span class="text-[12px] text-[#0ECB81] flex-shrink-0 whitespace-nowrap">今日已处理 ' + handledCount + ' 条 ✓</span>'
-        + '</div>';
-      return;
-    }
+  document.getElementById('main-content').innerHTML =
+    buildFavsSection()
+  + buildSection('fa-solid fa-trophy',               '#F0B90B', '资沉前五',     'deposit',  sec1Rows)
+  + buildSection('fa-solid fa-arrow-down-to-line',   '#0ECB81', '本周入金前五', 'inflow',   sec2Rows)
+  + buildSection('fa-solid fa-arrow-up-from-line',   '#F6465D', '本周出金前五', 'outflow',  sec3Rows)
+  + buildSection('fa-solid fa-sack-dollar',          '#4DA6FF', '利润贡献前五', 'profit',   sec4Rows);
 
-    var pct = totalEvents > 0 ? Math.round(handledCount / totalEvents * 100) : 0;
-    var extraCount = activeEvents.length > 5 ? activeEvents.length - 5 : 0;
-    var progressText = extraCount > 0
-      ? '还有 ' + (activeEvents.length - 5 + 5) + ' 条待处理'
-      : '已处理 ' + handledCount + '/' + totalEvents;
+  // ---------- Search ----------
 
-    // If more than 5 events, show overflow text
-    if (activeEvents.length > 5) {
-      progressText = '还有 ' + (activeEvents.length - 5) + ' 条待处理';
-    }
-
-    el.innerHTML =
-      '<div class="flex items-center gap-3">'
-      + '<div class="flex-1 h-1.5 rounded-full bg-[#2E3440] overflow-hidden">'
-      +   '<div class="h-full rounded-full bg-[#F0B90B] transition-all" style="width:' + pct + '%"></div>'
-      + '</div>'
-      + '<a href="events.html" class="text-[12px] text-[#848E9C] flex-shrink-0 whitespace-nowrap">' + progressText + ' · 查看全部 →</a>'
-      + '</div>';
-  }
-
-  // ---------- Search (preserved from original) ----------
   function getStatusLabel(c) {
     var rate = c.adjustedTrendRate;
     var pct = Math.abs(rate * 100).toFixed(1);
     if (rate <= -0.01) return { label: '流失 ' + pct + '%', bg: 'rgba(246,70,93,0.15)', color: '#F6465D' };
-    if (rate >= 0.01) return { label: '增长 ' + pct + '%', bg: 'rgba(14,203,129,0.15)', color: '#0ECB81' };
+    if (rate >= 0.01)  return { label: '增长 ' + pct + '%', bg: 'rgba(14,203,129,0.15)', color: '#0ECB81' };
     return { label: '稳定', bg: 'rgba(132,142,156,0.15)', color: '#848E9C' };
   }
 
@@ -380,16 +327,11 @@
     }
   });
 
-  // ---------- Init ----------
-  // Clear search state on page load (prevents residual text after navigating back)
+  // Clear search state on page load
   document.getElementById('search-input').value = '';
   document.getElementById('search-dropdown').classList.add('hidden');
   document.getElementById('search-clear').classList.add('hidden');
 
-  renderSummary();
-  renderHeroCard();
-  renderSmallRows();
-  renderProgress();
 })();
 </script>
 

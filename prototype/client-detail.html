@@ -520,19 +520,21 @@
       + '</span>';
   }
 
-  // 跟进事件区块（全部，含已完成）
-  if (clientAllEvents.length > 0) {
-    eventsHtml += '<div class="mx-4 mt-3 bg-[#1E2329] rounded-xl border border-[#2E3440] p-3">'
-      + '<div class="text-[13px] font-semibold text-[#EAECEF] mb-2">跟进事件</div>'
-      + '<div class="space-y-2">';
+  // 当前事件区块（始终渲染）
+  eventsHtml += '<div class="mx-4 mt-3 bg-[#1E2329] rounded-xl border border-[#2E3440] p-3">'
+    + '<div class="text-[13px] font-semibold text-[#EAECEF] mb-2">当前事件</div>';
+  if (clientAllEvents.length === 0) {
+    eventsHtml += '<div class="text-[12px] text-[#474D57] py-2 text-center">暂无跟进事件</div>';
+  } else {
+    eventsHtml += '<div class="space-y-2">';
     clientAllEvents.forEach(function(ev) {
       var isDone = ev.status === '已完成' || ev.status === '已忽略';
       var dl = isDone ? { text: ev.status, color: '#474D57' } : fuDaysLabel(ev.follow_up_at);
       var stateBg, stateColor;
-      if (ev.status === '跟进中')  { stateBg = 'rgba(77,166,255,0.12)';  stateColor = '#4DA6FF'; }
-      else if (ev.status === '已完成') { stateBg = 'rgba(14,203,129,0.12)'; stateColor = '#0ECB81'; }
-      else if (ev.status === '已忽略') { stateBg = 'rgba(132,142,156,0.1)'; stateColor = '#474D57'; }
-      else { stateBg = 'rgba(240,185,11,0.12)'; stateColor = '#F0B90B'; }
+      if (ev.status === '跟进中')      { stateBg = 'rgba(77,166,255,0.12)';  stateColor = '#4DA6FF'; }
+      else if (ev.status === '已完成') { stateBg = 'rgba(14,203,129,0.12)';  stateColor = '#0ECB81'; }
+      else if (ev.status === '已忽略') { stateBg = 'rgba(132,142,156,0.1)';  stateColor = '#474D57'; }
+      else                             { stateBg = 'rgba(240,185,11,0.12)';  stateColor = '#F0B90B'; }
       var titleText = ev.title ? esc(ev.title) : esc(ev.follow_up_note || '—');
       eventsHtml += '<a href="follow-up-thread.html?fuId=' + ev.id + '" class="flex items-center gap-2 py-1 block active:opacity-70">'
         + '<div class="flex-1 min-w-0">'
@@ -545,8 +547,9 @@
         + '<i class="fa-solid fa-chevron-right text-[10px] text-[#474D57] flex-shrink-0"></i>'
         + '</a>';
     });
-    eventsHtml += '</div></div>';
+    eventsHtml += '</div>';
   }
+  eventsHtml += '</div>';
 
   eventsHtml += '<div class="mx-4 mt-3 mb-2 bg-[#1E2329] rounded-xl border border-[#2E3440] p-3">'
     + '<div class="text-[13px] font-semibold text-[#EAECEF] mb-2">跟进记录</div>'
@@ -896,15 +899,9 @@ window.submitComm = function() {
   var summary = summaryEl ? summaryEl.value.trim() : '';
   var text = channel + ' · ' + result;
   if (summary) text += '：' + summary;
-  var commKey = 'comm_records_' + uid;
-  var records = [];
-  try { records = JSON.parse(sessionStorage.getItem(commKey) || '[]'); } catch(e) {}
-  records.unshift({ date: occurredAt, bd: 'BD', channel: channel, result: result, occurred_at: occurredAt, summary: summary, text: text });
-  sessionStorage.setItem(commKey, JSON.stringify(records));
-  sessionStorage.setItem('last_contact_' + uid, new Date().toISOString());
-
-  // 创建跟进事件（如勾选）
+  // 创建跟进事件（如勾选）— 先建事件拿到 ID，再写 comm_record
   var fuCheckEl = document.getElementById('comm-follow-up');
+  var newEventId = null, newEventTitle = null;
   if (fuCheckEl && fuCheckEl.checked) {
     var fuAt    = (document.getElementById('comm-follow-up-at')    || {}).value || '';
     var fuTitle = ((document.getElementById('comm-follow-up-title') || {}).value || '').trim();
@@ -912,29 +909,33 @@ window.submitComm = function() {
     if (fuAt) {
       var fuEvents = [];
       try { fuEvents = JSON.parse(sessionStorage.getItem('follow_up_events') || '[]'); } catch(e) {}
-      // 关闭该客户的旧活跃跟进
       fuEvents.forEach(function(e) {
         if (e.client_uid === uid && e.status !== '已完成' && e.status !== '已忽略') {
-          e.status = '已完成';
-          e.done_note = '被新跟进替代';
-          e.done_at = new Date().toISOString();
+          e.status = '已完成'; e.done_note = '被新跟进替代'; e.done_at = new Date().toISOString();
         }
       });
       var clientNameEl = document.getElementById('client-uid');
+      newEventId    = 'fu_' + uid + '_' + Date.now();
+      newEventTitle = fuTitle || fuNote || '跟进';
       fuEvents.push({
-        id: 'fu_' + uid + '_' + Date.now(),
-        client_uid: uid,
+        id: newEventId, client_uid: uid,
         client_name: clientNameEl ? clientNameEl.textContent : uid,
-        status: '待处理',
-        created_at: new Date().toISOString(),
-        title: fuTitle || fuNote || '跟进',
-        follow_up_at: fuAt,
-        follow_up_note: fuNote,
-        activities: []
+        status: '待处理', created_at: new Date().toISOString(),
+        title: newEventTitle, follow_up_at: fuAt, follow_up_note: fuNote, activities: []
       });
       sessionStorage.setItem('follow_up_events', JSON.stringify(fuEvents));
     }
   }
+
+  // 写 comm_record（带 event 关联）
+  var commKey = 'comm_records_' + uid;
+  var records = [];
+  try { records = JSON.parse(sessionStorage.getItem(commKey) || '[]'); } catch(e) {}
+  var rec = { date: occurredAt, bd: 'BD', channel: channel, result: result, occurred_at: occurredAt, summary: summary, text: text };
+  if (newEventId) { rec.event_id = newEventId; rec.event_title = newEventTitle; }
+  records.unshift(rec);
+  sessionStorage.setItem(commKey, JSON.stringify(records));
+  sessionStorage.setItem('last_contact_' + uid, new Date().toISOString());
 
   location.reload();
 };
