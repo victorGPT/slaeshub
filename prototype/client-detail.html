@@ -101,9 +101,13 @@
         </div>
       </div>
 
-      <!-- Row 3: Memo (福利金/礼金系统暂不做) -->
+      <!-- Row 3: Memo (click to edit) -->
       <div class="px-4 pb-3">
-        <input id="memo-input" type="text" class="w-full bg-[#2B3139] text-[#EAECEF] text-[11px] rounded-lg px-3 py-1.5 border border-[#2E3440] outline-none placeholder-[#474D57]" placeholder="备忘..." />
+        <div id="memo-display" class="flex items-center gap-1 cursor-pointer py-1" onclick="startEditMemo()">
+          <span id="memo-text" class="text-[11px] text-[#848E9C] flex-1 truncate"></span>
+          <i class="fa-solid fa-pen text-[8px] text-[#474D57]"></i>
+        </div>
+        <input id="memo-input" type="text" class="hidden w-full bg-[#2B3139] text-[#EAECEF] text-[11px] rounded-lg px-3 py-1.5 border border-[#F0B90B]/30 outline-none placeholder-[#474D57]" placeholder="输入备忘后点击其他区域保存..." />
       </div>
     </div>
 
@@ -334,14 +338,40 @@
   try { manualTags = JSON.parse(localStorage.getItem(manualTagKey) || '[]'); } catch(e) {}
 
   // Render tags
-  var tagsHtml = '';
-  sysTags.forEach(function(t) {
-    tagsHtml += '<span class="text-[9px] px-1.5 py-[2px] rounded border font-medium" style="color:' + t.color + ';border-color:' + t.color + '30;background:' + t.bg + '">' + t.label + '</span>';
-  });
-  manualTags.forEach(function(t) {
-    tagsHtml += '<span class="text-[9px] px-1.5 py-[2px] rounded bg-[#2B3139] text-[#EAECEF]">' + esc(t) + '</span>';
-  });
-  document.getElementById('tags-row').innerHTML = tagsHtml;
+  function renderTags() {
+    var tagsHtml = '';
+    // System tags (no delete)
+    sysTags.forEach(function(t) {
+      tagsHtml += '<span class="text-[9px] px-1.5 py-[2px] rounded border font-medium" style="color:' + t.color + ';border-color:' + t.color + '30;background:' + t.bg + '">' + t.label + '</span>';
+    });
+    // Manual tags (with × delete)
+    manualTags.forEach(function(t, i) {
+      tagsHtml += '<span class="text-[9px] px-1.5 py-[2px] rounded bg-[#2B3139] text-[#EAECEF] inline-flex items-center gap-1">'
+        + esc(t)
+        + '<i class="fa-solid fa-xmark text-[7px] text-[#474D57] cursor-pointer hover:text-[#F6465D]" onclick="removeTag(' + i + ')"></i>'
+        + '</span>';
+    });
+    // Add tag button
+    tagsHtml += '<span class="text-[9px] px-1.5 py-[2px] rounded border border-dashed border-[#474D57] text-[#474D57] cursor-pointer" onclick="addTag()">+ 标签</span>';
+    document.getElementById('tags-row').innerHTML = tagsHtml;
+  }
+
+  window.removeTag = function(idx) {
+    manualTags.splice(idx, 1);
+    localStorage.setItem(manualTagKey, JSON.stringify(manualTags));
+    renderTags();
+  };
+
+  window.addTag = function() {
+    var tag = prompt('输入标签名');
+    if (tag && tag.trim()) {
+      manualTags.push(tag.trim());
+      localStorage.setItem(manualTagKey, JSON.stringify(manualTags));
+      renderTags();
+    }
+  };
+
+  renderTags();
 
   // Delta: this week vs 8w avg
   var thisWeekVal = c.weeks[c.weeks.length - 1];
@@ -364,12 +394,36 @@
     + '</div>'
     + '<span class="text-[10px] tabular-nums" style="color:' + deltaColor + '">' + sign + fmtFlow(Math.round(deltaAbs)) + '</span>';
 
-  // Memo
+  // Memo (click to edit, blur to save)
   var memoKey = 'memo_' + c.uid;
+  var memoVal = localStorage.getItem(memoKey) || '';
+  var memoDisplay = document.getElementById('memo-display');
+  var memoText = document.getElementById('memo-text');
   var memoInput = document.getElementById('memo-input');
-  memoInput.value = localStorage.getItem(memoKey) || '';
-  memoInput.addEventListener('input', function() {
-    localStorage.setItem(memoKey, memoInput.value);
+
+  function renderMemo() {
+    memoText.textContent = memoVal || '添加备忘...';
+    memoText.style.color = memoVal ? '#EAECEF' : '#474D57';
+  }
+  renderMemo();
+
+  window.startEditMemo = function() {
+    memoDisplay.classList.add('hidden');
+    memoInput.classList.remove('hidden');
+    memoInput.value = memoVal;
+    memoInput.focus();
+  };
+
+  memoInput.addEventListener('blur', function() {
+    memoVal = memoInput.value.trim();
+    localStorage.setItem(memoKey, memoVal);
+    memoInput.classList.add('hidden');
+    memoDisplay.classList.remove('hidden');
+    renderMemo();
+  });
+
+  memoInput.addEventListener('keydown', function(e) {
+    if (e.key === 'Enter') memoInput.blur();
   });
 
   // UID copy
@@ -750,41 +804,7 @@
     });
   }
 
-  // === INTERACTIVE: BD Tags ===
-  function renderTags() {
-    var container = document.getElementById('bd-tags-container');
-    if (!container) return;
-    var inner = savedTags.map(function(tag) {
-      return '<span class="bd-tag text-[11px] px-2.5 py-1 rounded-full bg-[#0D1F2D] text-[#4DA6FF] cursor-pointer" data-tag="' + esc(tag) + '">'
-        + esc(tag) + ' <i class="fa-solid fa-xmark text-[9px] ml-1 opacity-60"></i></span>';
-    }).join('');
-    inner += '<span id="add-tag-btn" class="text-[11px] px-2.5 py-1 rounded-full border border-dashed border-[#474D57] text-[#474D57] cursor-pointer">+ 添加标签</span>';
-    container.innerHTML = inner;
-    bindTagEvents();
-  }
-
-  function bindTagEvents() {
-    var addBtn = document.getElementById('add-tag-btn');
-    if (addBtn) {
-      addBtn.addEventListener('click', function() {
-        var newTag = prompt('输入新标签:');
-        if (!newTag || !newTag.trim()) return;
-        savedTags.push(newTag.trim());
-        localStorage.setItem(tagKey, JSON.stringify(savedTags));
-        renderTags();
-      });
-    }
-    document.querySelectorAll('.bd-tag').forEach(function(el) {
-      el.addEventListener('click', function() {
-        var tag = el.getAttribute('data-tag');
-        savedTags = savedTags.filter(function(t) { return t !== tag; });
-        localStorage.setItem(tagKey, JSON.stringify(savedTags));
-        renderTags();
-      });
-    });
-  }
-
-  renderTags();
+  // BD Tags moved to header — see renderTags() above
 
 })();
 </script>
