@@ -83,7 +83,10 @@
         <span id="from-badge" class="text-[9px] px-1.5 py-[1px] rounded hidden flex-shrink-0"></span>
       </div>
 
-      <!-- Row 2: Deposit Hero + 8w Delta -->
+      <!-- Row 2: Tags -->
+      <div id="tags-row" class="px-4 pb-2 flex flex-wrap gap-1"></div>
+
+      <!-- Row 3: Deposit Hero + 8w Delta -->
       <div class="px-4 pb-2">
         <div class="flex items-end gap-3">
           <!-- Current deposit -->
@@ -290,10 +293,55 @@
 
   // Deposit hero
   document.getElementById('deposit-hero').textContent = c.thisWeekDisplay || '-';
-  // Welfare
-  var welf = c.welfare || {};
-  document.getElementById('welfare-remaining').textContent = welf.remainingDisplay || '$0';
-  document.getElementById('welfare-sent').textContent = welf.sentDisplay || '$0';
+  // --- System Tags ---
+  var sysTags = [];
+
+  // 维度1: 风险偏好 (互斥取1)
+  var dd = c.depositDist;
+  var ddTotal = (dd.futures||0) + (dd.leverage||0) + (dd.mini||0) + (dd.savings||0) + (dd.card||0) + (dd.cloud||0);
+  if (ddTotal > 0) {
+    var derivRatio = ((dd.futures||0) + (dd.leverage||0) + (dd.mini||0)) / ddTotal;
+    var safeRatio = ((dd.savings||0) + (dd.cloud||0)) / ddTotal;
+    var cardRatio = (dd.card||0) / ddTotal;
+    if (derivRatio > 0.5) sysTags.push({ label: '高风险偏好', color: '#F6465D', bg: 'rgba(246,70,93,0.12)' });
+    else if (safeRatio > 0.5) sysTags.push({ label: '低风险偏好', color: '#0ECB81', bg: 'rgba(14,203,129,0.12)' });
+    else if (cardRatio > 0.3) sysTags.push({ label: '消费型', color: '#4DA6FF', bg: 'rgba(77,166,255,0.12)' });
+    else sysTags.push({ label: '多元化', color: '#F0B90B', bg: 'rgba(240,185,11,0.12)' });
+  }
+
+  // 维度2: 贡献价值 (可并存)
+  var allProfits = allClients.map(function(cl) { return cl.netContribution ? cl.netContribution.total : 0; }).sort(function(a,b){return b-a;});
+  var top20Idx = Math.floor(allProfits.length * 0.2);
+  if (c.netContribution && c.netContribution.total >= allProfits[top20Idx]) {
+    sysTags.push({ label: '高贡献', color: '#F0B90B', bg: 'rgba(240,185,11,0.12)' });
+  }
+  var allDeposits = allClients.map(function(cl) { return cl.fMean; }).sort(function(a,b){return b-a;});
+  var top20DepIdx = Math.floor(allDeposits.length * 0.2);
+  if (c.fMean >= allDeposits[top20DepIdx]) {
+    sysTags.push({ label: '大客户', color: '#F0B90B', bg: 'rgba(240,185,11,0.12)' });
+  }
+
+  // 维度3: 活跃度 (互斥取1, 用事件数量近似)
+  var clientEvts = (D.eventsByClientUid[c.uid] || []).length;
+  var clientActs = (D.activitiesByClientUid && D.activitiesByClientUid[c.uid] || []).length;
+  var totalActivity = clientEvts + clientActs;
+  if (totalActivity === 0) sysTags.push({ label: '沉睡', color: '#848E9C', bg: 'rgba(132,142,156,0.12)' });
+  else if (totalActivity >= 3) sysTags.push({ label: '高活跃', color: '#0ECB81', bg: 'rgba(14,203,129,0.12)' });
+
+  // BD手动Tags
+  var manualTagKey = 'bd_tags_' + c.uid;
+  var manualTags = [];
+  try { manualTags = JSON.parse(localStorage.getItem(manualTagKey) || '[]'); } catch(e) {}
+
+  // Render tags
+  var tagsHtml = '';
+  sysTags.forEach(function(t) {
+    tagsHtml += '<span class="text-[9px] px-1.5 py-[2px] rounded border font-medium" style="color:' + t.color + ';border-color:' + t.color + '30;background:' + t.bg + '">' + t.label + '</span>';
+  });
+  manualTags.forEach(function(t) {
+    tagsHtml += '<span class="text-[9px] px-1.5 py-[2px] rounded bg-[#2B3139] text-[#EAECEF]">' + esc(t) + '</span>';
+  });
+  document.getElementById('tags-row').innerHTML = tagsHtml;
 
   // Delta: this week vs 8w avg
   var thisWeekVal = c.weeks[c.weeks.length - 1];
