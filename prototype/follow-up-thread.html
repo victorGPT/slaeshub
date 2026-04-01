@@ -287,7 +287,8 @@
 
   // ── ② Event content ──
   var di = daysInfo(ev.follow_up_at);
-  document.getElementById('event-goal').textContent = ev.follow_up_note || '—';
+  // 事件名称显示在顶部标题
+  document.getElementById('event-goal').textContent = ev.title || ev.follow_up_note || '—';
   document.getElementById('due-label').textContent = di.text;
   document.getElementById('due-label').style.color = di.color;
   document.getElementById('due-date').textContent = ev.follow_up_at || '';
@@ -400,7 +401,9 @@
       channel: channel,
       result: result,
       summary: summary,
-      text: channel + ' · ' + result + (summary ? '：' + summary : '')
+      text: channel + ' · ' + result + (summary ? '：' + summary : ''),
+      event_id: ev.id,
+      event_title: ev.title || ev.follow_up_note || ''
     });
     sessionStorage.setItem(commKey, JSON.stringify(crs));
 

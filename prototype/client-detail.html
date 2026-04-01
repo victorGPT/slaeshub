@@ -460,7 +460,11 @@
     var dateLabel = r.occurred_at || r.date || '';
     var displayDate = timeAgo(dateLabel) || dateLabel;
     var text = r.text || ((r.channel || '') + (r.result ? ' · ' + r.result : '') + (r.summary ? '：' + r.summary : ''));
-    return { date: displayDate, bd: r.bd || 'BD', text: text };
+    var tagHtml = '';
+    if (r.event_id && r.event_title) {
+      tagHtml = '<a href="follow-up-thread.html?fuId=' + r.event_id + '" class="inline-block text-[10px] px-1.5 py-0.5 rounded mr-1 active:opacity-70" style="background:rgba(77,166,255,0.12);color:#4DA6FF">' + esc(r.event_title) + '</a>';
+    }
+    return { date: displayDate, bd: r.bd || 'BD', text: text, tagHtml: tagHtml };
   });
 
   var allFollowups = commFollowups;
@@ -470,6 +474,9 @@
   try { allFollowUpEvents = JSON.parse(sessionStorage.getItem('follow_up_events') || '[]'); } catch(e) {}
   var clientActiveEvents = allFollowUpEvents.filter(function(e) {
     return e.client_uid === uid && e.status !== '已完成' && e.status !== '已忽略';
+  });
+  var clientAllEvents = allFollowUpEvents.filter(function(e) {
+    return e.client_uid === uid;
   });
   var todayStr = new Date().toISOString().split('T')[0];
 
@@ -513,24 +520,29 @@
       + '</span>';
   }
 
-  // 当前跟进事件区块
-  if (clientActiveEvents.length > 0) {
+  // 跟进事件区块（全部，含已完成）
+  if (clientAllEvents.length > 0) {
     eventsHtml += '<div class="mx-4 mt-3 bg-[#1E2329] rounded-xl border border-[#2E3440] p-3">'
-      + '<div class="text-[13px] font-semibold text-[#EAECEF] mb-2">当前跟进</div>'
+      + '<div class="text-[13px] font-semibold text-[#EAECEF] mb-2">跟进事件</div>'
       + '<div class="space-y-2">';
-    clientActiveEvents.forEach(function(ev) {
-      var dl = fuDaysLabel(ev.follow_up_at);
-      var stateBg = ev.status === '跟进中' ? 'rgba(77,166,255,0.12)' : 'rgba(240,185,11,0.12)';
-      var stateColor = ev.status === '跟进中' ? '#4DA6FF' : '#F0B90B';
-      eventsHtml += '<a href="follow-up-thread.html?fuId=' + ev.id + '" class="flex items-start justify-between gap-2 block active:opacity-70">'
+    clientAllEvents.forEach(function(ev) {
+      var isDone = ev.status === '已完成' || ev.status === '已忽略';
+      var dl = isDone ? { text: ev.status, color: '#474D57' } : fuDaysLabel(ev.follow_up_at);
+      var stateBg, stateColor;
+      if (ev.status === '跟进中')  { stateBg = 'rgba(77,166,255,0.12)';  stateColor = '#4DA6FF'; }
+      else if (ev.status === '已完成') { stateBg = 'rgba(14,203,129,0.12)'; stateColor = '#0ECB81'; }
+      else if (ev.status === '已忽略') { stateBg = 'rgba(132,142,156,0.1)'; stateColor = '#474D57'; }
+      else { stateBg = 'rgba(240,185,11,0.12)'; stateColor = '#F0B90B'; }
+      var titleText = ev.title ? esc(ev.title) : esc(ev.follow_up_note || '—');
+      eventsHtml += '<a href="follow-up-thread.html?fuId=' + ev.id + '" class="flex items-center gap-2 py-1 block active:opacity-70">'
         + '<div class="flex-1 min-w-0">'
         + '<div class="flex items-center gap-1.5 mb-0.5">'
         + '<span class="text-[10px] px-1.5 py-0.5 rounded-full" style="background:' + stateBg + ';color:' + stateColor + '">' + ev.status + '</span>'
-        + '<span class="text-[11px] font-medium" style="color:' + dl.color + '">' + dl.text + '</span>'
+        + (!isDone ? '<span class="text-[10px] font-medium" style="color:' + dl.color + '">' + dl.text + '</span>' : '')
         + '</div>'
-        + '<div class="text-[12px] text-[#EAECEF]">' + esc(ev.follow_up_note || '—') + '</div>'
+        + '<div class="text-[12px]" style="color:' + (isDone ? '#474D57' : '#EAECEF') + '">' + titleText + '</div>'
         + '</div>'
-        + '<i class="fa-solid fa-chevron-right text-[10px] text-[#474D57] mt-1 flex-shrink-0"></i>'
+        + '<i class="fa-solid fa-chevron-right text-[10px] text-[#474D57] flex-shrink-0"></i>'
         + '</a>';
     });
     eventsHtml += '</div></div>';
@@ -545,7 +557,7 @@
     eventsHtml += '<div class="relative">'
       + '<div class="absolute -left-[17px] top-[6px] w-2 h-2 rounded-full ' + dotColor + '"></div>'
       + '<div class="text-[10px] text-[#848E9C]">' + f.date + ' · ' + f.bd + '</div>'
-      + '<div class="text-[12px] text-[#EAECEF] mt-0.5">' + f.text + '</div>'
+      + '<div class="text-[12px] text-[#EAECEF] mt-0.5">' + (f.tagHtml || '') + f.text + '</div>'
       + '</div>';
   });
   if (allFollowups.length === 0) {
@@ -587,7 +599,9 @@
     + '<span class="text-[12px] text-[#848E9C]">需要后续跟进</span>'
     + '</label>'
     + '<div id="follow-up-fields" style="display:none" class="bg-[#2B3139] rounded-lg p-3 mb-3">'
-    + '<div class="text-[11px] text-[#848E9C] mb-1">跟进日期</div>'
+    + '<div class="text-[11px] text-[#848E9C] mb-1">事件名称</div>'
+    + '<input type="text" id="comm-follow-up-title" class="w-full bg-[#0B0E11] text-[#EAECEF] text-[12px] rounded-lg px-3 py-2 border border-[#2E3440] outline-none placeholder-[#474D57] mb-2" placeholder="如：客户维护、理财拜访">'
+    + '<div class="text-[11px] text-[#848E9C] mb-1">截止日期</div>'
     + '<input type="date" id="comm-follow-up-at" class="w-full bg-[#0B0E11] text-[#EAECEF] text-[12px] rounded-lg px-3 py-2 border border-[#2E3440] outline-none mb-2" style="color-scheme:dark">'
     + '<div class="text-[11px] text-[#848E9C] mb-1">跟进要点（选填）</div>'
     + '<input type="text" id="comm-follow-up-note" class="w-full bg-[#0B0E11] text-[#EAECEF] text-[12px] rounded-lg px-3 py-2 border border-[#2E3440] outline-none placeholder-[#474D57]" placeholder="下次要做什么">'
@@ -892,8 +906,9 @@ window.submitComm = function() {
   // 创建跟进事件（如勾选）
   var fuCheckEl = document.getElementById('comm-follow-up');
   if (fuCheckEl && fuCheckEl.checked) {
-    var fuAt = (document.getElementById('comm-follow-up-at') || {}).value || '';
-    var fuNote = ((document.getElementById('comm-follow-up-note') || {}).value || '').trim();
+    var fuAt    = (document.getElementById('comm-follow-up-at')    || {}).value || '';
+    var fuTitle = ((document.getElementById('comm-follow-up-title') || {}).value || '').trim();
+    var fuNote  = ((document.getElementById('comm-follow-up-note')  || {}).value || '').trim();
     if (fuAt) {
       var fuEvents = [];
       try { fuEvents = JSON.parse(sessionStorage.getItem('follow_up_events') || '[]'); } catch(e) {}
@@ -912,8 +927,10 @@ window.submitComm = function() {
         client_name: clientNameEl ? clientNameEl.textContent : uid,
         status: '待处理',
         created_at: new Date().toISOString(),
+        title: fuTitle || fuNote || '跟进',
         follow_up_at: fuAt,
-        follow_up_note: fuNote
+        follow_up_note: fuNote,
+        activities: []
       });
       sessionStorage.setItem('follow_up_events', JSON.stringify(fuEvents));
     }

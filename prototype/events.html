@@ -172,7 +172,8 @@
         + '<span style="font-size:13px;font-weight:600;color:#EAECEF">' + ev.client_name + '</span>'
         + '<span style="font-size:10px;padding:1px 6px;border-radius:9999px;background:' + sc.bg + ';color:' + sc.text + '">' + ev.status + '</span>'
         + '</div>'
-        + '<div style="font-size:12px;color:#EAECEF;margin-bottom:2px">' + (ev.follow_up_note || '—') + '</div>'
+        + '<div style="font-size:13px;font-weight:600;color:#EAECEF;margin-bottom:2px">' + (ev.title || ev.follow_up_note || '—') + '</div>'
+        + (ev.follow_up_note && ev.title ? '<div style="font-size:11px;color:#848E9C;margin-bottom:2px">' + ev.follow_up_note + '</div>' : '')
         + '<div style="font-size:11px;color:' + dl.color + ';font-weight:500">' + dl.text + ' · ' + ev.follow_up_at + '</div>'
         + (ev.done_note ? '<div style="font-size:11px;color:#848E9C;margin-top:3px">"' + ev.done_note + '"</div>' : '')
         + '</a>'
