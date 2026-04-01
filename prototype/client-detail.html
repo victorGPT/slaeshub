@@ -77,7 +77,8 @@
               <span id="client-uid" class="text-[16px] font-bold text-[#EAECEF] tabular-nums tracking-wide"></span>
               <i class="fa-regular fa-copy text-[10px] text-[#474D57]"></i>
             </button>
-            <!-- status badge removed: no threshold classification without real data -->
+            <!-- top-nickname: 从 worktree-1 引入 -->
+            <span id="top-nickname" class="text-[12px] text-[#848E9C]"></span>
           </div>
         </div>
         <span id="from-badge" class="text-[9px] px-1.5 py-[1px] rounded hidden flex-shrink-0"></span>
@@ -101,7 +102,7 @@
         </div>
       </div>
 
-      <!-- Row 3: Memo (click to edit) -->
+      <!-- Row 4: Memo (click to edit) -->
       <div class="px-4 pb-3">
         <div id="memo-display" class="flex items-center gap-1 cursor-pointer py-1" onclick="startEditMemo()">
           <span id="memo-text" class="text-[11px] text-[#848E9C] flex-1 truncate"></span>
@@ -175,13 +176,27 @@
 
   function esc(s) { return String(s).replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
 
+  // --- timeAgo（从 worktree-1 引入）---
+  function timeAgo(isoStr) {
+    if (!isoStr) return '';
+    var now = new Date();
+    var then = new Date(isoStr);
+    if (isNaN(then.getTime())) return '';
+    var diff = Math.floor((now - then) / 1000);
+    if (diff < 3600) return '刚刚';
+    if (diff < 86400) return Math.floor(diff / 3600) + '小时前';
+    var days = Math.floor(diff / 86400);
+    if (days < 7) return days + '天前';
+    if (days < 30) return Math.floor(days / 7) + '周前';
+    return (then.getMonth() + 1) + '月' + then.getDate() + '日';
+  }
+
   // --- Platform averages (across all clients) ---
   var allClients = D.clients;
   var platAvg = { depositChg: 0, flowNetChg: 0, profitChg: 0, pnlChg: 0 };
   var platCounts = { depositChg: 0, flowNetChg: 0, profitChg: 0, pnlChg: 0 };
 
   allClients.forEach(function(cl) {
-    // Deposit change rate
     var w = cl.weeks;
     var thisW = w[w.length - 1];
     var avg8 = 0;
@@ -189,14 +204,11 @@
     avg8 = avg8 / (w.length - 1);
     if (avg8 > 0) { platAvg.depositChg += (thisW - avg8) / avg8; platCounts.depositChg++; }
 
-    // Profit contribution change rate
     var nc = cl.netContribution;
     if (nc && nc.total !== undefined) {
-      // Simplified: use wow as proxy for change rate
       if (nc.wow !== undefined) { platAvg.profitChg += nc.wow; platCounts.profitChg++; }
     }
 
-    // PnL change rate
     var pnl = cl.clientPnl;
     if (pnl && pnl.weeklyAvg8w && Math.abs(pnl.weeklyAvg8w.value) > 0) {
       var pnlRate = (pnl.total7d.value - pnl.weeklyAvg8w.value) / Math.abs(pnl.weeklyAvg8w.value);
@@ -205,15 +217,14 @@
     }
   });
 
-  // Compute averages
   platAvg.depositChg = platCounts.depositChg > 0 ? (platAvg.depositChg / platCounts.depositChg * 100) : 0;
   platAvg.profitChg = platCounts.profitChg > 0 ? (platAvg.profitChg / platCounts.profitChg * 100) : 0;
   platAvg.pnlChg = platCounts.pnlChg > 0 ? (platAvg.pnlChg / platCounts.pnlChg * 100) : 0;
 
   function fmtAvg(v) {
     var s = v >= 0 ? '+' : '';
-    var c = v >= 0 ? '#0ECB81' : '#F6465D';
-    return '<span style="color:' + c + '">' + s + v.toFixed(1) + '%</span>';
+    var col = v >= 0 ? '#0ECB81' : '#F6465D';
+    return '<span style="color:' + col + '">' + s + v.toFixed(1) + '%</span>';
   }
 
   // --- Seeded random ---
@@ -243,9 +254,7 @@
   }
 
   var thisWeekFlow = flowWeeks[flowWeeks.length - 1];
-  var baselineWeeks = flowWeeks.slice(0, -1); // all except last (this week)
-  var avgInflow = Math.round(baselineWeeks.reduce(function(s, w) { return s + w.inflow; }, 0) / baselineWeeks.length);
-  var avgOutflow = Math.round(baselineWeeks.reduce(function(s, w) { return s + w.outflow; }, 0) / baselineWeeks.length);
+  var baselineWeeks = flowWeeks.slice(0, -1);
 
   function fmtFlow(v) {
     var abs = Math.abs(v);
@@ -254,13 +263,12 @@
     return '$' + Math.round(abs);
   }
 
-  // === STICKY HEADER ===
-
   // === HEADER CARD ===
-  var badge = c.statusBadge;
-
-  // Identity: UID as primary
   document.getElementById('client-uid').textContent = c.uid;
+
+  // top-nickname（从 worktree-1 引入）
+  var nnSpan = document.getElementById('top-nickname');
+  if (nnSpan) nnSpan.textContent = localStorage.getItem('nickname_' + uid) || '';
 
   // Favorite
   var favKey = 'fav_' + c.uid;
@@ -279,7 +287,6 @@
     localStorage.setItem(favKey, isFav ? '1' : '0');
     renderFav();
   };
-  // Status badge removed — delta percentage already shows direction
 
   // From badge
   var fromMap = {
@@ -297,10 +304,10 @@
 
   // Deposit hero
   document.getElementById('deposit-hero').textContent = c.thisWeekDisplay || '-';
+
   // --- System Tags ---
   var sysTags = [];
 
-  // 维度1: 风险偏好 (互斥取1)
   var dd = c.depositDist;
   var ddTotal = (dd.futures||0) + (dd.leverage||0) + (dd.mini||0) + (dd.savings||0) + (dd.card||0) + (dd.cloud||0) + (dd.spot||0);
   if (ddTotal > 0) {
@@ -313,7 +320,6 @@
     else sysTags.push({ label: '多元化', color: '#F0B90B', bg: 'rgba(240,185,11,0.12)' });
   }
 
-  // 维度2: 贡献价值 (可并存)
   var allProfits = allClients.map(function(cl) { return cl.netContribution ? cl.netContribution.total : 0; }).sort(function(a,b){return b-a;});
   var top20Idx = Math.floor(allProfits.length * 0.2);
   if (c.netContribution && c.netContribution.total >= allProfits[top20Idx]) {
@@ -325,33 +331,21 @@
     sysTags.push({ label: '大客户', color: '#F0B90B', bg: 'rgba(240,185,11,0.12)' });
   }
 
-  // 维度3: 活跃度 (互斥取1, 用事件数量近似)
-  var clientEvts = (D.eventsByClientUid[c.uid] || []).length;
-  var clientActs = (D.activitiesByClientUid && D.activitiesByClientUid[c.uid] || []).length;
-  var totalActivity = clientEvts + clientActs;
-  if (totalActivity === 0) sysTags.push({ label: '沉睡', color: '#848E9C', bg: 'rgba(132,142,156,0.12)' });
-  else if (totalActivity >= 3) sysTags.push({ label: '高活跃', color: '#0ECB81', bg: 'rgba(14,203,129,0.12)' });
-
-  // BD手动Tags
   var manualTagKey = 'bd_tags_' + c.uid;
   var manualTags = [];
   try { manualTags = JSON.parse(localStorage.getItem(manualTagKey) || '[]'); } catch(e) {}
 
-  // Render tags
   function renderTags() {
     var tagsHtml = '';
-    // System tags (no delete)
     sysTags.forEach(function(t) {
       tagsHtml += '<span class="text-[9px] px-1.5 py-[2px] rounded border font-medium" style="color:' + t.color + ';border-color:' + t.color + '30;background:' + t.bg + '">' + t.label + '</span>';
     });
-    // Manual tags (with × delete)
     manualTags.forEach(function(t, i) {
       tagsHtml += '<span class="text-[9px] px-1.5 py-[2px] rounded bg-[#2B3139] text-[#EAECEF] inline-flex items-center gap-1">'
         + esc(t)
         + '<i class="fa-solid fa-xmark text-[7px] text-[#474D57] cursor-pointer hover:text-[#F6465D]" onclick="removeTag(' + i + ')"></i>'
         + '</span>';
     });
-    // Add tag button
     tagsHtml += '<span class="text-[9px] px-1.5 py-[2px] rounded border border-dashed border-[#474D57] text-[#474D57] cursor-pointer" onclick="addTag()">+ 标签</span>';
     document.getElementById('tags-row').innerHTML = tagsHtml;
   }
@@ -384,17 +378,17 @@
   var deltaColor = isUp ? '#0ECB81' : '#F6465D';
   var deltaBg = isUp ? 'rgba(14,203,129,0.12)' : 'rgba(246,70,93,0.12)';
   var arrowChar = isUp ? '▲' : '▼';
-  var sign = isUp ? '+' : '';
+  var signStr = isUp ? '+' : '';
 
   deltaEl.innerHTML = '<div class="flex items-center gap-1 px-1.5 py-0.5 rounded" style="background:' + deltaBg + '">'
     + '<span class="text-[11px]" style="color:' + deltaColor + '">' + arrowChar + '</span>'
-    + '<span class="text-[12px] font-bold tabular-nums" style="color:' + deltaColor + '">' + sign + deltaPct.toFixed(1) + '%</span>'
+    + '<span class="text-[12px] font-bold tabular-nums" style="color:' + deltaColor + '">' + signStr + deltaPct.toFixed(1) + '%</span>'
     + '<span class="text-[10px] text-[#474D57] mx-0.5">|</span>'
     + '<span class="text-[10px]">均</span>' + fmtAvg(platAvg.depositChg)
     + '</div>'
-    + '<span class="text-[10px] tabular-nums" style="color:' + deltaColor + '">' + sign + fmtFlow(Math.round(deltaAbs)) + '</span>';
+    + '<span class="text-[10px] tabular-nums" style="color:' + deltaColor + '">' + signStr + fmtFlow(Math.round(deltaAbs)) + '</span>';
 
-  // Memo (click to edit, blur to save)
+  // Memo
   var memoKey = 'memo_' + c.uid;
   var memoVal = localStorage.getItem(memoKey) || '';
   var memoDisplay = document.getElementById('memo-display');
@@ -452,7 +446,7 @@
   // === TAB 1: EVENTS ===
   var eventsHtml = '';
 
-  // Module 4: Current Events
+  // Module: Current Events
   var events = (D.eventsByClientUid && D.eventsByClientUid[uid]) || [];
   var processedSet = {};
   var followingSet = {};
@@ -498,46 +492,48 @@
   }
   eventsHtml += '</div></div>';
 
-  // Module 5: Follow-up Records (跟进记录)
-  // 从 sessionStorage 读取处理记录，与静态数据合并
+  // Module: Follow-up Records（跟进记录）
+  // 先读取主动沟通记录（从 worktree-2 引入）
+  var commRecords = [];
+  try { commRecords = JSON.parse(sessionStorage.getItem('comm_records_' + uid) || '[]'); } catch(e) {}
+
   var eventNotes = {};
   try { eventNotes = JSON.parse(sessionStorage.getItem('event_notes') || '{}'); } catch(e) {}
 
-  // 构建动态跟进条目：已处理的事件 → 时间线条目
+  // 动态跟进条目：事件触发、已处理、已忽略
   var dynamicFollowups = [];
   events.forEach(function(ev) {
-    // 事件触发记录（系统）
     dynamicFollowups.push({
       date: ev.time_ago,
       bd: '系统',
-      text: '[' + ev.type + '] 触发' + (ev.amount_display ? ' — ' + ev.amount_display : ''),
-      tag: ev.type,
-      tagColor: ev.color
+      text: '[' + ev.type + '] 触发' + (ev.amount_display ? ' — ' + ev.amount_display : '')
     });
-    // 已处理记录（BD）
     if (processedSet[ev.id]) {
       var note = eventNotes[ev.id];
       dynamicFollowups.push({
         date: '刚刚',
         bd: 'BD',
-        text: '[' + ev.type + '] 已处理' + (note ? ' — "' + note + '"' : ''),
-        tag: ev.type,
-        tagColor: '#0ECB81'
+        text: '[' + ev.type + '] 已处理' + (note ? ' — "' + note + '"' : '')
       });
     }
-    // 已忽略记录
     if (ignoredSet[ev.id]) {
       dynamicFollowups.push({
         date: '刚刚',
         bd: 'BD',
-        text: '[' + ev.type + '] 已忽略',
-        tag: ev.type,
-        tagColor: '#848E9C'
+        text: '[' + ev.type + '] 已忽略'
       });
     }
   });
 
-  // 静态 mock 跟进记录（作为历史数据）
+  // 主动沟通记录转时间线条目（worktree-2，排在最前）
+  var commFollowups = commRecords.map(function(r) {
+    var dateLabel = r.occurred_at || r.date || '';
+    var displayDate = timeAgo(dateLabel) || dateLabel;
+    var text = r.text || ((r.channel || '') + (r.result ? ' · ' + r.result : '') + (r.summary ? '：' + r.summary : ''));
+    return { date: displayDate, bd: r.bd || 'BD', text: text };
+  });
+
+  // 静态 mock 历史数据
   function getStaticFollowups() {
     if (c.status === '流失') {
       return [
@@ -559,13 +555,31 @@
     ];
   }
 
-  // 合并：动态记录（最新）在前，静态历史在后
-  var allFollowups = dynamicFollowups.concat(getStaticFollowups());
+  // 合并顺序：主动沟通（最新）→ 动态事件记录 → 静态历史
+  var allFollowups = commFollowups.concat(dynamicFollowups).concat(getStaticFollowups());
 
-  eventsHtml += '<div class="mx-4 mt-3 mb-4 bg-[#1E2329] rounded-xl border border-[#2E3440] p-3">'
-    + '<div class="flex items-center justify-between mb-2">'
-    + '<div class="text-[13px] font-semibold text-[#EAECEF]">跟进记录</div>'
-    + '</div>'
+  // 上次联系行（从 worktree-1 引入）
+  var lastContactRowHtml = '';
+  if (commRecords.length > 0) {
+    var lc = commRecords[0];
+    var lcText = (lc.channel && lc.result) ? lc.channel + ' · ' + lc.result : (lc.text || '');
+    var lcTime = timeAgo(lc.occurred_at || lc.date) || lc.date || '';
+    lastContactRowHtml = '<div class="mx-4 mt-2 mb-1 flex items-center justify-between">'
+      + '<span class="text-[11px] text-[#848E9C]">上次联系</span>'
+      + '<span class="text-[12px] flex items-center gap-1.5">'
+      + '<span class="font-semibold" style="color:#F0B90B">' + lcTime + '</span>'
+      + '<span class="text-[#848E9C]">' + lcText + '</span>'
+      + '</span></div>';
+  } else {
+    lastContactRowHtml = '<div class="mx-4 mt-2 mb-1 flex items-center justify-between">'
+      + '<span class="text-[11px] text-[#848E9C]">上次联系</span>'
+      + '<span class="text-[12px] text-[#474D57]">暂无记录</span>'
+      + '</div>';
+  }
+  eventsHtml += lastContactRowHtml;
+
+  eventsHtml += '<div class="mx-4 mt-3 mb-2 bg-[#1E2329] rounded-xl border border-[#2E3440] p-3">'
+    + '<div class="text-[13px] font-semibold text-[#EAECEF] mb-2">跟进记录</div>'
     + '<div class="border-l-2 border-[#2E3440] pl-3 space-y-3">';
   allFollowups.forEach(function(f) {
     var isSystem = f.bd === '系统';
@@ -576,45 +590,78 @@
       + '<div class="text-[12px] text-[#EAECEF] mt-0.5">' + f.text + '</div>'
       + '</div>';
   });
-
   if (allFollowups.length === 0) {
     eventsHtml += '<div class="text-[12px] text-[#474D57] py-2">暂无跟进记录</div>';
   }
-
   eventsHtml += '</div></div>';
+
+  // Module: 主动沟通表单（从 worktree-2 引入）
+  eventsHtml += '<div class="mx-4 mb-6">'
+    + '<div id="comm-default">'
+    + '<button onclick="openCommForm()" class="w-full h-[44px] border border-[#2E3440] text-[#848E9C] font-medium text-[14px] rounded-lg active:opacity-80 transition">+ 记录主动沟通</button>'
+    + '</div>'
+    + '<div id="comm-form" style="display:none" class="bg-[#1E2329] rounded-xl p-4 border border-[#2E3440]">'
+    + '<div class="text-[13px] font-semibold text-[#EAECEF] mb-3">主动沟通</div>'
+    + '<div class="text-[11px] text-[#848E9C] mb-1">渠道</div>'
+    + '<div class="flex gap-2 overflow-x-auto pb-1 mb-3" style="scrollbar-width:none">'
+    + '<button class="comm-pill-channel flex-shrink-0 rounded-full px-3 py-1 text-[12px] bg-[#F0B90B] text-[#0B0E11] font-semibold" data-val="Telegram" onclick="selectPill(this,\'channel\')">Telegram</button>'
+    + '<button class="comm-pill-channel flex-shrink-0 rounded-full px-3 py-1 text-[12px] bg-[#2B3139] text-[#848E9C] border border-[#2E3440]" data-val="WhatsApp" onclick="selectPill(this,\'channel\')">WhatsApp</button>'
+    + '<button class="comm-pill-channel flex-shrink-0 rounded-full px-3 py-1 text-[12px] bg-[#2B3139] text-[#848E9C] border border-[#2E3440]" data-val="微信" onclick="selectPill(this,\'channel\')">微信</button>'
+    + '<button class="comm-pill-channel flex-shrink-0 rounded-full px-3 py-1 text-[12px] bg-[#2B3139] text-[#848E9C] border border-[#2E3440]" data-val="电话" onclick="selectPill(this,\'channel\')">电话</button>'
+    + '<button class="comm-pill-channel flex-shrink-0 rounded-full px-3 py-1 text-[12px] bg-[#2B3139] text-[#848E9C] border border-[#2E3440]" data-val="线下" onclick="selectPill(this,\'channel\')">线下</button>'
+    + '<button class="comm-pill-channel flex-shrink-0 rounded-full px-3 py-1 text-[12px] bg-[#2B3139] text-[#848E9C] border border-[#2E3440]" data-val="邮件" onclick="selectPill(this,\'channel\')">邮件</button>'
+    + '</div>'
+    + '<div class="text-[11px] text-[#848E9C] mb-1">结果</div>'
+    + '<div class="flex gap-2 overflow-x-auto pb-1 mb-3" style="scrollbar-width:none">'
+    + '<button class="comm-pill-result flex-shrink-0 rounded-full px-3 py-1 text-[12px] bg-[#F0B90B] text-[#0B0E11] font-semibold" data-val="已联系上" onclick="selectPill(this,\'result\')">已联系上</button>'
+    + '<button class="comm-pill-result flex-shrink-0 rounded-full px-3 py-1 text-[12px] bg-[#2B3139] text-[#848E9C] border border-[#2E3440]" data-val="有回复" onclick="selectPill(this,\'result\')">有回复</button>'
+    + '<button class="comm-pill-result flex-shrink-0 rounded-full px-3 py-1 text-[12px] bg-[#2B3139] text-[#848E9C] border border-[#2E3440]" data-val="已见面" onclick="selectPill(this,\'result\')">已见面</button>'
+    + '<button class="comm-pill-result flex-shrink-0 rounded-full px-3 py-1 text-[12px] bg-[#2B3139] text-[#848E9C] border border-[#2E3440]" data-val="未接通" onclick="selectPill(this,\'result\')">未接通</button>'
+    + '<button class="comm-pill-result flex-shrink-0 rounded-full px-3 py-1 text-[12px] bg-[#2B3139] text-[#848E9C] border border-[#2E3440]" data-val="未回复" onclick="selectPill(this,\'result\')">未回复</button>'
+    + '<button class="comm-pill-result flex-shrink-0 rounded-full px-3 py-1 text-[12px] bg-[#2B3139] text-[#848E9C] border border-[#2E3440]" data-val="仅发送消息" onclick="selectPill(this,\'result\')">仅发送消息</button>'
+    + '</div>'
+    + '<div class="text-[11px] text-[#848E9C] mb-1">联系时间</div>'
+    + '<input type="datetime-local" id="comm-occurred-at" class="w-full bg-[#2B3139] text-[#EAECEF] text-[12px] rounded-lg px-3 py-2 border border-[#2E3440] outline-none mb-3" style="color-scheme:dark" />'
+    + '<div class="text-[11px] text-[#848E9C] mb-1">内容摘要（选填）</div>'
+    + '<textarea id="comm-summary" rows="2" class="w-full bg-[#2B3139] text-[#EAECEF] text-[12px] rounded-lg px-3 py-2 border border-[#2E3440] outline-none placeholder-[#474D57] resize-none mb-3" placeholder="简要说明聊了什么"></textarea>'
+    + '<div class="flex gap-2">'
+    + '<button onclick="submitComm()" class="flex-1 py-2 rounded-lg text-[13px] font-semibold bg-[#F0B90B] text-[#0B0E11] active:opacity-80">创建</button>'
+    + '<button onclick="closeCommForm()" class="py-2 px-4 rounded-lg text-[13px] text-[#848E9C] border border-[#2E3440] active:opacity-80">取消</button>'
+    + '</div>'
+    + '</div>'
+    + '</div>';
 
   document.getElementById('tab-events').innerHTML = eventsHtml;
 
   // === TAB 2: ASSETS ===
   var assetsHtml = '';
 
-  // Module 6: Deposit Distribution
-  var dd = c.depositDist;
-  var ddTotal = dd.futures + dd.leverage + dd.savings + dd.card + dd.cloud + dd.mini + (dd.spot||0);
+  // Module: 资沉分布
+  var ddAssets = c.depositDist;
+  var ddAssetsTotal = ddAssets.futures + ddAssets.leverage + ddAssets.savings + ddAssets.card + ddAssets.cloud + ddAssets.mini + (ddAssets.spot||0);
   var ddItems = [
-    { name: '双仓合约', value: dd.futures, display: dd.futuresDisplay },
-    { name: '超级杠杆', value: dd.leverage, display: dd.leverageDisplay },
-    { name: '理财', value: dd.savings, display: dd.savingsDisplay },
-    { name: '金融卡', value: dd.card, display: dd.cardDisplay },
-    { name: '云算力', value: dd.cloud, display: dd.cloudDisplay },
-    { name: 'Mini合约', value: dd.mini, display: dd.miniDisplay },
-    { name: '现货', value: dd.spot||0, display: dd.spotDisplay||'$0' }
+    { name: '双仓合约', value: ddAssets.futures, display: ddAssets.futuresDisplay },
+    { name: '超级杠杆', value: ddAssets.leverage, display: ddAssets.leverageDisplay },
+    { name: '理财', value: ddAssets.savings, display: ddAssets.savingsDisplay },
+    { name: '金融卡', value: ddAssets.card, display: ddAssets.cardDisplay },
+    { name: '云算力', value: ddAssets.cloud, display: ddAssets.cloudDisplay },
+    { name: 'Mini合约', value: ddAssets.mini, display: ddAssets.miniDisplay },
+    { name: '现货', value: ddAssets.spot||0, display: ddAssets.spotDisplay||'$0' }
   ].sort(function(a, b) { return b.value - a.value; });
   ddItems.forEach(function(item) {
-    item.pct = ddTotal > 0 ? Math.round(item.value / ddTotal * 100) : 0;
+    item.pct = ddAssetsTotal > 0 ? Math.round(item.value / ddAssetsTotal * 100) : 0;
   });
 
-  // 资沉分布 (reuse deltaAbs/deltaPct from header)
   var distChgColor = deltaPct >= 0 ? '#0ECB81' : '#F6465D';
   var distChgChar = deltaPct >= 0 ? '▲' : '▼';
   var distChgSign = deltaPct >= 0 ? '+' : '';
 
   assetsHtml += '<div class="mx-4 mt-3 bg-[#1E2329] rounded-xl border border-[#2E3440] p-3">'
     + '<div class="flex items-start justify-between mb-3">'
-    + '<div><div class="text-[13px] font-semibold text-[#EAECEF]">资沉分布</div></div>'
+    + '<div class="text-[13px] font-semibold text-[#EAECEF]">资沉分布</div>'
     + '<div class="text-right">'
     + '<div class="text-[16px] font-bold tabular-nums" style="color:#F0B90B">' + fmtFlow(c.fMean) + '</div>'
-    + '<div class="text-[10px] mt-0.5"><span style="color:' + distChgColor + '">' + distChgChar + ' ' + distChgSign + deltaPct.toFixed(1) + '%</span> <span class="text-[#474D57]">| </span>均' + fmtAvg(platAvg.depositChg) + '</span></div>'
+    + '<div class="text-[10px] mt-0.5"><span style="color:' + distChgColor + '">' + distChgChar + ' ' + distChgSign + deltaPct.toFixed(1) + '%</span> <span class="text-[#474D57]">| </span>均' + fmtAvg(platAvg.depositChg) + '</div>'
     + '</div>'
     + '</div>'
     + '<div class="h-[1px] bg-[#2E3440] mb-3"></div>';
@@ -632,39 +679,11 @@
   });
   assetsHtml += '</div>';
 
-  // Module 7 (业务参与) removed — merged into 资沉分布 above
-
-  // Module 8: Asset Flow Chart (complete redesign)
-  var maxFlow = Math.max.apply(null, flowWeeks.map(function(w) { return Math.max(w.inflow, w.outflow); }).concat([1]));
-  var maxBarH = 60;
-
-  // Totals
-  var totalInflow = flowWeeks.reduce(function(s, w) { return s + w.inflow; }, 0);
-  var totalOutflow = flowWeeks.reduce(function(s, w) { return s + w.outflow; }, 0);
-  var netFlow = totalInflow - totalOutflow;
-
-  function fmtFlowAmt(v) {
-    if (Math.abs(v) >= 10000) return Math.round(v / 10000) + '万';
-    if (Math.abs(v) >= 1000) return (v / 10000).toFixed(1) + '万';
-    return Math.round(v) + '';
-  }
-
-  // Y-axis ticks: 3 levels (maxFlow rounded up)
-  var yTop = maxFlow;
-  var yMid = Math.round(maxFlow / 2);
-
-  // 资沉流动
-  // Baseline per-week averages (excluding this week)
-  var baselineInflow = baselineWeeks.reduce(function(s, w) { return s + w.inflow; }, 0);
-  var baselineOutflow = baselineWeeks.reduce(function(s, w) { return s + w.outflow; }, 0);
-  var baselineNetFlow = baselineInflow - baselineOutflow;
-  var avgInflowPerWeek = Math.round(baselineInflow / baselineWeeks.length);
-  var avgOutflowPerWeek = Math.round(baselineOutflow / baselineWeeks.length);
-  var avgNetPerWeek = Math.round(baselineNetFlow / baselineWeeks.length);
+  // Module: 周冲提 横向双条形图
+  var avgNetPerWeek = Math.round(baselineWeeks.reduce(function(s, w) { return s + w.inflow - w.outflow; }, 0) / baselineWeeks.length);
   var netFlowColor = avgNetPerWeek >= 0 ? '#0ECB81' : '#F6465D';
   var netFlowSign = avgNetPerWeek >= 0 ? '+' : '-';
 
-  // This week's net flow vs 8w avg net flow
   var thisWeekNet = thisWeekFlow.inflow - thisWeekFlow.outflow;
   var flowChgPct = Math.abs(avgNetPerWeek) > 0 ? ((thisWeekNet - avgNetPerWeek) / Math.abs(avgNetPerWeek) * 100) : 0;
   var flowChgColor = flowChgPct >= 0 ? '#0ECB81' : '#F6465D';
@@ -673,102 +692,64 @@
 
   assetsHtml += '<div class="mx-4 mt-3 bg-[#1E2329] rounded-xl border border-[#2E3440] p-3">'
     + '<div class="flex items-start justify-between mb-3">'
-    + '<div><div class="text-[13px] font-semibold text-[#EAECEF]">资沉流动</div></div>'
+    + '<div class="text-[13px] font-semibold text-[#EAECEF]">周冲提</div>'
     + '<div class="text-right">'
     + '<div class="text-[16px] font-bold tabular-nums" style="color:' + netFlowColor + '">' + netFlowSign + fmtFlow(Math.abs(avgNetPerWeek)) + '/周</div>'
-    + '<div class="text-[10px] mt-0.5"><span style="color:' + flowChgColor + '">' + flowChgChar + ' ' + flowChgSign + flowChgPct.toFixed(1) + '%</span> <span class="text-[#474D57]">| </span>均' + fmtAvg(platAvg.depositChg) + '</span></div>'
+    + '<div class="text-[10px] mt-0.5"><span style="color:' + flowChgColor + '">' + flowChgChar + ' ' + flowChgSign + flowChgPct.toFixed(1) + '%</span> <span class="text-[#474D57]">| </span>均' + fmtAvg(platAvg.depositChg) + '</div>'
     + '</div>'
     + '</div>'
     + '<div class="h-[1px] bg-[#2E3440] mb-3"></div>';
 
-  // Chart area with Y-axis
-  assetsHtml += '<div class="flex">';
-
-  // Y-axis labels (left side)
-  assetsHtml += '<div class="flex flex-col flex-shrink-0" style="width:36px">';
-  // Top half labels
-  assetsHtml += '<div style="height:' + maxBarH + 'px" class="flex flex-col justify-between">'
-    + '<span class="text-[9px] text-[#474D57] leading-none">' + fmtFlowAmt(yTop) + '</span>'
-    + '<span class="text-[9px] text-[#474D57] leading-none">' + fmtFlowAmt(yMid) + '</span>'
-    + '</div>';
-  // Zero
-  assetsHtml += '<div class="text-[9px] text-[#848E9C] leading-none" style="height:12px;line-height:12px">0</div>';
-  // Bottom half labels
-  assetsHtml += '<div style="height:' + maxBarH + 'px" class="flex flex-col justify-between">'
-    + '<span class="text-[9px] text-[#474D57] leading-none">' + fmtFlowAmt(yMid) + '</span>'
-    + '<span class="text-[9px] text-[#474D57] leading-none">' + fmtFlowAmt(yTop) + '</span>'
-    + '</div>';
-  assetsHtml += '</div>';
-
-  // Bars area
-  assetsHtml += '<div class="flex-1">';
-
-  // Inflow bars
-  assetsHtml += '<div class="flex items-end justify-around" style="height:' + maxBarH + 'px">';
-  flowWeeks.forEach(function(w) {
-    var h = maxFlow > 0 ? Math.round(w.inflow / maxFlow * maxBarH) : 0;
-    assetsHtml += '<div style="width:24px;height:' + Math.max(h, 1) + 'px;background:#0ECB81;border-radius:2px 2px 0 0"></div>';
+  var chartWeeks = flowWeeks.slice(0, -1);
+  var maxChartFlow = Math.max.apply(null, chartWeeks.map(function(w) { return Math.max(w.inflow, w.outflow); }).concat([1]));
+  chartWeeks.forEach(function(w, wi) {
+    var inflowPct = Math.max(1, Math.round(w.inflow / maxChartFlow * 100));
+    var outflowPct = Math.max(1, Math.round(w.outflow / maxChartFlow * 100));
+    var wLabel = 'W' + (wi + 2);
+    assetsHtml += '<div class="flex items-center mb-2">'
+      + '<div style="width:28px" class="text-right pr-2 text-[10px] text-[#848E9C] flex-shrink-0">' + wLabel + '</div>'
+      + '<div class="flex-1">'
+      + '<div style="width:' + inflowPct + '%;height:8px;background:#0ECB81;border-radius:2px;margin-bottom:2px"></div>'
+      + '<div style="width:' + outflowPct + '%;height:8px;background:#F6465D;border-radius:2px"></div>'
+      + '</div>'
+      + '</div>';
   });
-  assetsHtml += '</div>';
-
-  // Zero line
-  assetsHtml += '<div style="height:1px;background:#474D57;margin:0 -4px"></div>';
-
-  // Outflow bars
-  assetsHtml += '<div class="flex items-start justify-around" style="height:' + maxBarH + 'px">';
-  flowWeeks.forEach(function(w) {
-    var h = maxFlow > 0 ? Math.round(w.outflow / maxFlow * maxBarH) : 0;
-    assetsHtml += '<div style="width:24px;height:' + Math.max(h, 1) + 'px;background:#F6465D;border-radius:0 0 2px 2px"></div>';
-  });
-  assetsHtml += '</div>';
-
-  // X-axis labels
-  assetsHtml += '<div class="flex justify-around mt-1">';
-  for (var wi = 0; wi < flowWeeks.length; wi++) {
-    var xLabel = (wi === flowWeeks.length - 1) ? '本周' : 'W' + (wi + 2);
-    assetsHtml += '<div style="width:24px" class="text-center text-[9px] text-[#848E9C]">' + xLabel + '</div>';
-  }
-  assetsHtml += '</div>';
-
-  assetsHtml += '</div>'; // bars area
-  assetsHtml += '</div>'; // chart flex
-
-  // Legend
   assetsHtml += '<div class="flex items-center gap-4 mt-2 pt-2 border-t border-[#2E3440]">'
     + '<div class="flex items-center gap-1"><span class="w-2 h-2 rounded-sm bg-[#0ECB81]"></span><span class="text-[10px] text-[#848E9C]">流入</span></div>'
     + '<div class="flex items-center gap-1"><span class="w-2 h-2 rounded-sm bg-[#F6465D]"></span><span class="text-[10px] text-[#848E9C]">流出</span></div>'
-    + '</div>';
+    + '</div></div>';
 
-  assetsHtml += '</div>';
-
-  // Net Contribution
+  // Module: 月利润贡献（周值 × 4.3）
   var nc = c.netContribution;
   var ncWowColor = nc.wow >= 0 ? '#0ECB81' : '#F6465D';
+  var monthMult = 4.3;
   var ncItems = [
-    { name: '合约', value: nc.futures, isRevenue: true },
-    { name: '杠杆', value: nc.leverage, isRevenue: true },
-    { name: 'Mini合约', value: nc.mini, isRevenue: true },
-    { name: '金融卡', value: nc.card, isRevenue: true },
-    { name: '云算力', value: nc.cloud, isRevenue: true },
-    { name: '理财利息', value: nc.savingsInterest, isRevenue: false },
-    { name: '返佣', value: nc.rebate, isRevenue: false }
+    { name: '合约', value: Math.round(nc.futures * monthMult), isRevenue: true },
+    { name: '杠杆', value: Math.round(nc.leverage * monthMult), isRevenue: true },
+    { name: 'Mini合约', value: Math.round(nc.mini * monthMult), isRevenue: true },
+    { name: '现货', value: Math.round((nc.spot || 0) * monthMult), isRevenue: true },
+    { name: '金融卡', value: Math.round(nc.card * monthMult), isRevenue: true },
+    { name: '云算力', value: Math.round(nc.cloud * monthMult), isRevenue: true },
+    { name: '理财利息', value: Math.round(nc.savingsInterest * monthMult), isRevenue: false },
+    { name: '返佣', value: Math.round(nc.rebate * monthMult), isRevenue: false }
   ];
   var ncMax = Math.max.apply(null, ncItems.map(function(i) { return Math.abs(i.value); }));
-
+  var ncMonthTotal = Math.round(nc.total * monthMult);
   var ncWowChar = nc.wow >= 0 ? '▲' : '▼';
+
   assetsHtml += '<div class="mx-4 mt-3 bg-[#1E2329] rounded-xl border border-[#2E3440] p-3">'
     + '<div class="flex items-start justify-between mb-3">'
-    + '<div><div class="text-[13px] font-semibold text-[#EAECEF]">7日利润贡献</div></div>'
+    + '<div class="text-[13px] font-semibold text-[#EAECEF]">月利润贡献</div>'
     + '<div class="text-right">'
-    + '<div class="text-[16px] font-bold tabular-nums" style="color:' + (nc.total >= 0 ? '#0ECB81' : '#F6465D') + '">' + (nc.total >= 0 ? '+' : '-') + fmtFlow(nc.total) + '</div>'
-    + '<div class="text-[10px] mt-0.5"><span style="color:' + ncWowColor + '">' + ncWowChar + ' ' + nc.wowDisplay + '</span> <span class="text-[#474D57]">| </span>均' + fmtAvg(platAvg.profitChg) + '</span></div>'
+    + '<div class="text-[16px] font-bold tabular-nums" style="color:' + (ncMonthTotal >= 0 ? '#0ECB81' : '#F6465D') + '">' + (ncMonthTotal >= 0 ? '+' : '-') + fmtFlow(Math.abs(ncMonthTotal)) + '</div>'
+    + '<div class="text-[10px] mt-0.5"><span style="color:' + ncWowColor + '">' + ncWowChar + ' ' + nc.wowDisplay + '</span> <span class="text-[#474D57]">| </span>均' + fmtAvg(platAvg.profitChg) + '</div>'
     + '</div>'
     + '</div>'
     + '<div class="h-[1px] bg-[#2E3440] mb-3"></div>';
   ncItems.forEach(function(item) {
     var color = item.isRevenue ? '#0ECB81' : '#F6465D';
-    var sign = item.value >= 0 ? '+' : '';
-    var displayVal = sign + (Math.abs(item.value) >= 10000 ? (item.value / 10000).toFixed(1) + '万' : Math.round(item.value));
+    var s = item.value >= 0 ? '+' : '';
+    var displayVal = s + (Math.abs(item.value) >= 10000 ? (item.value / 10000).toFixed(1) + '万' : Math.round(item.value));
     var barW = ncMax > 0 ? Math.round(Math.abs(item.value) / ncMax * 100) : 0;
     assetsHtml += '<div class="flex items-center gap-2 mb-1.5">'
       + '<span class="w-[52px] text-[10px] text-[#848E9C] flex-shrink-0">' + item.name + '</span>'
@@ -780,43 +761,43 @@
   });
   assetsHtml += '</div>';
 
-  // Client P&L
+  // Module: 月交易盈亏（周值 × 4.3）
   var pnl = c.clientPnl;
+  var pnlMonthTotal = Math.round(pnl.total7d.value * monthMult);
   var pnlItems = [
-    { name: '双仓合约', data: pnl.futures7d },
-    { name: '超级杠杆', data: pnl.leverage7d },
-    { name: 'Mini合约', data: pnl.mini7d },
-    { name: '现货', data: pnl.spot7d }
+    { name: '双仓合约', value: Math.round(pnl.futures7d.value * monthMult), color: pnl.futures7d.color },
+    { name: '超级杠杆', value: Math.round(pnl.leverage7d.value * monthMult), color: pnl.leverage7d.color },
+    { name: 'Mini合约', value: Math.round(pnl.mini7d.value * monthMult), color: pnl.mini7d.color },
+    { name: '现货', value: Math.round(pnl.spot7d.value * monthMult), color: pnl.spot7d.color }
   ];
-  var pnlMax = Math.max.apply(null, pnlItems.map(function(i) { return Math.abs(i.data.value); }).concat([1]));
-
-  // 7日交易盈亏
-  var pnlAvgVal = pnl.weeklyAvg8w.value;
-  var pnl7dVal = pnl.total7d.value;
-  var pnlChgPct = Math.abs(pnlAvgVal) > 0 ? ((pnl7dVal - pnlAvgVal) / Math.abs(pnlAvgVal) * 100) : 0;
+  var pnlMax = Math.max.apply(null, pnlItems.map(function(i) { return Math.abs(i.value); }).concat([1]));
+  var pnlAvgVal = pnl.weeklyAvg8w.value * monthMult;
+  var pnlChgPct = Math.abs(pnlAvgVal) > 0 ? ((pnlMonthTotal - pnlAvgVal) / Math.abs(pnlAvgVal) * 100) : 0;
   var pnlChgColor = pnlChgPct >= 0 ? '#0ECB81' : '#F6465D';
   var pnlChgChar = pnlChgPct >= 0 ? '▲' : '▼';
   var pnlChgSign = pnlChgPct >= 0 ? '+' : '';
+  var pnlMonthColor = pnlMonthTotal >= 0 ? '#0ECB81' : '#F6465D';
 
   assetsHtml += '<div class="mx-4 mt-3 mb-4 bg-[#1E2329] rounded-xl border border-[#2E3440] p-3">'
     + '<div class="flex items-start justify-between mb-3">'
-    + '<div><div class="text-[13px] font-semibold text-[#EAECEF]">7日交易盈亏</div></div>'
+    + '<div class="text-[13px] font-semibold text-[#EAECEF]">月交易盈亏</div>'
     + '<div class="text-right">'
-    + '<div class="text-[16px] font-bold tabular-nums" style="color:' + pnl.total7d.color + '">' + (pnl.total7d.value >= 0 ? '+' : '-') + fmtFlow(pnl.total7d.value) + '</div>'
-    + '<div class="text-[10px] mt-0.5"><span style="color:' + pnlChgColor + '">' + pnlChgChar + ' ' + pnlChgSign + pnlChgPct.toFixed(1) + '%</span> <span class="text-[#474D57]">| </span>均' + fmtAvg(platAvg.pnlChg) + '</span></div>'
+    + '<div class="text-[16px] font-bold tabular-nums" style="color:' + pnlMonthColor + '">' + (pnlMonthTotal >= 0 ? '+' : '-') + fmtFlow(Math.abs(pnlMonthTotal)) + '</div>'
+    + '<div class="text-[10px] mt-0.5"><span style="color:' + pnlChgColor + '">' + pnlChgChar + ' ' + pnlChgSign + pnlChgPct.toFixed(1) + '%</span> <span class="text-[#474D57]">| </span>均' + fmtAvg(platAvg.pnlChg) + '</div>'
     + '</div>'
     + '</div>'
     + '<div class="h-[1px] bg-[#2E3440] mb-3"></div>';
   pnlItems.forEach(function(item) {
-    var d = item.data;
-    var barW = pnlMax > 0 ? Math.round(Math.abs(d.value) / pnlMax * 100) : 0;
+    var barW = pnlMax > 0 ? Math.round(Math.abs(item.value) / pnlMax * 100) : 0;
+    var s = item.value >= 0 ? '+' : '-';
+    var displayAmt = s + fmtFlow(Math.abs(item.value));
     assetsHtml += '<div>'
       + '<div class="flex items-center justify-between mb-0.5">'
       + '<span class="text-[11px] text-[#EAECEF]">' + item.name + '</span>'
-      + '<span class="text-[11px] font-medium" style="color:' + d.color + '">' + d.display + '</span>'
+      + '<span class="text-[11px] font-medium" style="color:' + item.color + '">' + displayAmt + '</span>'
       + '</div>'
       + '<div class="w-full h-[4px] rounded-full bg-[#2B3139]">'
-      + '<div class="h-full rounded-full" style="width:' + Math.max(barW, 2) + '%;background:' + d.color + '"></div>'
+      + '<div class="h-full rounded-full" style="width:' + Math.max(barW, 2) + '%;background:' + item.color + '"></div>'
       + '</div>'
       + '</div>';
   });
@@ -825,43 +806,201 @@
   document.getElementById('tab-assets').innerHTML = assetsHtml;
 
   // === TAB 3: PROFILE ===
-  var profileHtml = '';
-
-  // Module 9: BD Tags
-  var tagKey = 'bd_tags_' + c.uid;
-  var savedTags = JSON.parse(localStorage.getItem(tagKey) || 'null');
-  if (!savedTags) {
-    savedTags = ['偏好短线', '英文沟通'];
-    localStorage.setItem(tagKey, JSON.stringify(savedTags));
-  }
-
-  profileHtml += '<div class="mx-4 mt-3 bg-[#1E2329] rounded-xl border border-[#2E3440] p-3" id="bd-tags-card">'
-    + '<div class="text-[13px] font-semibold text-[#EAECEF] mb-2">BD 标签</div>'
-    + '<div id="bd-tags-container" class="flex flex-wrap gap-1.5"></div>'
+  document.getElementById('tab-profile').innerHTML = ''
+    + '<div class="mx-4 mt-3 bg-[#1E2329] rounded-xl border border-[#2E3440] p-4">'
+    + '<div class="text-[13px] font-semibold text-[#EAECEF] mb-3">基础信息</div>'
+    + '<div id="nickname-display-row" class="flex items-center justify-between py-2 border-b border-[#2E3440]">'
+    + '<span class="text-[12px] text-[#848E9C]">昵称</span>'
+    + '<div class="flex items-center gap-2">'
+    + '<span id="nickname-val" class="text-[12px] text-[#474D57]">未设置</span>'
+    + '<button onclick="editNickname()" class="text-[#848E9C] text-[12px]">✎</button>'
+    + '</div>'
+    + '</div>'
+    + '<div id="nickname-edit-row" class="flex items-center justify-between py-2 border-b border-[#2E3440]" style="display:none!important">'
+    + '<span class="text-[12px] text-[#848E9C]">昵称</span>'
+    + '<div class="flex items-center gap-2">'
+    + '<input id="nickname-input" type="text" class="bg-[#2B3139] text-[#EAECEF] text-[12px] rounded-lg px-2 py-1 border border-[#F0B90B] outline-none w-28" placeholder="输入昵称" />'
+    + '<button onclick="saveNickname()" class="text-[12px] font-semibold text-[#F0B90B]">✓ 保存</button>'
+    + '</div>'
+    + '</div>'
+    + '<div class="flex items-center justify-between py-2 border-b border-[#2E3440]">'
+    + '<span class="text-[12px] text-[#848E9C]">KYC 等级</span>'
+    + '<span class="text-[12px] text-[#EAECEF]">LV2 · 已认证</span>'
+    + '</div>'
+    + '<div class="flex items-center justify-between py-2">'
+    + '<span class="text-[12px] text-[#848E9C]">VIP 等级</span>'
+    + '<span class="text-[12px] text-[#EAECEF]">VIP 3</span>'
+    + '</div>'
+    + '</div>'
+    + '<div class="mx-4 mt-3 bg-[#1E2329] rounded-xl border border-[#2E3440] p-4">'
+    + '<div class="text-[13px] font-semibold text-[#EAECEF] mb-3">联系方式</div>'
+    + '<div id="contact-list"></div>'
+    + '<button onclick="openContactForm()" class="w-full mt-2 py-2 text-[12px] text-[#848E9C] border border-dashed border-[#2E3440] rounded-lg">+ 添加联系方式</button>'
+    + '<div id="contact-form" style="display:none" class="mt-3">'
+    + '<div class="flex gap-2 mb-2">'
+    + '<select id="contact-channel" onchange="updateContactPlaceholder()" class="bg-[#2B3139] text-[#EAECEF] text-[12px] rounded-lg px-3 py-2 border border-[#2E3440] outline-none flex-shrink-0">'
+    + '<option>Telegram</option><option>WhatsApp</option><option>微信</option><option>电话</option><option>邮件</option>'
+    + '</select>'
+    + '<input id="contact-value" type="text" class="flex-1 bg-[#2B3139] text-[#EAECEF] text-[12px] rounded-lg px-3 py-2 border border-[#2E3440] outline-none" placeholder="@username" />'
+    + '</div>'
+    + '<div class="flex gap-2">'
+    + '<button onclick="saveContact()" class="flex-1 py-2 rounded-lg text-[13px] font-semibold bg-[#F0B90B] text-[#0B0E11]">保存</button>'
+    + '<button onclick="closeContactForm()" class="py-2 px-4 rounded-lg text-[13px] text-[#848E9C] border border-[#2E3440]">取消</button>'
+    + '</div>'
+    + '</div>'
+    + '</div>'
+    + '<div class="mx-4 mt-3 mb-6 bg-[#1E2329] rounded-xl border border-[#2E3440] p-4">'
+    + '<div class="text-[13px] font-semibold text-[#EAECEF] mb-3">笔记</div>'
+    + '<textarea id="client-notes" rows="6" class="w-full bg-[#2B3139] text-[#EAECEF] text-[12px] rounded-lg px-3 py-2 border border-[#2E3440] outline-none placeholder-[#474D57] resize-none leading-relaxed" placeholder="记录客户背景、沟通风格、历史关系等..."></textarea>'
     + '</div>';
 
-  // Module 10: Notes
-  var noteKey = 'bd_note_' + c.uid;
-  var savedNote = localStorage.getItem(noteKey) || '';
-
-  profileHtml += '<div class="mx-4 mt-3 mb-4 bg-[#1E2329] rounded-xl border border-[#2E3440] p-3">'
-    + '<div class="text-[13px] font-semibold text-[#EAECEF] mb-2">BD 备注</div>'
-    + '<textarea id="bd-note" class="w-full bg-[#2B3139] text-[#EAECEF] text-[12px] rounded-lg p-3 border border-[#2E3440] outline-none resize-none min-h-[100px] placeholder-[#474D57]" placeholder="添加备注...">' + esc(savedNote) + '</textarea>'
-    + '</div>';
-
-  document.getElementById('tab-profile').innerHTML = profileHtml;
-
-  // === INTERACTIVE: BD Note auto-save ===
-  var noteEl = document.getElementById('bd-note');
-  if (noteEl) {
-    noteEl.addEventListener('input', function() {
-      localStorage.setItem(noteKey, noteEl.value);
-    });
-  }
-
-  // BD Tags moved to header — see renderTags() above
+  // 初始化档案 tab
+  (function initProfile() {
+    var nn = localStorage.getItem('nickname_' + uid) || '';
+    var nnVal = document.getElementById('nickname-val');
+    if (nnVal) { nnVal.textContent = nn || '未设置'; nnVal.style.color = nn ? '#EAECEF' : '#474D57'; }
+    var notesEl = document.getElementById('client-notes');
+    if (notesEl) {
+      notesEl.value = localStorage.getItem('notes_' + uid) || '';
+      notesEl.addEventListener('input', function() { localStorage.setItem('notes_' + uid, notesEl.value); });
+    }
+    renderContacts();
+  })();
 
 })();
+
+// === 主动沟通 JS（从 worktree-2 引入）===
+window.openCommForm = function() {
+  document.getElementById('comm-default').style.display = 'none';
+  document.getElementById('comm-form').style.display = 'block';
+  var now = new Date();
+  var pad = function(n) { return n < 10 ? '0' + n : n; };
+  var dt = now.getFullYear() + '-' + pad(now.getMonth()+1) + '-' + pad(now.getDate())
+           + 'T' + pad(now.getHours()) + ':' + pad(now.getMinutes());
+  document.getElementById('comm-occurred-at').value = dt;
+};
+
+window.closeCommForm = function() {
+  document.getElementById('comm-form').style.display = 'none';
+  document.getElementById('comm-default').style.display = 'block';
+};
+
+window.selectPill = function(el, group) {
+  var cls = 'comm-pill-' + group;
+  document.querySelectorAll('.' + cls).forEach(function(p) {
+    p.className = p.className
+      .replace(/bg-\[#F0B90B\]\s*/g, '')
+      .replace(/text-\[#0B0E11\]\s*/g, '')
+      .replace(/font-semibold\s*/g, '')
+      .trim();
+    p.className += ' bg-[#2B3139] text-[#848E9C] border border-[#2E3440]';
+  });
+  el.className = el.className
+    .replace(/bg-\[#2B3139\]\s*/g, '')
+    .replace(/text-\[#848E9C\]\s*/g, '')
+    .replace(/border\s+border-\[#2E3440\]\s*/g, '')
+    .trim();
+  el.className += ' bg-[#F0B90B] text-[#0B0E11] font-semibold';
+};
+
+window.submitComm = function() {
+  var params = new URLSearchParams(location.search);
+  var uid = params.get('uid');
+  var channelEl = document.querySelector('.comm-pill-channel.font-semibold');
+  var channel = channelEl ? channelEl.getAttribute('data-val') : 'Telegram';
+  var resultEl = document.querySelector('.comm-pill-result.font-semibold');
+  var result = resultEl ? resultEl.getAttribute('data-val') : '已联系上';
+  var occurredAt = document.getElementById('comm-occurred-at').value || new Date().toISOString();
+  var summaryEl = document.getElementById('comm-summary');
+  var summary = summaryEl ? summaryEl.value.trim() : '';
+  var text = channel + ' · ' + result;
+  if (summary) text += '：' + summary;
+  var commKey = 'comm_records_' + uid;
+  var records = [];
+  try { records = JSON.parse(sessionStorage.getItem(commKey) || '[]'); } catch(e) {}
+  records.unshift({ date: occurredAt, bd: 'BD', channel: channel, result: result, occurred_at: occurredAt, summary: summary, text: text });
+  sessionStorage.setItem(commKey, JSON.stringify(records));
+  sessionStorage.setItem('last_contact_' + uid, new Date().toISOString());
+  location.reload();
+};
+
+// === 档案 Tab JS ===
+window.editNickname = function() {
+  document.getElementById('nickname-display-row').style.display = 'none';
+  document.getElementById('nickname-edit-row').style.removeProperty('display');
+  var params = new URLSearchParams(location.search);
+  var uid = params.get('uid');
+  var cur = localStorage.getItem('nickname_' + uid) || '';
+  document.getElementById('nickname-input').value = cur;
+  document.getElementById('nickname-input').focus();
+};
+
+window.saveNickname = function() {
+  var params = new URLSearchParams(location.search);
+  var uid = params.get('uid');
+  var val = document.getElementById('nickname-input').value.trim();
+  localStorage.setItem('nickname_' + uid, val);
+  document.getElementById('nickname-val').textContent = val || '未设置';
+  document.getElementById('nickname-val').style.color = val ? '#EAECEF' : '#474D57';
+  document.getElementById('nickname-edit-row').style.display = 'none';
+  document.getElementById('nickname-display-row').style.display = '';
+  var nnSpan = document.getElementById('top-nickname');
+  if (nnSpan) nnSpan.textContent = val;
+};
+
+window.renderContacts = function() {
+  var params = new URLSearchParams(location.search);
+  var uid = params.get('uid');
+  var contacts = [];
+  try { contacts = JSON.parse(localStorage.getItem('contacts_' + uid) || '[]'); } catch(e) {}
+  var list = document.getElementById('contact-list');
+  if (!list) return;
+  if (contacts.length === 0) { list.innerHTML = ''; return; }
+  list.innerHTML = contacts.map(function(c, i) {
+    return '<div class="flex items-center justify-between py-2 border-b border-[#2E3440]">'
+      + '<div class="flex items-center gap-2">'
+      + '<span class="text-[11px] bg-[#2B3139] text-[#848E9C] px-2 py-0.5 rounded-full">' + c.channel + '</span>'
+      + '<span class="text-[12px] text-[#EAECEF]">' + c.value + '</span>'
+      + '</div>'
+      + '<button onclick="deleteContact(' + i + ')" class="text-[#474D57] text-[14px] px-1">×</button>'
+      + '</div>';
+  }).join('');
+};
+
+window.openContactForm = function() {
+  document.getElementById('contact-form').style.display = 'block';
+};
+window.closeContactForm = function() {
+  document.getElementById('contact-form').style.display = 'none';
+  document.getElementById('contact-value').value = '';
+};
+window.updateContactPlaceholder = function() {
+  var ch = document.getElementById('contact-channel').value;
+  var ph = { '电话': '+86 138...', '邮件': 'user@example.com' };
+  document.getElementById('contact-value').placeholder = ph[ch] || '@username';
+};
+window.saveContact = function() {
+  var params = new URLSearchParams(location.search);
+  var uid = params.get('uid');
+  var channel = document.getElementById('contact-channel').value;
+  var value = document.getElementById('contact-value').value.trim();
+  if (!value) return;
+  var contacts = [];
+  try { contacts = JSON.parse(localStorage.getItem('contacts_' + uid) || '[]'); } catch(e) {}
+  contacts.push({ channel: channel, value: value });
+  localStorage.setItem('contacts_' + uid, JSON.stringify(contacts));
+  closeContactForm();
+  renderContacts();
+};
+window.deleteContact = function(idx) {
+  var params = new URLSearchParams(location.search);
+  var uid = params.get('uid');
+  var contacts = [];
+  try { contacts = JSON.parse(localStorage.getItem('contacts_' + uid) || '[]'); } catch(e) {}
+  contacts.splice(idx, 1);
+  localStorage.setItem('contacts_' + uid, JSON.stringify(contacts));
+  renderContacts();
+};
 </script>
 
 </body>
