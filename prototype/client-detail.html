@@ -350,7 +350,7 @@
   var pnlVal = c.clientPnl && c.clientPnl.total7d && c.clientPnl.total7d.value;
   if (pnlVal !== undefined && pnlVal !== null) {
     pnlEl.textContent = fmtUSDT(pnlVal, true);
-    pnlEl.style.color = pnlVal >= 0 ? '#0ECB81' : '#F6465D';
+    pnlEl.style.color = '#F0B90B';
   } else {
     pnlEl.textContent = '--';
     pnlEl.style.color = '#848E9C';
@@ -396,8 +396,8 @@
     return (cl.clientPnl && cl.clientPnl.total7d ? cl.clientPnl.total7d.value : 0) > myPnl;
   }).length + 1;
   if (pnlRank <= 100) {
-    var prc = pnlRank <= 10 ? '#F0B90B' : pnlRank <= 50 ? '#4DA6FF' : '#848E9C';
-    var prb = pnlRank <= 10 ? 'rgba(240,185,11,0.12)' : pnlRank <= 50 ? 'rgba(77,166,255,0.12)' : 'rgba(132,142,156,0.12)';
+    var prc = '#F0B90B';
+    var prb = 'rgba(240,185,11,0.12)';
     sysTags.push({ label: '盈亏 #' + pnlRank, color: prc, bg: prb });
   }
 
@@ -887,7 +887,7 @@
     + '<div id="contact-form" style="display:none" class="mt-3">'
     + '<div class="flex gap-2 mb-2">'
     + '<select id="contact-channel" onchange="updateContactPlaceholder()" class="bg-[#2B3139] text-[#EAECEF] text-[12px] rounded-lg px-3 py-2 border border-[#2E3440] outline-none flex-shrink-0">'
-    + '<option>Telegram</option><option>WhatsApp</option><option>微信</option><option>电话</option><option>邮件</option>'
+    + '<option>Telegram</option><option>WhatsApp</option><option>微信</option><option>Discord</option><option>电话</option><option>邮件</option><option>其他</option>'
     + '</select>'
     + '<input id="contact-value" type="text" class="flex-1 bg-[#2B3139] text-[#EAECEF] text-[12px] rounded-lg px-3 py-2 border border-[#2E3440] outline-none" placeholder="@username" />'
     + '</div>'
@@ -1278,6 +1278,8 @@ window.renderContacts();
       <button class="comm-pill-channel" data-val="电话" onclick="selectPill(this,'channel')" style="flex-shrink:0;border-radius:999px;padding:4px 12px;font-size:12px;background:#2B3139;color:#848E9C;border:1px solid #2E3440;cursor:pointer">电话</button>
       <button class="comm-pill-channel" data-val="线下" onclick="selectPill(this,'channel')" style="flex-shrink:0;border-radius:999px;padding:4px 12px;font-size:12px;background:#2B3139;color:#848E9C;border:1px solid #2E3440;cursor:pointer">线下</button>
       <button class="comm-pill-channel" data-val="邮件" onclick="selectPill(this,'channel')" style="flex-shrink:0;border-radius:999px;padding:4px 12px;font-size:12px;background:#2B3139;color:#848E9C;border:1px solid #2E3440;cursor:pointer">邮件</button>
+      <button class="comm-pill-channel" data-val="Discord" onclick="selectPill(this,'channel')" style="flex-shrink:0;border-radius:999px;padding:4px 12px;font-size:12px;background:#2B3139;color:#848E9C;border:1px solid #2E3440;cursor:pointer">Discord</button>
+      <button class="comm-pill-channel" data-val="其他" onclick="selectPill(this,'channel')" style="flex-shrink:0;border-radius:999px;padding:4px 12px;font-size:12px;background:#2B3139;color:#848E9C;border:1px solid #2E3440;cursor:pointer">其他</button>
     </div>
     <div style="font-size:11px;color:#848E9C;margin-bottom:4px">结果</div>
     <div style="display:flex;gap:8px;overflow-x:auto;padding-bottom:4px;margin-bottom:12px;scrollbar-width:none">
