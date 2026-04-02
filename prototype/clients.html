@@ -62,12 +62,17 @@
   </div>
 
   <!-- Search Bar -->
-  <div class="px-4 pt-3 pb-2">
+  <div class="px-4 pt-3 pb-2 relative z-20">
     <div class="flex items-center bg-[#1E2329] rounded-lg border border-[#2E3440] px-3 py-2">
       <i class="fa-solid fa-magnifying-glass text-[14px] text-[#848E9C] mr-2"></i>
       <input id="search-input" type="text" placeholder="搜索客户名称或UID"
-        class="flex-1 bg-transparent text-[14px] text-[#EAECEF] outline-none placeholder-[#848E9C]" />
+        class="flex-1 bg-transparent text-[14px] text-[#EAECEF] outline-none placeholder-[#848E9C]"
+        oninput="onSearchInput()" />
+      <button id="search-clear" onclick="clearSearch()" class="hidden text-[#848E9C] text-[12px] ml-2 bg-transparent border-0 cursor-pointer">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
     </div>
+    <div id="search-dropdown" class="hidden absolute left-4 right-4 top-full z-40 bg-[#1E2329] rounded-b-lg border border-t-0 border-[#2E3440] max-h-[320px] overflow-y-auto shadow-lg"></div>
   </div>
 
   <!-- Sort Tabs + 方向切换 -->
@@ -358,7 +363,52 @@
     renderList();
   });
 
-  searchInput.addEventListener('input', function() { currentPage = 1; renderList(); });
+  function renderSearchDropdown(query) {
+    var dropdown = document.getElementById('search-dropdown');
+    var clearBtn = document.getElementById('search-clear');
+    var mainContent = document.getElementById('client-list');
+    if (!query) {
+      dropdown.classList.add('hidden');
+      clearBtn.classList.add('hidden');
+      if (mainContent) mainContent.style.display = '';
+      return;
+    }
+    clearBtn.classList.remove('hidden');
+    if (mainContent) mainContent.style.display = 'none';
+    var q = query.toLowerCase();
+    var matches = D.clients.filter(function(c) {
+      return c.name.toLowerCase().indexOf(q) !== -1 || c.uid.toLowerCase().indexOf(q) !== -1;
+    }).slice(0, 20);
+    if (matches.length === 0) {
+      dropdown.innerHTML = '<div class="text-center py-6 text-[13px] text-[#848E9C]">未找到匹配客户</div>';
+    } else {
+      dropdown.innerHTML = matches.map(function(c) {
+        return '<a href="client-detail.html?uid=' + c.uid + '" class="flex items-center justify-between px-4 py-3 border-b border-[#2E3440] last:border-0 active:bg-[#2B3139]" style="text-decoration:none">'
+          + '<div>'
+          +   '<div class="text-[13px] font-medium text-[#EAECEF]">' + c.name + ' <span class="text-[11px] text-[#474D57]">UID ' + c.uid + '</span></div>'
+          +   '<div class="text-[12px] text-[#848E9C] mt-0.5">' + (c.depositDisplay || '') + '</div>'
+          + '</div>'
+          + '<i class="fa-solid fa-chevron-right text-[10px] text-[#474D57]"></i>'
+          + '</a>';
+      }).join('');
+    }
+    dropdown.classList.remove('hidden');
+  }
+
+  window.onSearchInput = function() {
+    var query = searchInput.value.trim();
+    renderSearchDropdown(query);
+  };
+
+  window.clearSearch = function() {
+    searchInput.value = '';
+    renderSearchDropdown('');
+    searchInput.focus();
+  };
+
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') { searchInput.value = ''; renderSearchDropdown(''); }
+  });
 
   // 初始化
   updateTabs();
