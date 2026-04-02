@@ -521,7 +521,7 @@
     var html = '<div class="mx-4 mt-3">';
     // tab 切换
     html += '<div class="flex mb-3 border-b border-[#2E3440]">'
-      + '<button onclick="switchTaskTab(\'active\')" class="flex-1 pb-2 text-[12px] font-medium border-b-2 ' + (!showArchived ? 'text-[#F0B90B] border-[#F0B90B]' : 'text-[#474D57] border-transparent') + '">全部</button>'
+      + '<button onclick="switchTaskTab(\'active\')" class="flex-1 pb-2 text-[12px] font-medium border-b-2 ' + (!showArchived ? 'text-[#F0B90B] border-[#F0B90B]' : 'text-[#474D57] border-transparent') + '">当前</button>'
       + '<button onclick="switchTaskTab(\'archived\')" class="flex-1 pb-2 text-[12px] font-medium border-b-2 ' + (showArchived ? 'text-[#F0B90B] border-[#F0B90B]' : 'text-[#474D57] border-transparent') + '">已归档' + (archived.length > 0 ? ' <span class="text-[10px]">(' + archived.length + ')</span>' : '') + '</button>'
       + '</div>';
     // 列表
