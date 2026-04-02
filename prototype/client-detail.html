@@ -104,7 +104,7 @@
       </div>
 
       <!-- Row 5: Last Contact -->
-      <div id="last-contact-row" class="px-4 pb-3 flex items-center justify-between"></div>
+      <div id="last-contact-row" class="hidden px-4 pb-3 flex items-center justify-between"></div>
       <!-- Row 6: Active Follow-up (hidden when none) -->
       <div id="active-followup-row" class="hidden px-4 pb-3 flex items-center justify-between"></div>
     </div>
@@ -479,23 +479,7 @@
     return { text: d + '天后', color: '#4DA6FF' };
   }
 
-  // Row 5: 上次联系（写入顶部固定头部，不进 eventsHtml）
-  var lastContactEl = document.getElementById('last-contact-row');
-  if (lastContactEl) {
-    if (commRecords.length > 0) {
-      var lc = commRecords[0];
-      var lcText = (lc.channel && lc.result) ? lc.channel + ' · ' + lc.result : (lc.text || '');
-      var lcTime = timeAgo(lc.occurred_at || lc.date) || lc.date || '';
-      lastContactEl.innerHTML = '<span class="text-[11px] text-[#848E9C]">上次联系</span>'
-        + '<span class="text-[12px] flex items-center gap-1.5">'
-        + '<span class="font-semibold" style="color:#F0B90B">' + lcTime + '</span>'
-        + '<span class="text-[#848E9C]">' + lcText + '</span>'
-        + '</span>';
-    } else {
-      lastContactEl.innerHTML = '<span class="text-[11px] text-[#848E9C]">上次联系</span>'
-        + '<span class="text-[12px] text-[#474D57]">暂无记录</span>';
-    }
-  }
+  // 上次联系已隐藏（暂不启用）
 
   // 主动跟进功能已隐藏（暂不启用）
 
