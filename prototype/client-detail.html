@@ -174,6 +174,19 @@
 
 <script src="mock-data.js"></script>
 <script>
+function esc(s) { return String(s).replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
+function timeAgo(isoStr) {
+  if (!isoStr) return '';
+  var now = new Date(), then = new Date(isoStr);
+  if (isNaN(then.getTime())) return '';
+  var diff = Math.floor((now - then) / 1000);
+  if (diff < 3600) return '刚刚';
+  if (diff < 86400) return Math.floor(diff / 3600) + '小时前';
+  var days = Math.floor(diff / 86400);
+  if (days < 7) return days + '天前';
+  if (days < 30) return Math.floor(days / 7) + '周前';
+  return (then.getMonth() + 1) + '月' + then.getDate() + '日';
+}
 (function() {
   var D = window.PROTOTYPE_DATA;
   var params = new URLSearchParams(location.search);
@@ -1188,9 +1201,8 @@ setTimeout(function() { if (typeof renderNotesList === 'function') renderNotesLi
     if (!text) return;
     notes.push({ id: Date.now(), text: text, created_at: new Date().toISOString() });
     localStorage.setItem(notesKey, JSON.stringify(notes));
-    document.getElementById('note-input').value = '';
     renderNotesList();
-    document.getElementById('note-input').focus();
+    closeNote();
   };
 
   // FAB 滚动隐藏
@@ -1335,8 +1347,6 @@ setTimeout(function() { if (typeof renderNotesList === 'function') renderNotesLi
     <textarea id="note-input" rows="3" class="w-full bg-[#2B3139] text-[#EAECEF] text-[13px] rounded-xl px-3 py-2.5 border border-[#2E3440] outline-none placeholder-[#474D57] resize-none focus:border-[#F0B90B]/40" placeholder="输入笔记..."></textarea>
     <button onclick="saveNote()" class="mt-2 w-full h-10 bg-[#F0B90B] text-[#0B0E11] text-[13px] font-bold rounded-xl active:scale-[0.98] transition-transform">保存</button>
   </div>
-  <div class="border-t border-[#2E3440] flex-shrink-0"></div>
-  <div id="notes-list" class="overflow-y-auto flex-1 py-3 pl-8 pr-4"></div>
   <div class="h-[34px] flex-shrink-0"></div>
 </div>
 
