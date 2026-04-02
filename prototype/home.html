@@ -203,7 +203,7 @@
     } else {
       taskPanelHtml = topTasks.map(function(item) {
         var t = item.task, cl = item.client;
-        return '<a href="client-detail.html?uid=' + cl.uid + '" style="display:flex;align-items:flex-start;gap:10px;padding:11px 14px;border-bottom:1px solid #2E3440;text-decoration:none;active:opacity-70">'
+        return '<a href="task-detail.html?uid=' + cl.uid + '&taskId=' + t.id + '" style="display:flex;align-items:flex-start;gap:10px;padding:11px 14px;border-bottom:1px solid #2E3440;text-decoration:none;active:opacity-70">'
           + '<div style="flex:1;min-width:0">'
           + '<div style="font-size:13px;color:#EAECEF;line-height:1.4;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + t.text + '</div>'
           + (function() {
