@@ -708,7 +708,7 @@
     assetsHtml += '<div class="mb-2 last:mb-0">'
       + '<div class="flex items-center justify-between mb-0.5">'
       + '<span class="text-[11px] text-[#EAECEF]">' + item.name + '</span>'
-      + '<span class="text-[11px] text-[#848E9C]">' + item.display + ' <span class="text-[10px]">' + item.pct + '%</span></span>'
+      + '<span class="text-[11px] text-[#848E9C]">' + fmtUSDT(item.value) + ' <span class="text-[10px]">' + item.pct + '%</span></span>'
       + '</div>'
       + '<div class="w-full h-[5px] rounded-full bg-[#2B3139]">'
       + '<div class="h-full rounded-full" style="width:' + Math.max(item.pct, 1) + '%;background:' + barColor + '"></div>'
@@ -732,7 +732,7 @@
     + '<div class="flex items-start justify-between mb-3">'
     + '<div class="text-[13px] font-semibold text-[#EAECEF]">周冲提</div>'
     + '<div class="text-right">'
-    + '<div class="text-[16px] font-bold tabular-nums" style="color:' + netFlowColor + '">' + netFlowSign + fmtFlow(Math.abs(avgNetPerWeek)) + '</div>'
+    + '<div class="text-[16px] font-bold tabular-nums" style="color:' + netFlowColor + '">' + fmtUSDT(avgNetPerWeek, true) + '</div>'
     + '<div class="text-[10px] mt-0.5"><span style="color:' + flowChgColor + '">' + flowChgChar + ' ' + flowChgSign + flowChgPct.toFixed(1) + '%</span> <span class="text-[#474D57]">| </span>均' + fmtAvg(platAvg.depositChg) + '</div>'
     + '</div>'
     + '</div>'
@@ -779,22 +779,20 @@
     + '<div class="flex items-start justify-between mb-3">'
     + '<div class="text-[13px] font-semibold text-[#EAECEF]">月利润贡献</div>'
     + '<div class="text-right">'
-    + '<div class="text-[16px] font-bold tabular-nums" style="color:' + (ncMonthTotal >= 0 ? '#0ECB81' : '#F6465D') + '">' + (ncMonthTotal >= 0 ? '+' : '-') + fmtFlow(Math.abs(ncMonthTotal)) + '</div>'
+    + '<div class="text-[16px] font-bold tabular-nums" style="color:' + (ncMonthTotal >= 0 ? '#0ECB81' : '#F6465D') + '">' + fmtUSDT(ncMonthTotal, true) + '</div>'
     + '<div class="text-[10px] mt-0.5"><span style="color:' + ncWowColor + '">' + ncWowChar + ' ' + nc.wowDisplay + '</span> <span class="text-[#474D57]">| </span>均' + fmtAvg(platAvg.profitChg) + '</div>'
     + '</div>'
     + '</div>'
     + '<div class="h-[1px] bg-[#2E3440] mb-3"></div>';
   ncItems.forEach(function(item) {
     var color = item.isRevenue ? '#0ECB81' : '#F6465D';
-    var s = item.value >= 0 ? '+' : '';
-    var displayVal = s + (Math.abs(item.value) >= 10000 ? (item.value / 10000).toFixed(1) + '万' : Math.round(item.value));
     var barW = ncMax > 0 ? Math.round(Math.abs(item.value) / ncMax * 100) : 0;
     assetsHtml += '<div class="flex items-center gap-2 mb-1.5">'
       + '<span class="w-[52px] text-[10px] text-[#848E9C] flex-shrink-0">' + item.name + '</span>'
       + '<div class="flex-1 h-[4px] rounded-full bg-[#2B3139]">'
       + '<div class="h-full rounded-full" style="width:' + Math.max(barW, 2) + '%;background:' + color + '"></div>'
       + '</div>'
-      + '<span class="text-[10px] font-medium w-[48px] text-right flex-shrink-0" style="color:' + color + '">$ ' + displayVal + '</span>'
+      + '<span class="text-[10px] font-medium w-[48px] text-right flex-shrink-0" style="color:' + color + '">' + fmtUSDT(item.value, true) + '</span>'
       + '</div>';
   });
   assetsHtml += '</div>';
@@ -820,15 +818,14 @@
     + '<div class="flex items-start justify-between mb-3">'
     + '<div class="text-[13px] font-semibold text-[#EAECEF]">月交易盈亏</div>'
     + '<div class="text-right">'
-    + '<div class="text-[16px] font-bold tabular-nums" style="color:' + pnlMonthColor + '">' + (pnlMonthTotal >= 0 ? '+' : '-') + fmtFlow(Math.abs(pnlMonthTotal)) + '</div>'
+    + '<div class="text-[16px] font-bold tabular-nums" style="color:' + pnlMonthColor + '">' + fmtUSDT(pnlMonthTotal, true) + '</div>'
     + '<div class="text-[10px] mt-0.5"><span style="color:' + pnlChgColor + '">' + pnlChgChar + ' ' + pnlChgSign + pnlChgPct.toFixed(1) + '%</span> <span class="text-[#474D57]">| </span>均' + fmtAvg(platAvg.pnlChg) + '</div>'
     + '</div>'
     + '</div>'
     + '<div class="h-[1px] bg-[#2E3440] mb-3"></div>';
   pnlItems.forEach(function(item) {
     var barW = pnlMax > 0 ? Math.round(Math.abs(item.value) / pnlMax * 100) : 0;
-    var s = item.value >= 0 ? '+' : '-';
-    var displayAmt = s + fmtFlow(Math.abs(item.value));
+    var displayAmt = fmtUSDT(item.value, true);
     assetsHtml += '<div>'
       + '<div class="flex items-center justify-between mb-0.5">'
       + '<span class="text-[11px] text-[#EAECEF]">' + item.name + '</span>'
