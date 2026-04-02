@@ -447,13 +447,9 @@
 
   var deltaEl = document.getElementById('deposit-delta');
   var deltaColor = isUp ? '#0ECB81' : '#F6465D';
-  var deltaBg = isUp ? 'rgba(14,203,129,0.12)' : 'rgba(246,70,93,0.12)';
-  var arrowChar = isUp ? '▲' : '▼';
-  var signStr = isUp ? '+' : '';
 
-  deltaEl.innerHTML = '<span class="text-[13px]" style="color:' + deltaColor + '">' + arrowChar + '</span>'
-    + '<span class="text-[16px] font-bold tabular-nums ml-0.5" style="color:' + deltaColor + '">' + signStr + fmtFlow(Math.round(deltaAbs)) + '</span>'
-    + '<span class="text-[11px] tabular-nums ml-2" style="color:' + deltaColor + ';opacity:0.55">' + signStr + deltaPct.toFixed(1) + '%</span>';
+  deltaEl.innerHTML = '<span class="text-[15px] font-bold tabular-nums" style="color:' + deltaColor + '">' + fmtUSDT(deltaAbs, true) + '</span>'
+    + '<span class="text-[11px] tabular-nums ml-1.5" style="color:' + deltaColor + ';opacity:0.7">' + (isUp ? '+' : '') + deltaPct.toFixed(1) + '%</span>';
 
   // Memo（DOM 元素已移除，跳过）
 
@@ -691,7 +687,7 @@
   });
 
   var distChgColor = deltaPct >= 0 ? '#0ECB81' : '#F6465D';
-  var distChgChar = deltaPct >= 0 ? '▲' : '▼';
+  var distChgChar = deltaPct >= 0 ? '+' : '-';
   var distChgSign = deltaPct >= 0 ? '+' : '';
 
   assetsHtml += '<div class="mx-4 mt-3 bg-[#1E2329] rounded-xl border border-[#2E3440] p-3">'
@@ -704,7 +700,7 @@
     + '</div>'
     + '<div class="h-[1px] bg-[#2E3440] mb-3"></div>';
   ddItems.forEach(function(item, idx) {
-    var barColor = idx < 2 ? '#F0B90B' : '#4DA6FF';
+    var barColor = '#F0B90B';
     assetsHtml += '<div class="mb-2 last:mb-0">'
       + '<div class="flex items-center justify-between mb-0.5">'
       + '<span class="text-[11px] text-[#EAECEF]">' + item.name + '</span>'
@@ -725,7 +721,7 @@
   var thisWeekNet = thisWeekFlow.inflow - thisWeekFlow.outflow;
   var flowChgPct = Math.abs(avgNetPerWeek) > 0 ? ((thisWeekNet - avgNetPerWeek) / Math.abs(avgNetPerWeek) * 100) : 0;
   var flowChgColor = flowChgPct >= 0 ? '#0ECB81' : '#F6465D';
-  var flowChgChar = flowChgPct >= 0 ? '▲' : '▼';
+  var flowChgChar = flowChgPct >= 0 ? '+' : '-';
   var flowChgSign = flowChgPct >= 0 ? '+' : '';
 
   assetsHtml += '<div class="mx-4 mt-3 bg-[#1E2329] rounded-xl border border-[#2E3440] p-3">'
@@ -773,7 +769,7 @@
   ];
   var ncMax = Math.max.apply(null, ncItems.map(function(i) { return Math.abs(i.value); }));
   var ncMonthTotal = Math.round(nc.total * monthMult);
-  var ncWowChar = nc.wow >= 0 ? '▲' : '▼';
+  var ncWowChar = nc.wow >= 0 ? '+' : '-';
 
   assetsHtml += '<div class="mx-4 mt-3 bg-[#1E2329] rounded-xl border border-[#2E3440] p-3">'
     + '<div class="flex items-start justify-between mb-3">'
@@ -810,7 +806,7 @@
   var pnlAvgVal = pnl.weeklyAvg8w.value * monthMult;
   var pnlChgPct = Math.abs(pnlAvgVal) > 0 ? ((pnlMonthTotal - pnlAvgVal) / Math.abs(pnlAvgVal) * 100) : 0;
   var pnlChgColor = pnlChgPct >= 0 ? '#0ECB81' : '#F6465D';
-  var pnlChgChar = pnlChgPct >= 0 ? '▲' : '▼';
+  var pnlChgChar = pnlChgPct >= 0 ? '+' : '-';
   var pnlChgSign = pnlChgPct >= 0 ? '+' : '';
   var pnlMonthColor = pnlMonthTotal >= 0 ? '#0ECB81' : '#F6465D';
 
