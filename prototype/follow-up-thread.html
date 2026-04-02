@@ -55,9 +55,9 @@
   <div id="client-card" class="mx-3 mt-2 mb-2 bg-[#1E2329] rounded-2xl border border-[#2E3440] overflow-hidden">
     <!-- Row 1: Identity -->
     <div class="flex items-center gap-3 px-4 pt-3 pb-2">
-      <div class="w-8 h-8 flex items-center justify-center rounded-full bg-[#2B3139] flex-shrink-0">
+      <button id="fav-btn" onclick="toggleFav()" class="w-8 h-8 flex items-center justify-center rounded-full bg-[#2B3139] flex-shrink-0 active:scale-95 transition-transform">
         <i id="fav-icon" class="fa-regular fa-star text-[14px] text-[#474D57]"></i>
-      </div>
+      </button>
       <div class="flex-1 min-w-0">
         <div class="flex items-center gap-2">
           <button id="uid-btn" onclick="copyUid()" class="flex items-center gap-1.5 active:opacity-70">
@@ -295,11 +295,20 @@
     }
 
     // Fav
-    var isFav = localStorage.getItem('fav_' + c.uid) === '1';
-    var favIcon = document.getElementById('fav-icon');
-    favIcon.className = isFav
-      ? 'fa-solid fa-star text-[13px] text-[#F0B90B]'
-      : 'fa-regular fa-star text-[13px] text-[#474D57]';
+    var favKey = 'fav_' + c.uid;
+    var isFav = localStorage.getItem(favKey) === '1';
+    function renderFav() {
+      var icon = document.getElementById('fav-icon');
+      icon.className = isFav
+        ? 'fa-solid fa-star text-[14px] text-[#F0B90B]'
+        : 'fa-regular fa-star text-[14px] text-[#474D57]';
+    }
+    renderFav();
+    window.toggleFav = function() {
+      isFav = !isFav;
+      localStorage.setItem(favKey, isFav ? '1' : '0');
+      renderFav();
+    };
 
     // sysTags 完整版
     var sysTags = [];
