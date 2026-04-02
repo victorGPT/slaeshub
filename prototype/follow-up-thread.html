@@ -120,11 +120,6 @@
       <button onclick="cancelEdit()" class="text-[12px] text-[#848E9C] active:opacity-70">取消</button>
     </div>
     <div id="event-meta" class="text-[11px] text-[#474D57] mb-4"></div>
-    <!-- 活动记录 -->
-    <div class="border-t border-[#2E3440] pt-3 mb-4">
-      <div class="text-[12px] text-[#848E9C] mb-2">活动记录</div>
-      <div id="activities-list" class="border-l-2 border-[#2E3440] pl-3 space-y-3"></div>
-    </div>
     <!-- 归档 + 删除 -->
     <div class="flex gap-2">
       <button onclick="archiveEvent()" style="flex:1;height:44px;background:#2B3139;color:#EAECEF;font-size:14px;font-weight:500;border:1px solid #2E3440;border-radius:10px;cursor:pointer">归档</button>
@@ -328,49 +323,10 @@
 
   // ── ② Task info ──
   document.getElementById('event-goal').textContent = ev.title || '—';
-  var firstAct = (ev.activities || []).find(function(a) { return a.type === '创建'; });
-  var metaParts = [];
-  if (firstAct && firstAct.note) metaParts.push(firstAct.note);
   if (ev.created_at) {
     var cd = new Date(ev.created_at);
-    metaParts.push(cd.getFullYear() + '-' + ('0'+(cd.getMonth()+1)).slice(-2) + '-' + ('0'+cd.getDate()).slice(-2));
+    document.getElementById('event-meta').textContent = '创建于 ' + (cd.getMonth()+1) + '月' + cd.getDate() + '日 ' + ('0'+cd.getHours()).slice(-2) + ':' + ('0'+cd.getMinutes()).slice(-2);
   }
-  document.getElementById('event-meta').textContent = metaParts.join(' · ');
-
-  var TYPE_META = {
-    '创建': { color: '#F0B90B', label: '创建' },
-    '跟进': { color: '#4DA6FF', label: '跟进' },
-    '结束': { color: '#0ECB81', label: '结束' },
-  };
-
-  function renderActivities() {
-    var list = document.getElementById('activities-list');
-    var acts = ev.activities || [];
-    if (acts.length === 0) {
-      list.innerHTML = '<div class="text-[12px] text-[#474D57] py-1 pb-2">暂无活动记录</div>';
-      return;
-    }
-    list.innerHTML = acts.slice().reverse().map(function(a) {
-      var meta = TYPE_META[a.type];
-      var dotColor = meta ? meta.color : '#4DA6FF';
-      var typeTag = meta ? '<span style="color:' + meta.color + ';font-weight:600">[' + meta.label + ']</span> · ' : '';
-      var timeLabel = timeAgo(a.occurred_at) || (a.occurred_at || '').slice(0, 10) || '';
-      var body;
-      if (a.type === '创建' || a.type === '跟进' || a.type === '结束') {
-        var outcomeMap = { '成功': '#0ECB81', '失败': '#F6465D', '其他': '#848E9C' };
-        var outcomeTag = (a.type === '结束' && a.outcome) ? '<span style="color:' + (outcomeMap[a.outcome] || '#848E9C') + ';font-weight:600;margin-right:4px">' + esc(a.outcome) + '</span>' : '';
-        body = outcomeTag + esc(a.note || (a.type === '创建' ? '创建了跟进任务' : ''));
-      } else {
-        body = (a.channel || '') + (a.result ? ' · ' + a.result : '') + (a.summary ? '：' + esc(a.summary) : '');
-      }
-      return '<div class="relative pb-1">'
-        + '<div class="absolute -left-[17px] top-[5px] w-2 h-2 rounded-full" style="background:' + dotColor + '"></div>'
-        + '<div class="text-[10px] text-[#848E9C]">' + typeTag + timeLabel + ' · BD</div>'
-        + (body ? '<div class="text-[12px] text-[#EAECEF] mt-0.5">' + body + '</div>' : '')
-        + '</div>';
-    }).join('');
-  }
-  renderActivities();
 
   function saveStatus(status) {
     var all = [];
