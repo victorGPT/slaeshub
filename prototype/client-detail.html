@@ -71,20 +71,19 @@
     <div class="mx-3 mt-2 mb-2 bg-[#1E2329] rounded-2xl border border-[#2E3440] overflow-hidden">
       <!-- Row 1: Identity -->
       <div class="flex items-center gap-3 px-4 pt-3 pb-2">
-        <button id="fav-btn" onclick="toggleFav()" class="w-8 h-8 flex items-center justify-center rounded-full bg-[#2B3139] flex-shrink-0 active:scale-95 transition-transform">
-          <i id="fav-icon" class="fa-regular fa-star text-[14px] text-[#474D57]"></i>
-        </button>
         <div class="flex-1 min-w-0">
           <div class="flex items-center gap-2">
             <button id="uid-copy-btn" onclick="copyUid()" class="flex items-center gap-1.5 active:opacity-70">
               <span id="client-uid" class="text-[16px] font-bold text-[#EAECEF] tabular-nums tracking-wide"></span>
               <i class="fa-regular fa-copy text-[10px] text-[#474D57]"></i>
             </button>
-            <!-- top-nickname: 从 worktree-1 引入 -->
             <span id="top-nickname" class="text-[12px] text-[#848E9C]"></span>
           </div>
         </div>
         <span id="from-badge" class="text-[9px] px-1.5 py-[1px] rounded hidden flex-shrink-0"></span>
+        <button id="fav-btn" onclick="toggleFav()" class="w-8 h-8 flex items-center justify-center rounded-full bg-[#2B3139] flex-shrink-0 active:scale-95 transition-transform">
+          <i id="fav-icon" class="fa-regular fa-star text-[14px] text-[#474D57]"></i>
+        </button>
       </div>
 
       <!-- Row 2: Tags -->
