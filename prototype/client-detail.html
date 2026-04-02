@@ -497,51 +497,7 @@
     }
   }
 
-  // Row 6: 活跃跟进（写入顶部 header）
-  var fuRow = document.getElementById('active-followup-row');
-  if (fuRow && clientActiveEvents.length > 0) {
-    var fuLatest = clientActiveEvents[0];
-    var fuDL = fuDaysLabel(fuLatest.follow_up_at);
-    fuRow.classList.remove('hidden');
-    fuRow.innerHTML = '<span class="text-[11px] text-[#848E9C]">待跟进</span>'
-      + '<span class="text-[12px] flex items-center gap-2">'
-      + '<span class="font-semibold" style="color:' + fuDL.color + '">' + fuDL.text + '</span>'
-      + (fuLatest.follow_up_note ? '<span class="text-[#848E9C] max-w-[120px] truncate">' + esc(fuLatest.follow_up_note) + '</span>' : '')
-      + '<button onclick="window.markEventDone(\'' + fuLatest.id + '\')" class="flex-shrink-0 text-[11px] px-2.5 py-0.5 rounded-full border active:opacity-70" style="color:#4DA6FF;border-color:#4DA6FF">完成</button>'
-      + '</span>';
-  }
-
-  // 当前事件区块（始终渲染）
-  eventsHtml += '<div class="mx-4 mt-3 bg-[#1E2329] rounded-xl border border-[#2E3440] p-3">'
-    + '<div class="text-[13px] font-semibold text-[#EAECEF] mb-2">当前事件</div>';
-  if (clientAllEvents.length === 0) {
-    eventsHtml += '<div class="text-[12px] text-[#474D57] py-2 text-center">暂无跟进事件</div>';
-  } else {
-    eventsHtml += '<div class="space-y-2">';
-    clientAllEvents.forEach(function(ev) {
-      var isDone = ev.status === '已结束';
-      var stateBg, stateColor, borderColor;
-      if (ev.status === '跟进中')      { stateBg = 'rgba(77,166,255,0.10)';  stateColor = '#4DA6FF'; borderColor = 'rgba(77,166,255,0.25)'; }
-      else                             { stateBg = 'rgba(14,203,129,0.08)';  stateColor = '#0ECB81'; borderColor = 'rgba(14,203,129,0.20)'; }
-      var titleText = ev.title ? esc(ev.title) : '—';
-      var acts = ev.activities || [];
-      var actCount = acts.length;
-      var lastAct = acts[acts.length - 1];
-      var lastNote = lastAct ? esc(lastAct.note || '') : '';
-      var createdAct = acts.find(function(a){ return a.type === '创建'; });
-      var metaLine = createdAct ? esc(createdAct.note || '') : '';
-      eventsHtml += '<a href="follow-up-thread.html?fuId=' + ev.id + '" class="block active:opacity-70 rounded-xl p-3" style="background:' + stateBg + ';border:1px solid ' + borderColor + '">'
-        + '<div class="flex items-center justify-between mb-1.5">'
-        + '<span class="text-[10px] px-2 py-0.5 rounded-full font-medium" style="color:' + stateColor + ';background:' + borderColor + '">' + ev.status + '</span>'
-        + '<span class="text-[10px] text-[#848E9C]">' + actCount + ' 条记录</span>'
-        + '</div>'
-        + '<div class="text-[13px] font-semibold mb-1" style="color:' + (isDone ? '#848E9C' : '#EAECEF') + '">' + titleText + '</div>'
-        + (metaLine ? '<div class="text-[11px] text-[#848E9C] truncate">' + metaLine + '</div>' : '')
-        + '</a>';
-    });
-    eventsHtml += '</div>';
-  }
-  eventsHtml += '</div>';
+  // 主动跟进功能已隐藏（暂不启用）
 
   eventsHtml += '<div class="mx-4 mt-3 mb-2 bg-[#1E2329] rounded-xl border border-[#2E3440] p-3">'
     + '<div class="text-[13px] font-semibold text-[#EAECEF] mb-2">跟进记录</div>'
@@ -560,10 +516,7 @@
   }
   eventsHtml += '</div></div>';
 
-  // Module: 主动沟通表单（从 worktree-2 引入）
-  eventsHtml += '<div class="mx-4 mb-6">'
-    + '<button onclick="openCommForm()" class="w-full h-[44px] border border-[#2E3440] text-[#848E9C] font-medium text-[14px] rounded-lg active:opacity-80 transition">+ 记录主动沟通</button>'
-    + '</div>';
+  // 主动沟通按钮已隐藏（暂不启用）
 
   document.getElementById('tab-events').innerHTML = eventsHtml;
 
