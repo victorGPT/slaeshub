@@ -133,50 +133,6 @@
   </div>
 
 </div>
-
-<!-- ③ 底部操作栏 -->
-<div id="action-bar" class="fixed-bar bg-[#0B0E11] border-t border-[#2E3440] z-30 px-4 pt-3" style="padding-bottom:calc(0.75rem + env(safe-area-inset-bottom))">
-</div>
-
-<!-- 已结束 Bottom Sheet -->
-<div id="done-sheet" class="fixed inset-0 z-50 hidden items-end justify-center" onclick="if(event.target===this)closeDoneSheet()">
-  <div class="absolute inset-0 bg-black/60"></div>
-  <div class="relative w-[393px] bg-[#1E2329] rounded-t-2xl p-5" style="padding-bottom:calc(1.25rem + env(safe-area-inset-bottom))">
-    <div class="flex items-center justify-between mb-4">
-      <span class="text-[15px] font-semibold text-[#EAECEF]">完成任务</span>
-      <button onclick="closeDoneSheet()" class="w-7 h-7 flex items-center justify-center text-[#848E9C] text-[18px]">✕</button>
-    </div>
-    <div class="text-[11px] text-[#848E9C] mb-2">结果</div>
-    <div class="flex gap-2 mb-4">
-      <button id="done-outcome-success" onclick="selectOutcome('成功')" class="done-outcome-btn flex-1 py-2 rounded-xl text-[13px] border border-[#0ECB81] text-[#0ECB81] active:opacity-70" style="font-weight:600">成功</button>
-      <button id="done-outcome-fail" onclick="selectOutcome('失败')" class="done-outcome-btn flex-1 py-2 rounded-xl text-[13px] border border-[#2E3440] text-[#848E9C] active:opacity-70">失败</button>
-      <button id="done-outcome-other" onclick="selectOutcome('其他')" class="done-outcome-btn flex-1 py-2 rounded-xl text-[13px] border border-[#2E3440] text-[#848E9C] active:opacity-70">其他</button>
-    </div>
-    <div class="text-[11px] text-[#848E9C] mb-1">本次内容 + 说明（选填）</div>
-    <textarea id="done-note" rows="3" class="w-full bg-[#2B3139] text-[#EAECEF] text-[13px] rounded-lg px-3 py-2.5 border border-[#2E3440] outline-none placeholder-[#474D57] resize-none mb-4" placeholder="记录这次做了什么、结果如何..."></textarea>
-    <button onclick="confirmDone()" class="w-full py-3 rounded-xl text-[14px] font-semibold bg-[#0ECB81] text-[#0B0E11] active:opacity-80">确认完成</button>
-  </div>
-</div>
-
-<!-- 继续跟进 Bottom Sheet -->
-<div id="followup-sheet" class="fixed inset-0 z-50 hidden items-end justify-center" onclick="if(event.target===this)closeFollowupSheet()">
-  <div class="absolute inset-0 bg-black/60"></div>
-  <div class="relative w-[393px] bg-[#1E2329] rounded-t-2xl p-5" style="padding-bottom:calc(1.25rem + env(safe-area-inset-bottom))">
-    <div class="flex items-center justify-between mb-4">
-      <span class="text-[15px] font-semibold text-[#EAECEF]">继续跟进</span>
-      <button onclick="closeFollowupSheet()" class="w-7 h-7 flex items-center justify-center text-[#848E9C] text-[18px]">✕</button>
-    </div>
-    <div class="text-[11px] text-[#848E9C] mb-1">本次跟进内容（选填）</div>
-    <textarea id="followup-note" rows="3" class="w-full bg-[#2B3139] text-[#EAECEF] text-[13px] rounded-lg px-3 py-2.5 border border-[#2E3440] outline-none placeholder-[#474D57] resize-none mb-4" placeholder="简要说明这次做了什么..."></textarea>
-    <div class="text-[11px] text-[#848E9C] mb-2">下次提醒</div>
-    <div class="flex gap-2 mb-3">
-      <button id="fu-days-3" onclick="selectFollowupDays(3)" class="fu-days-btn flex-1 py-2 rounded-xl text-[13px] border border-[#F0B90B] text-[#F0B90B] active:opacity-70">3天后</button>
-      <button id="fu-days-7" onclick="selectFollowupDays(7)" class="fu-days-btn flex-1 py-2 rounded-xl text-[13px] border border-[#2E3440] text-[#848E9C] active:opacity-70">1周后</button>
-      <button id="fu-days-0" onclick="selectFollowupDays(0)" class="fu-days-btn flex-1 py-2 rounded-xl text-[13px] border border-[#2E3440] text-[#848E9C] active:opacity-70">自定义</button>
-    </div>
-    <input type="date" id="followup-custom-date" class="hidden w-full bg-[#2B3139] text-[#EAECEF] text-[12px] rounded-lg px-3 py-2 border border-[#2E3440] outline-none mb-3" style="color-scheme:dark">
-    <button onclick="confirmFollowup()" class="w-full py-3 rounded-xl text-[14px] font-semibold bg-[#F0B90B] text-[#0B0E11] active:opacity-80">确认</button>
-  </div>
 </div>
 
 <script src="mock-data.js"></script>
@@ -416,109 +372,7 @@
   }
   renderActivities();
 
-  // ── 继续跟进 sheet ──
-  var _selectedFollowupDays = 3;
-
-  window.openFollowupSheet = function() {
-    document.getElementById('followup-note').value = '';
-    document.getElementById('followup-custom-date').classList.add('hidden');
-    _selectedFollowupDays = 3;
-    document.querySelectorAll('.fu-days-btn').forEach(function(b) {
-      b.style.borderColor = '#2E3440'; b.style.color = '#848E9C';
-    });
-    var d3 = document.getElementById('fu-days-3');
-    d3.style.borderColor = '#F0B90B'; d3.style.color = '#F0B90B';
-    var sheet = document.getElementById('followup-sheet');
-    sheet.classList.remove('hidden'); sheet.classList.add('flex');
-  };
-
-  window.closeFollowupSheet = function() {
-    var sheet = document.getElementById('followup-sheet');
-    sheet.classList.add('hidden'); sheet.classList.remove('flex');
-  };
-
-  window.selectFollowupDays = function(days) {
-    _selectedFollowupDays = days;
-    document.querySelectorAll('.fu-days-btn').forEach(function(b) {
-      b.style.borderColor = '#2E3440'; b.style.color = '#848E9C';
-    });
-    var btnId = days === 3 ? 'fu-days-3' : days === 7 ? 'fu-days-7' : 'fu-days-0';
-    var activeBtn = document.getElementById(btnId);
-    activeBtn.style.borderColor = '#F0B90B'; activeBtn.style.color = '#F0B90B';
-    var customEl = document.getElementById('followup-custom-date');
-    if (days === 0) {
-      customEl.classList.remove('hidden');
-      var d = new Date(); d.setDate(d.getDate() + 3);
-      customEl.value = d.getFullYear() + '-' + pad(d.getMonth()+1) + '-' + pad(d.getDate());
-    } else {
-      customEl.classList.add('hidden');
-    }
-  };
-
-  window.confirmFollowup = function() {
-    var note = document.getElementById('followup-note').value.trim();
-    var fuAt;
-    if (_selectedFollowupDays === 0) {
-      fuAt = document.getElementById('followup-custom-date').value;
-    } else {
-      var d = new Date(); d.setDate(d.getDate() + _selectedFollowupDays);
-      fuAt = d.getFullYear() + '-' + pad(d.getMonth()+1) + '-' + pad(d.getDate());
-    }
-    var activity = { type: '跟进', note: note, occurred_at: new Date().toISOString() };
-
-    var all = [];
-    try { all = JSON.parse(sessionStorage.getItem('follow_up_events') || '[]'); } catch(e) {}
-    all.forEach(function(e) {
-      if (e.id === ev.id) {
-        if (!e.activities) e.activities = [];
-        e.activities.push(activity);
-        if (fuAt) e.follow_up_at = fuAt;
-        e.status = '跟进中';
-        ev.activities = e.activities;
-        ev.follow_up_at = e.follow_up_at;
-        ev.status = e.status;
-      }
-    });
-    sessionStorage.setItem('follow_up_events', JSON.stringify(all));
-
-    // Write to comm_records for timeline sync
-    var commKey = 'comm_records_' + ev.client_uid;
-    var crs = [];
-    try { crs = JSON.parse(sessionStorage.getItem(commKey) || '[]'); } catch(e) {}
-    crs.unshift({
-      occurred_at: activity.occurred_at, date: activity.occurred_at, bd: 'BD',
-      title: ev.title, text: note || '跟进',
-      event_id: ev.id, event_title: ev.title || ''
-    });
-    sessionStorage.setItem(commKey, JSON.stringify(crs));
-
-    closeFollowupSheet();
-    renderActivities();
-    var ss2 = STATUS_STYLE['跟进中'];
-    badge.textContent = '跟进中'; badge.style.background = ss2.bg; badge.style.color = ss2.color;
-    renderActionBar();
-  };
-
-  // ── ③ Action bar ──
-  function renderActionBar() {
-    var bar = document.getElementById('action-bar');
-    if (ev.status === '已结束') {
-      var outcomeColor = { '成功': '#0ECB81', '失败': '#F6465D', '其他': '#848E9C' };
-      var oc = ev.done_outcome || '';
-      var ocHtml = oc ? '<span style="color:' + (outcomeColor[oc] || '#848E9C') + ';font-weight:600;margin-right:4px">' + oc + '</span>' : '';
-      bar.innerHTML = '<div class="text-center text-[12px] text-[#474D57] py-2">'
-        + '任务完成 · ' + ocHtml + (ev.done_note ? '"' + esc(ev.done_note) + '"' : '')
-        + '</div>';
-      return;
-    }
-    bar.innerHTML = '<div class="flex gap-2">'
-      + '<button onclick="openFollowupSheet()" class="flex-1 py-3 rounded-xl text-[13px] font-semibold bg-[#4DA6FF] text-[#0B0E11] active:opacity-80">继续跟进</button>'
-      + '<button onclick="openDoneSheet()" class="flex-1 py-3 rounded-xl text-[13px] font-semibold bg-[#0ECB81] text-[#0B0E11] active:opacity-80">完成任务</button>'
-      + '</div>';
-  }
-  renderActionBar();
-
-  function saveStatus(status, doneNote) {
+  function saveStatus(status) {
     var all = [];
     try { all = JSON.parse(sessionStorage.getItem('follow_up_events') || '[]'); } catch(e) {}
     all.forEach(function(e) {
@@ -531,77 +385,6 @@
     });
     sessionStorage.setItem('follow_up_events', JSON.stringify(all));
   }
-
-  window.setFollowing = function() {
-    saveStatus('跟进中');
-    var ss2 = STATUS_STYLE['跟进中'];
-    badge.textContent = '跟进中';
-    badge.style.background = ss2.bg;
-    badge.style.color = ss2.color;
-    renderActionBar();
-  };
-
-
-  var _doneOutcome = '成功';
-  window.selectOutcome = function(val) {
-    _doneOutcome = val;
-    var colors = { '成功': '#0ECB81', '失败': '#F6465D', '其他': '#848E9C' };
-    var ids = { '成功': 'done-outcome-success', '失败': 'done-outcome-fail', '其他': 'done-outcome-other' };
-    ['成功','失败','其他'].forEach(function(v) {
-      var btn = document.getElementById(ids[v]);
-      if (!btn) return;
-      if (v === val) { btn.style.borderColor = colors[v]; btn.style.color = colors[v]; btn.style.fontWeight = '600'; }
-      else { btn.style.borderColor = '#2E3440'; btn.style.color = '#848E9C'; btn.style.fontWeight = '400'; }
-    });
-  };
-  window.openDoneSheet = function() {
-    _doneOutcome = '成功';
-    document.getElementById('done-note').value = '';
-    window.selectOutcome('成功');
-    var sheet = document.getElementById('done-sheet');
-    sheet.classList.remove('hidden');
-    sheet.classList.add('flex');
-  };
-  window.closeDoneSheet = function() {
-    var sheet = document.getElementById('done-sheet');
-    sheet.classList.add('hidden');
-    sheet.classList.remove('flex');
-  };
-  window.confirmDone = function() {
-    var note = document.getElementById('done-note').value.trim();
-    var outcome = _doneOutcome;
-    var doneAct = { type: '结束', outcome: outcome, note: note, occurred_at: new Date().toISOString() };
-    var all = [];
-    try { all = JSON.parse(sessionStorage.getItem('follow_up_events') || '[]'); } catch(e) {}
-    all.forEach(function(e) {
-      if (e.id === ev.id) {
-        if (!e.activities) e.activities = [];
-        e.activities.push(doneAct);
-        e.status = '已结束'; e.done_note = note; e.done_outcome = outcome; e.done_at = doneAct.occurred_at;
-        ev.activities = e.activities; ev.status = e.status;
-        ev.done_note = note; ev.done_outcome = outcome;
-      }
-    });
-    sessionStorage.setItem('follow_up_events', JSON.stringify(all));
-
-    // Write to comm_records timeline
-    var commKey = 'comm_records_' + ev.client_uid;
-    var crs = [];
-    try { crs = JSON.parse(sessionStorage.getItem(commKey) || '[]'); } catch(e) {}
-    var bodyText = '[结束] ' + outcome + (note ? ' · ' + note : '');
-    crs.unshift({
-      occurred_at: doneAct.occurred_at, date: doneAct.occurred_at, bd: 'BD',
-      title: ev.title, text: bodyText,
-      event_id: ev.id, event_title: ev.title || ''
-    });
-    sessionStorage.setItem(commKey, JSON.stringify(crs));
-
-    closeDoneSheet();
-    var ss2 = STATUS_STYLE['已结束'];
-    badge.textContent = '已结束'; badge.style.background = ss2.bg; badge.style.color = ss2.color;
-    renderActivities();
-    renderActionBar();
-  };
 
   // ── 编辑标题 ──
   window.enterEditMode = function() {
@@ -634,7 +417,6 @@
     saveStatus('已结束');
     var ss2 = STATUS_STYLE['已结束'];
     badge.textContent = '已结束'; badge.style.background = ss2.bg; badge.style.color = ss2.color;
-    renderActionBar();
   };
 
   window.openDeleteSheet = function() {
