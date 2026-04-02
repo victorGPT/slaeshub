@@ -132,7 +132,7 @@
         <div class="tab-line mt-1 mx-auto w-10 rounded-full"></div>
       </button>
       <button class="tab-btn flex-1 py-2 text-center text-[13px] font-medium text-[#848E9C]" data-tab="events">
-        <span>事件</span>
+        <span>近期事件</span>
         <div class="tab-line mt-1 mx-auto w-10 rounded-full"></div>
       </button>
       <button class="tab-btn flex-1 py-2 text-center text-[13px] font-medium text-[#848E9C]" data-tab="profile">
@@ -581,7 +581,7 @@ function timeAgo(isoStr) {
       + '</div>';
     // 列表
     if (list.length === 0) {
-      html += '<div class="text-[12px] text-[#474D57] text-center py-4">' + (showArchived ? '暂无归档任务' : '暂无任务') + '</div>';
+      html += '<div class="text-[12px] text-[#474D57] text-center py-4">' + (showArchived ? '暂无归档事件' : '暂无事件') + '</div>';
     } else {
       list.forEach(function(t) { html += taskCard(t, showArchived); });
     }
