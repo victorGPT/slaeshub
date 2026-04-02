@@ -303,9 +303,10 @@ function timeAgo(isoStr) {
   var nnSpan = document.getElementById('top-nickname');
   if (nnSpan) nnSpan.textContent = localStorage.getItem('nickname_' + uid) || '';
 
-  // Favorite
-  var favKey = 'fav_' + c.uid;
-  var isFav = localStorage.getItem(favKey) === '1';
+  // Favorite（与列表页共用 slaeshub_favs 数组）
+  var FAV_KEY = 'slaeshub_favs';
+  function getFavs() { try { return JSON.parse(localStorage.getItem(FAV_KEY) || '[]'); } catch(e) { return []; } }
+  var isFav = getFavs().indexOf(c.uid) !== -1;
   function renderFav() {
     var icon = document.getElementById('fav-icon');
     if (isFav) {
@@ -317,7 +318,10 @@ function timeAgo(isoStr) {
   renderFav();
   window.toggleFav = function() {
     isFav = !isFav;
-    localStorage.setItem(favKey, isFav ? '1' : '0');
+    var arr = getFavs();
+    if (isFav) { if (arr.indexOf(c.uid) === -1) arr.push(c.uid); }
+    else { arr = arr.filter(function(id) { return id !== c.uid; }); }
+    localStorage.setItem(FAV_KEY, JSON.stringify(arr));
     renderFav();
   };
 
