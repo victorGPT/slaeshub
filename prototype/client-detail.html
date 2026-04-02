@@ -99,7 +99,9 @@
           <div id="deposit-delta" class="mb-1 flex items-center gap-1">
             <!-- filled by JS: arrow icon + percentage + absolute change -->
           </div>
-          <div id="deposit-rank" class="mb-1 text-[10px] text-[#848E9C] tabular-nums"></div>
+        </div>
+        <div class="flex justify-end mt-0.5">
+          <span id="data-refresh-time" class="text-[9px] text-[#474D57]"></span>
         </div>
       </div>
 
@@ -301,6 +303,14 @@
 
   // Deposit hero
   document.getElementById('deposit-hero').textContent = c.thisWeekDisplay || '-';
+
+  // 刷新时间
+  var refreshEl = document.getElementById('data-refresh-time');
+  if (refreshEl && D.generatedAt) {
+    var d = new Date(D.generatedAt);
+    var mo = d.getMonth() + 1, dd2 = d.getDate();
+    refreshEl.textContent = '数据截至 ' + mo + '月' + dd2 + '日';
+  }
 
   // commRecords: 需在 tags 之前定义（活跃度标签会用到）
   var commRecords = [];
