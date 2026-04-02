@@ -44,7 +44,7 @@
   </style>
 </head>
 <body class="bg-[#0B0E11] text-[#EAECEF]">
-<div class="w-full flex flex-col" style="min-height:100dvh">
+<div class="w-full">
 
   <!-- iOS Status Bar -->
   <div class="h-[44px] bg-[#0B0E11] flex items-center justify-between px-6 flex-shrink-0">
@@ -77,10 +77,10 @@
   </div>
 
   <!-- Scrollable Content -->
-  <div class="overflow-y-auto flex-1 py-2" id="main-content"></div>
+  <div class="py-2 pb-[calc(56px+env(safe-area-inset-bottom,34px)+8px)]" id="main-content"></div>
 
   <!-- Bottom Tab Bar -->
-  <div class="flex-shrink-0 bg-[#0B0E11] border-t border-[#2E3440]">
+  <div class="fixed-bar bg-[#0B0E11] border-t border-[#2E3440] z-30">
     <div class="flex items-center justify-around h-[56px]">
       <a href="home.html" class="flex flex-col items-center gap-0.5">
         <i class="fa-solid fa-house text-[18px] text-[#F0B90B]"></i>
