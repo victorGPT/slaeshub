@@ -120,31 +120,31 @@
 
   // ---------- 排序 ----------
 
-  // 1. 资沉前五：fMean 降序
+  // 1. 资沉前十：fMean 降序
   var top5Deposit = D.clients.slice().sort(function(a, b) {
     return (b.fMean || 0) - (a.fMean || 0);
-  }).slice(0, 5);
+  }).slice(0, 10);
 
-  // 2. 本周入金前五：本周净变化 > 0，降序
+  // 2. 本周入金前十：本周净变化 > 0，降序
   var top5Inflow = D.clients.slice().filter(function(c) {
     return weekDelta(c) > 0;
   }).sort(function(a, b) {
     return weekDelta(b) - weekDelta(a);
-  }).slice(0, 5);
+  }).slice(0, 10);
 
-  // 3. 本周出金前五：本周净变化 < 0，绝对值降序
+  // 3. 本周出金前十：本周净变化 < 0，绝对值降序
   var top5Outflow = D.clients.slice().filter(function(c) {
     return weekDelta(c) < 0;
   }).sort(function(a, b) {
     return Math.abs(weekDelta(b)) - Math.abs(weekDelta(a));
-  }).slice(0, 5);
+  }).slice(0, 10);
 
-  // 4. 利润贡献前五：netContribution.total 降序
+  // 4. 利润贡献前十：netContribution.total 降序
   var top5Profit = D.clients.slice().sort(function(a, b) {
     var va = (a.netContribution && a.netContribution.total) ? a.netContribution.total : 0;
     var vb = (b.netContribution && b.netContribution.total) ? b.netContribution.total : 0;
     return vb - va;
-  }).slice(0, 5);
+  }).slice(0, 10);
 
   // ---------- Render helpers ----------
 
@@ -194,13 +194,15 @@
         + '</div>';
     }).join('');
 
-    return '<div style="background:#1E2329;border-radius:12px;border:1px solid #2E3440;margin:0 16px 12px;overflow:hidden">'
-      + '<div style="display:flex;align-items:center;padding:12px 16px;border-bottom:1px solid #2E3440">'
-      +   '<i class="fa-solid fa-sparkles" style="color:#F0B90B;font-size:14px;margin-right:8px"></i>'
-      +   '<span style="font-size:14px;font-weight:700;color:#EAECEF;flex:1">智能推荐</span>'
+    return '<div style="margin:0 16px 12px">'
+      + '<div style="display:flex;align-items:center;gap:6px;margin-bottom:8px">'
+      +   '<i class="fa-solid fa-sparkles" style="color:#F0B90B;font-size:12px"></i>'
+      +   '<span style="font-size:13px;font-weight:600;color:#848E9C">智能推荐</span>'
       + '</div>'
+      + '<div style="background:#1E2329;border-radius:12px;border:1px solid #2E3440;overflow:hidden">'
       + '<div style="display:flex;border-bottom:1px solid #2E3440">' + tabBar + '</div>'
       + panels
+      + '</div>'
       + '</div>';
   }
 
@@ -252,14 +254,17 @@
       + '<i class="fa-solid fa-chevron-right" style="font-size:10px"></i>'
       + '</a>';
 
-    return '<div style="background:#1E2329;border-radius:12px;border:1px solid #2E3440;margin:0 16px 12px;overflow:hidden">'
-      + '<div style="display:flex;align-items:center;padding:12px 16px;border-bottom:1px solid #2E3440">'
-      +   '<i class="fa-solid fa-chart-bar" style="color:#F0B90B;font-size:14px;margin-right:8px"></i>'
-      +   '<span style="font-size:14px;font-weight:700;color:#EAECEF">用户排名</span>'
+    return '<div style="margin:0 16px 12px">'
+      + '<div style="display:flex;align-items:center;gap:6px;margin-bottom:8px">'
+      +   '<i class="fa-solid fa-chart-bar" style="color:#F0B90B;font-size:12px"></i>'
+      +   '<span style="font-size:13px;font-weight:600;color:#848E9C;flex:1">用户排名</span>'
+      +   '<span id="refresh-time" style="font-size:11px;color:#474D57">--:--</span>'
       + '</div>'
+      + '<div style="background:#1E2329;border-radius:12px;border:1px solid #2E3440;overflow:hidden">'
       + '<div style="display:flex;border-bottom:1px solid #2E3440">' + tabBar + '</div>'
       + panels
       + moreFooter
+      + '</div>'
       + '</div>';
   }
 
@@ -372,6 +377,12 @@
   document.getElementById('search-input').value = '';
   document.getElementById('search-dropdown').classList.add('hidden');
   document.getElementById('search-clear').classList.add('hidden');
+
+  // 刷新时间
+  var now = new Date();
+  var hh = String(now.getHours()).padStart(2, '0');
+  var mm = String(now.getMinutes()).padStart(2, '0');
+  document.getElementById('refresh-time').textContent = hh + ':' + mm;
 
 })();
 </script>
