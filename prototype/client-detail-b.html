@@ -1,0 +1,1233 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>客户详情 - 方案B</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            'hub-bg':         '#0B0E11',
+            'hub-card':       '#1E2329',
+            'hub-card-hover': '#2B3139',
+            'hub-border':     '#2E3440',
+            'hub-gold':       '#F0B90B',
+            'hub-gold-text':  '#F8D33A',
+            'hub-red':        '#F6465D',
+            'hub-green':      '#0ECB81',
+            'hub-blue':       '#4DA6FF',
+            'hub-text':       '#EAECEF',
+            'hub-muted':      '#848E9C',
+            'hub-disabled':   '#474D57',
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body { font-family: 'PingFang SC', 'Helvetica Neue', sans-serif; background: #0B0E11; }
+    ::-webkit-scrollbar { display: none; }
+    html { background: #000; }
+    html, body { width: 393px !important; margin: 0 auto !important; overflow-x: hidden; }
+    .fixed-bar { position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); width: 393px; }
+    .tab-btn { transition: color 0.15s; }
+    .tab-btn.active { color: #F0B90B; }
+    .tab-btn.active .tab-line { background: #F0B90B; }
+    .tab-line { height: 2px; background: transparent; transition: background 0.15s; }
+  </style>
+</head>
+<body class="bg-[#0B0E11] text-[#EAECEF]">
+<div class="w-full">
+
+  <!-- iOS Status Bar -->
+  <div class="h-[44px] bg-[#0B0E11] flex items-center justify-between px-6 flex-shrink-0">
+    <span class="text-[12px] font-semibold text-[#EAECEF]">9:41</span>
+    <div class="flex items-center gap-1.5 text-[#EAECEF]">
+      <i class="fa-solid fa-signal text-[12px]"></i>
+      <i class="fa-solid fa-wifi text-[12px]"></i>
+      <i class="fa-solid fa-battery-full text-[13px]"></i>
+    </div>
+  </div>
+
+  <!-- Top Nav -->
+  <div id="sticky-top" class="sticky top-0 z-20 bg-[#0B0E11]">
+    <!-- Nav bar -->
+    <div class="h-[44px] border-b border-[#2E3440] flex items-center justify-between px-4">
+      <button onclick="history.back()" class="w-8 h-8 flex items-center justify-center">
+        <i class="fa-solid fa-chevron-left text-[16px] text-[#EAECEF]"></i>
+      </button>
+      <h1 class="text-[16px] font-bold text-[#EAECEF]">客户详情</h1>
+      <div class="w-8"></div>
+    </div>
+
+    <!-- Unified Header Card -->
+    <div class="mx-3 mt-2 mb-2 bg-[#1E2329] rounded-2xl border border-[#2E3440] overflow-hidden">
+      <!-- Row 1: Identity -->
+      <div class="flex items-center gap-3 px-4 pt-3 pb-2">
+        <button id="fav-btn" onclick="toggleFav()" class="w-8 h-8 flex items-center justify-center rounded-full bg-[#2B3139] flex-shrink-0 active:scale-95 transition-transform">
+          <i id="fav-icon" class="fa-regular fa-star text-[14px] text-[#474D57]"></i>
+        </button>
+        <div class="flex-1 min-w-0">
+          <div class="flex items-center gap-2">
+            <button id="uid-copy-btn" onclick="copyUid()" class="flex items-center gap-1.5 active:opacity-70">
+              <span id="client-uid" class="text-[16px] font-bold text-[#EAECEF] tabular-nums tracking-wide"></span>
+              <i class="fa-regular fa-copy text-[10px] text-[#474D57]"></i>
+            </button>
+            <span id="top-nickname" class="text-[12px] text-[#848E9C]"></span>
+          </div>
+        </div>
+        <span id="from-badge" class="text-[9px] px-1.5 py-[1px] rounded hidden flex-shrink-0"></span>
+      </div>
+
+      <!-- Row 2: Tags -->
+      <div id="tags-row" class="px-4 pb-2 flex flex-wrap gap-1"></div>
+
+      <!-- Row 3: Deposit Hero + 8w Delta -->
+      <div class="px-4 pb-2">
+        <div class="flex items-end gap-3">
+          <!-- Current deposit -->
+          <div>
+            <div class="text-[10px] text-[#474D57] mb-0.5">7日资沉</div>
+            <span id="deposit-hero" class="text-[28px] font-bold text-[#EAECEF] tracking-tight leading-none"></span>
+          </div>
+          <!-- 8w comparison: delta badge -->
+          <div id="deposit-delta" class="mb-1 flex items-center gap-1">
+            <!-- filled by JS: arrow icon + percentage + absolute change -->
+          </div>
+          <!-- Rank badge -->
+          <div id="deposit-rank" class="mb-1 text-[10px] text-[#848E9C] tabular-nums"></div>
+        </div>
+      </div>
+
+      <!-- Row 5: Last Contact -->
+      <div id="last-contact-row" class="px-4 pb-3 flex items-center justify-between"></div>
+      <!-- Row 6: Active Follow-up (hidden when none) -->
+      <div id="active-followup-row" class="hidden px-4 pb-3 flex items-center justify-between"></div>
+    </div>
+
+    <!-- Tab Bar -->
+    <div class="flex border-b border-[#2E3440]">
+      <button class="tab-btn active flex-1 py-2 text-center text-[13px] font-medium text-[#848E9C]" data-tab="events">
+        <span>事件</span>
+        <div class="tab-line mt-1 mx-auto w-10 rounded-full"></div>
+      </button>
+      <button class="tab-btn flex-1 py-2 text-center text-[13px] font-medium text-[#848E9C]" data-tab="assets">
+        <span>资产</span>
+        <div class="tab-line mt-1 mx-auto w-10 rounded-full"></div>
+      </button>
+      <button class="tab-btn flex-1 py-2 text-center text-[13px] font-medium text-[#848E9C]" data-tab="profile">
+        <span>档案</span>
+        <div class="tab-line mt-1 mx-auto w-10 rounded-full"></div>
+      </button>
+    </div>
+  </div>
+
+  <!-- Tab Content -->
+  <div id="tab-events" class="tab-content pb-[120px]"></div>
+  <div id="tab-assets" class="tab-content pb-[120px] hidden"></div>
+  <div id="tab-profile" class="tab-content pb-[120px] hidden"></div>
+
+</div>
+
+<!-- Bottom Tab Bar -->
+<div class="fixed-bar bg-[#0B0E11] border-t border-[#2E3440] z-30">
+  <div class="flex items-center justify-around h-[56px]">
+    <a href="home.html" class="flex flex-col items-center gap-0.5">
+      <i class="fa-solid fa-house text-[18px] text-[#848E9C]"></i>
+      <span class="text-[10px] text-[#848E9C]">首页</span>
+    </a>
+    <a href="clients.html" class="flex flex-col items-center gap-0.5">
+      <i class="fa-solid fa-users text-[18px] text-[#848E9C]"></i>
+      <span class="text-[10px] text-[#848E9C]">客户</span>
+    </a>
+    <a href="events.html" class="flex flex-col items-center gap-0.5">
+      <i class="fa-solid fa-bell text-[18px] text-[#848E9C]"></i>
+      <span class="text-[10px] text-[#848E9C]">事件</span>
+    </a>
+    <a href="profile.html" class="flex flex-col items-center gap-0.5">
+      <i class="fa-solid fa-user text-[18px] text-[#848E9C]"></i>
+      <span class="text-[10px] text-[#848E9C]">我的</span>
+    </a>
+  </div>
+  <div class="h-[34px]"></div>
+</div>
+
+<script src="mock-data.js"></script>
+<script>
+(function() {
+  var D = window.PROTOTYPE_DATA;
+  var params = new URLSearchParams(location.search);
+  var uid = params.get('uid');
+  var fromParam = params.get('from');
+  var c = uid ? D.clientsById[uid] : null;
+
+  if (!c) {
+    document.getElementById('tab-events').innerHTML =
+      '<div class="mx-4 mt-8 bg-[#1E2329] rounded-xl border border-[#2E3440] p-6 text-center text-[#848E9C]">未找到客户数据</div>';
+    return;
+  }
+
+  function esc(s) { return String(s).replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
+
+  function timeAgo(isoStr) {
+    if (!isoStr) return '';
+    var now = new Date();
+    var then = new Date(isoStr);
+    if (isNaN(then.getTime())) return '';
+    var diff = Math.floor((now - then) / 1000);
+    if (diff < 3600) return '刚刚';
+    if (diff < 86400) return Math.floor(diff / 3600) + '小时前';
+    var days = Math.floor(diff / 86400);
+    if (days < 7) return days + '天前';
+    if (days < 30) return Math.floor(days / 7) + '周前';
+    return (then.getMonth() + 1) + '月' + then.getDate() + '日';
+  }
+
+  // --- Platform averages (across all clients) ---
+  var allClients = D.clients;
+  var platAvg = { depositChg: 0, flowNetChg: 0, profitChg: 0, pnlChg: 0 };
+  var platCounts = { depositChg: 0, flowNetChg: 0, profitChg: 0, pnlChg: 0 };
+
+  allClients.forEach(function(cl) {
+    var w = cl.weeks;
+    var thisW = w[w.length - 1];
+    var avg8 = 0;
+    for (var j = 0; j < w.length - 1; j++) avg8 += w[j];
+    avg8 = avg8 / (w.length - 1);
+    if (avg8 > 0) { platAvg.depositChg += (thisW - avg8) / avg8; platCounts.depositChg++; }
+
+    var nc = cl.netContribution;
+    if (nc && nc.total !== undefined) {
+      if (nc.wow !== undefined) { platAvg.profitChg += nc.wow; platCounts.profitChg++; }
+    }
+
+    var pnl = cl.clientPnl;
+    if (pnl && pnl.weeklyAvg8w && Math.abs(pnl.weeklyAvg8w.value) > 0) {
+      var pnlRate = (pnl.total7d.value - pnl.weeklyAvg8w.value) / Math.abs(pnl.weeklyAvg8w.value);
+      platAvg.pnlChg += pnlRate;
+      platCounts.pnlChg++;
+    }
+  });
+
+  platAvg.depositChg = platCounts.depositChg > 0 ? (platAvg.depositChg / platCounts.depositChg * 100) : 0;
+  platAvg.profitChg = platCounts.profitChg > 0 ? (platAvg.profitChg / platCounts.profitChg * 100) : 0;
+  platAvg.pnlChg = platCounts.pnlChg > 0 ? (platAvg.pnlChg / platCounts.pnlChg * 100) : 0;
+
+  function fmtAvg(v) {
+    var s = v >= 0 ? '+' : '';
+    var col = v >= 0 ? '#0ECB81' : '#F6465D';
+    return '<span style="color:' + col + '">' + s + v.toFixed(1) + '%</span>';
+  }
+
+  // --- Seeded random ---
+  function seededRandom(seed) {
+    var x = Math.sin(seed) * 10000;
+    return x - Math.floor(x);
+  }
+
+  // --- Flow data ---
+  var flowWeeks = [];
+  var seedBase = parseInt(c.uid, 10) || 1;
+  for (var i = 1; i < c.weeks.length; i++) {
+    var delta = c.weeks[i] - c.weeks[i - 1];
+    var r = seededRandom(seedBase + i);
+    var inflow, outflow;
+    if (delta > 0) {
+      inflow = delta * (1.2 + r * 0.6);
+      outflow = inflow - delta;
+    } else if (delta < 0) {
+      outflow = Math.abs(delta) * (1.2 + r * 0.6);
+      inflow = outflow - Math.abs(delta);
+    } else {
+      inflow = c.fMean * (0.01 + r * 0.04);
+      outflow = inflow * (0.95 + seededRandom(seedBase + i + 100) * 0.1);
+    }
+    flowWeeks.push({ inflow: Math.round(inflow), outflow: Math.round(outflow) });
+  }
+
+  var thisWeekFlow = flowWeeks[flowWeeks.length - 1];
+  var baselineWeeks = flowWeeks.slice(0, -1);
+
+  function fmtFlow(v) {
+    var abs = Math.abs(v);
+    if (abs >= 10000) return '$' + Math.round(abs / 10000) + '万';
+    if (abs >= 1000) return '$' + (abs / 1000).toFixed(1) + '千';
+    return '$' + Math.round(abs);
+  }
+
+  // === HEADER CARD ===
+  document.getElementById('client-uid').textContent = c.uid;
+
+  var nnSpan = document.getElementById('top-nickname');
+  if (nnSpan) nnSpan.textContent = localStorage.getItem('nickname_' + uid) || '';
+
+  // Favorite
+  var favKey = 'fav_' + c.uid;
+  var isFav = localStorage.getItem(favKey) === '1';
+  function renderFav() {
+    var icon = document.getElementById('fav-icon');
+    if (isFav) {
+      icon.className = 'fa-solid fa-star text-[14px] text-[#F0B90B]';
+    } else {
+      icon.className = 'fa-regular fa-star text-[14px] text-[#474D57]';
+    }
+  }
+  renderFav();
+  window.toggleFav = function() {
+    isFav = !isFav;
+    localStorage.setItem(favKey, isFav ? '1' : '0');
+    renderFav();
+  };
+
+  // From badge
+  var fromMap = {
+    'event': { label: '事件', bg: 'rgba(77,166,255,0.12)', color: '#4DA6FF' },
+    'clients': { label: '列表', bg: 'rgba(132,142,156,0.1)', color: '#848E9C' },
+    'search': { label: '搜索', bg: 'rgba(132,142,156,0.1)', color: '#848E9C' }
+  };
+  if (fromParam && fromMap[fromParam]) {
+    var fb = document.getElementById('from-badge');
+    fb.textContent = fromMap[fromParam].label;
+    fb.style.background = fromMap[fromParam].bg;
+    fb.style.color = fromMap[fromParam].color;
+    fb.classList.remove('hidden');
+  }
+
+  // Deposit hero
+  document.getElementById('deposit-hero').textContent = c.thisWeekDisplay || '-';
+
+  // Asset Rank
+  var allDeposits = allClients.map(function(cl) { return cl.fMean; }).sort(function(a,b){return b-a;});
+  var rankIdx = allDeposits.findIndex(function(v) { return v <= c.fMean; });
+  var rankNum = rankIdx >= 0 ? rankIdx + 1 : allDeposits.length;
+  var totalClients = allDeposits.length;
+  var rankEl = document.getElementById('deposit-rank');
+  if (rankEl) {
+    rankEl.textContent = '#' + rankNum + ' / ' + totalClients;
+  }
+
+  // --- System Tags ---
+  var sysTags = [];
+
+  var dd = c.depositDist;
+  var ddTotal = (dd.futures||0) + (dd.leverage||0) + (dd.mini||0) + (dd.savings||0) + (dd.card||0) + (dd.cloud||0) + (dd.spot||0);
+  if (ddTotal > 0) {
+    var derivRatio = ((dd.futures||0) + (dd.leverage||0) + (dd.mini||0)) / ddTotal;
+    var safeRatio = ((dd.savings||0) + (dd.cloud||0)) / ddTotal;
+    var cardRatio = (dd.card||0) / ddTotal;
+    if (derivRatio > 0.5) sysTags.push({ label: '衍生品偏好高', color: '#F6465D', bg: 'rgba(246,70,93,0.12)' });
+    else if (safeRatio > 0.5) sysTags.push({ label: '理财偏好高', color: '#0ECB81', bg: 'rgba(14,203,129,0.12)' });
+    else if (cardRatio > 0.3) sysTags.push({ label: '消费型', color: '#4DA6FF', bg: 'rgba(77,166,255,0.12)' });
+    else sysTags.push({ label: '多元化', color: '#F0B90B', bg: 'rgba(240,185,11,0.12)' });
+  }
+
+  var allProfits = allClients.map(function(cl) { return cl.netContribution ? cl.netContribution.total : 0; }).sort(function(a,b){return b-a;});
+  var top20Idx = Math.floor(allProfits.length * 0.2);
+  if (c.netContribution && c.netContribution.total >= allProfits[top20Idx]) {
+    sysTags.push({ label: '高利润贡献', color: '#F0B90B', bg: 'rgba(240,185,11,0.12)' });
+  }
+  var top20DepIdx = Math.floor(allDeposits.length * 0.2);
+  if (c.fMean >= allDeposits[top20DepIdx]) {
+    sysTags.push({ label: '大客户', color: '#F0B90B', bg: 'rgba(240,185,11,0.12)' });
+  }
+
+  var manualTagKey = 'bd_tags_' + c.uid;
+  var manualTags = [];
+  try { manualTags = JSON.parse(localStorage.getItem(manualTagKey) || '[]'); } catch(e) {}
+
+  // Notes storage init
+  var notesKey = 'notes_' + uid;
+  var notes = [];
+  try { notes = JSON.parse(localStorage.getItem(notesKey) || '[]'); } catch(e) {}
+
+  // Follow-up records (needed for activity tag)
+  var commRecords = [];
+  try { commRecords = JSON.parse(sessionStorage.getItem('comm_records_' + uid) || '[]'); } catch(e) {}
+
+  // 活跃度标签
+  var activityTag = null;
+  var lastContactDate = null;
+  if (c.lastContact) {
+    lastContactDate = new Date(c.lastContact);
+  } else if (commRecords.length > 0) {
+    var latestRecord = commRecords.reduce(function(a, b) {
+      return new Date(a.occurred_at || a.date || 0) > new Date(b.occurred_at || b.date || 0) ? a : b;
+    });
+    lastContactDate = new Date(latestRecord.occurred_at || latestRecord.date || 0);
+  }
+  if (lastContactDate && !isNaN(lastContactDate.getTime())) {
+    var daysSince = Math.floor((new Date() - lastContactDate) / 86400000);
+    if (daysSince <= 7) activityTag = { label: '7天内活跃', color: '#0ECB81', bg: 'rgba(14,203,129,0.12)' };
+    else if (daysSince <= 30) activityTag = { label: '近期活跃', color: '#4DA6FF', bg: 'rgba(77,166,255,0.12)' };
+    else activityTag = { label: '30天未联系', color: '#F6465D', bg: 'rgba(246,70,93,0.12)' };
+    if (activityTag) sysTags.push(activityTag);
+  }
+
+  function renderTags() {
+    var tagsHtml = '';
+    sysTags.forEach(function(t) {
+      tagsHtml += '<span class="text-[9px] px-1.5 py-[2px] rounded border font-medium" style="color:' + t.color + ';border-color:' + t.color + '30;background:' + t.bg + '">' + t.label + '</span>';
+    });
+    manualTags.forEach(function(t, i) {
+      tagsHtml += '<span class="text-[9px] px-1.5 py-[2px] rounded bg-[#2B3139] text-[#EAECEF] inline-flex items-center gap-1">'
+        + esc(t)
+        + '<i class="fa-solid fa-xmark text-[7px] text-[#474D57] cursor-pointer hover:text-[#F6465D]" onclick="removeTag(' + i + ')"></i>'
+        + '</span>';
+    });
+    tagsHtml += '<span class="text-[9px] px-1.5 py-[2px] rounded border border-dashed border-[#474D57] text-[#474D57] cursor-pointer" onclick="addTag()">+ 标签</span>';
+    document.getElementById('tags-row').innerHTML = tagsHtml;
+  }
+
+  window.removeTag = function(idx) {
+    manualTags.splice(idx, 1);
+    localStorage.setItem(manualTagKey, JSON.stringify(manualTags));
+    renderTags();
+  };
+
+  window.addTag = function() {
+    var tag = prompt('输入标签名');
+    if (tag && tag.trim()) {
+      manualTags.push(tag.trim());
+      localStorage.setItem(manualTagKey, JSON.stringify(manualTags));
+      renderTags();
+    }
+  };
+
+  renderTags();
+
+  // Delta: this week vs 8w avg
+  var thisWeekVal = c.weeks[c.weeks.length - 1];
+  var avgVal = c.fMean;
+  var deltaAbs = thisWeekVal - avgVal;
+  var deltaPct = avgVal > 0 ? ((thisWeekVal - avgVal) / avgVal * 100) : 0;
+  var isUp = deltaAbs >= 0;
+
+  var deltaEl = document.getElementById('deposit-delta');
+  var deltaColor = isUp ? '#0ECB81' : '#F6465D';
+  var deltaBg = isUp ? 'rgba(14,203,129,0.12)' : 'rgba(246,70,93,0.12)';
+  var arrowChar = isUp ? '▲' : '▼';
+  var signStr = isUp ? '+' : '';
+
+  deltaEl.innerHTML = '<div class="flex items-center gap-1 px-1.5 py-0.5 rounded" style="background:' + deltaBg + '">'
+    + '<span class="text-[11px]" style="color:' + deltaColor + '">' + arrowChar + '</span>'
+    + '<span class="text-[12px] font-bold tabular-nums" style="color:' + deltaColor + '">' + signStr + deltaPct.toFixed(1) + '%</span>'
+    + '<span class="text-[10px] text-[#474D57] mx-0.5">|</span>'
+    + '<span class="text-[10px]">均</span>' + fmtAvg(platAvg.depositChg)
+    + '</div>'
+    + '<span class="text-[10px] tabular-nums" style="color:' + deltaColor + '">' + signStr + fmtFlow(Math.round(deltaAbs)) + '</span>';
+
+  // UID copy
+  window.copyUid = function() {
+    navigator.clipboard.writeText(c.uid).then(function() {
+      var btn = document.getElementById('uid-copy-btn');
+      var icon = btn.querySelector('i');
+      icon.className = 'fa-solid fa-check text-[9px] text-[#0ECB81]';
+      setTimeout(function() { icon.className = 'fa-regular fa-copy text-[9px] text-[#848E9C]'; }, 1200);
+    });
+  };
+
+  // === TAB SWITCHING ===
+  var tabBtns = document.querySelectorAll('.tab-btn');
+  var tabPanels = document.querySelectorAll('.tab-content');
+  tabBtns.forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      var target = btn.getAttribute('data-tab');
+      tabBtns.forEach(function(b) { b.classList.remove('active'); });
+      btn.classList.add('active');
+      tabPanels.forEach(function(p) { p.classList.add('hidden'); });
+      document.getElementById('tab-' + target).classList.remove('hidden');
+    });
+  });
+
+  // === TAB 1: EVENTS ===
+  var eventsHtml = '';
+
+  // 按 occurred_at 降序排列（最新在前）
+  var sortedRecords = commRecords.slice().sort(function(a, b) {
+    return new Date(b.occurred_at || b.date || 0) - new Date(a.occurred_at || a.date || 0);
+  });
+
+  // 构建 event status 查询 map
+  var fuEventsMap = {};
+  try {
+    JSON.parse(sessionStorage.getItem('follow_up_events') || '[]').forEach(function(e) { fuEventsMap[e.id] = e; });
+  } catch(e) {}
+
+  var statusBadgeColors = { '跟进中': '#4DA6FF', '已结束': '#0ECB81' };
+
+  // 主动沟通记录转时间线条目
+  var commFollowups = sortedRecords.map(function(r) {
+    var dateLabel = r.occurred_at || r.date || '';
+    var displayDate = timeAgo(dateLabel) || dateLabel;
+    var text = r.text || ((r.channel || '') + (r.result ? ' · ' + r.result : '') + (r.summary ? '：' + r.summary : ''));
+    var tagHtml = '';
+    if (r.event_id && r.event_title) {
+      var evStatus = (fuEventsMap[r.event_id] || {}).status || '';
+      var sColor = statusBadgeColors[evStatus] || '#848E9C';
+      var statusSpan = evStatus ? '<span style="color:' + sColor + ';margin-left:3px;font-size:9px">' + evStatus + '</span>' : '';
+      tagHtml = '<a href="follow-up-thread.html?fuId=' + r.event_id + '" class="inline-flex items-center text-[10px] px-1.5 py-0.5 rounded mr-1 active:opacity-70" style="background:rgba(77,166,255,0.12);color:#4DA6FF">' + esc(r.event_title) + statusSpan + '</a>';
+    } else if (r.title) {
+      tagHtml = '<span class="inline-block text-[10px] px-1.5 py-0.5 rounded mr-1" style="background:rgba(132,142,156,0.15);color:#848E9C">' + esc(r.title) + '</span>';
+    }
+    return { date: displayDate, bd: r.bd || 'BD', text: text, tagHtml: tagHtml };
+  });
+
+  var allFollowups = commFollowups;
+
+  // 读取全局跟进事件
+  var allFollowUpEvents = [];
+  try { allFollowUpEvents = JSON.parse(sessionStorage.getItem('follow_up_events') || '[]'); } catch(e) {}
+  var clientActiveEvents = allFollowUpEvents.filter(function(e) {
+    return e.client_uid === uid && e.status !== '已结束';
+  });
+  var clientAllEvents = allFollowUpEvents.filter(function(e) {
+    return e.client_uid === uid;
+  });
+  var todayStr = new Date().toISOString().split('T')[0];
+
+  function fuDaysLabel(fuAt) {
+    var d = Math.round((new Date(fuAt) - new Date(todayStr)) / 86400000);
+    if (d < 0) return { text: '逾期' + Math.abs(d) + '天', color: '#F6465D' };
+    if (d === 0) return { text: '今天', color: '#F0B90B' };
+    if (d === 1) return { text: '明天', color: '#F0B90B' };
+    return { text: d + '天后', color: '#4DA6FF' };
+  }
+
+  // Row 5: 上次联系
+  var lastContactEl = document.getElementById('last-contact-row');
+  if (lastContactEl) {
+    if (commRecords.length > 0) {
+      var lc = commRecords[0];
+      var lcText = (lc.channel && lc.result) ? lc.channel + ' · ' + lc.result : (lc.text || '');
+      var lcTime = timeAgo(lc.occurred_at || lc.date) || lc.date || '';
+      lastContactEl.innerHTML = '<span class="text-[11px] text-[#848E9C]">上次联系</span>'
+        + '<span class="text-[12px] flex items-center gap-1.5">'
+        + '<span class="font-semibold" style="color:#F0B90B">' + lcTime + '</span>'
+        + '<span class="text-[#848E9C]">' + lcText + '</span>'
+        + '</span>';
+    } else {
+      lastContactEl.innerHTML = '<span class="text-[11px] text-[#848E9C]">上次联系</span>'
+        + '<span class="text-[12px] text-[#474D57]">暂无记录</span>';
+    }
+  }
+
+  // Row 6: 活跃跟进
+  var fuRow = document.getElementById('active-followup-row');
+  if (fuRow && clientActiveEvents.length > 0) {
+    var fuLatest = clientActiveEvents[0];
+    var fuDL = fuDaysLabel(fuLatest.follow_up_at);
+    fuRow.classList.remove('hidden');
+    fuRow.innerHTML = '<span class="text-[11px] text-[#848E9C]">待跟进</span>'
+      + '<span class="text-[12px] flex items-center gap-2">'
+      + '<span class="font-semibold" style="color:' + fuDL.color + '">' + fuDL.text + '</span>'
+      + (fuLatest.follow_up_note ? '<span class="text-[#848E9C] max-w-[120px] truncate">' + esc(fuLatest.follow_up_note) + '</span>' : '')
+      + '<button onclick="window.markEventDone(\'' + fuLatest.id + '\')" class="flex-shrink-0 text-[11px] px-2.5 py-0.5 rounded-full border active:opacity-70" style="color:#4DA6FF;border-color:#4DA6FF">完成</button>'
+      + '</span>';
+  }
+
+  // 当前事件区块（始终渲染）
+  eventsHtml += '<div class="mx-4 mt-3 bg-[#1E2329] rounded-xl border border-[#2E3440] p-3">'
+    + '<div class="text-[13px] font-semibold text-[#EAECEF] mb-2">当前事件</div>';
+  if (clientAllEvents.length === 0) {
+    eventsHtml += '<div class="text-[12px] text-[#474D57] py-2 text-center">暂无跟进事件</div>';
+  } else {
+    eventsHtml += '<div class="space-y-2">';
+    clientAllEvents.forEach(function(ev) {
+      var isDone = ev.status === '已结束';
+      var stateBg, stateColor, borderColor;
+      if (ev.status === '跟进中')      { stateBg = 'rgba(77,166,255,0.10)';  stateColor = '#4DA6FF'; borderColor = 'rgba(77,166,255,0.25)'; }
+      else                             { stateBg = 'rgba(14,203,129,0.08)';  stateColor = '#0ECB81'; borderColor = 'rgba(14,203,129,0.20)'; }
+      var titleText = ev.title ? esc(ev.title) : '—';
+      var acts = ev.activities || [];
+      var actCount = acts.length;
+      var lastAct = acts[acts.length - 1];
+      var lastNote = lastAct ? esc(lastAct.note || '') : '';
+      var createdAct = acts.find(function(a){ return a.type === '创建'; });
+      var metaLine = createdAct ? esc(createdAct.note || '') : '';
+      eventsHtml += '<a href="follow-up-thread.html?fuId=' + ev.id + '" class="block active:opacity-70 rounded-xl p-3" style="background:' + stateBg + ';border:1px solid ' + borderColor + '">'
+        + '<div class="flex items-center justify-between mb-1.5">'
+        + '<span class="text-[10px] px-2 py-0.5 rounded-full font-medium" style="color:' + stateColor + ';background:' + borderColor + '">' + ev.status + '</span>'
+        + '<span class="text-[10px] text-[#848E9C]">' + actCount + ' 条记录</span>'
+        + '</div>'
+        + '<div class="text-[13px] font-semibold mb-1" style="color:' + (isDone ? '#848E9C' : '#EAECEF') + '">' + titleText + '</div>'
+        + (metaLine ? '<div class="text-[11px] text-[#848E9C] truncate">' + metaLine + '</div>' : '')
+        + '</a>';
+    });
+    eventsHtml += '</div>';
+  }
+  eventsHtml += '</div>';
+
+  eventsHtml += '<div class="mx-4 mt-3 mb-2 bg-[#1E2329] rounded-xl border border-[#2E3440] p-3">'
+    + '<div class="text-[13px] font-semibold text-[#EAECEF] mb-2">跟进记录</div>'
+    + '<div class="border-l-2 border-[#2E3440] pl-3 space-y-3">';
+  allFollowups.forEach(function(f) {
+    var isSystem = f.bd === '系统';
+    var dotColor = isSystem ? 'bg-[#474D57]' : 'bg-[#4DA6FF]';
+    eventsHtml += '<div class="relative">'
+      + '<div class="absolute -left-[17px] top-[6px] w-2 h-2 rounded-full ' + dotColor + '"></div>'
+      + '<div class="text-[10px] text-[#848E9C]">' + f.date + ' · ' + f.bd + '</div>'
+      + '<div class="text-[12px] text-[#EAECEF] mt-0.5">' + (f.tagHtml || '') + f.text + '</div>'
+      + '</div>';
+  });
+  if (allFollowups.length === 0) {
+    eventsHtml += '<div class="text-[12px] text-[#474D57] py-2">暂无跟进记录</div>';
+  }
+  eventsHtml += '</div></div>';
+
+  // Module: 主动沟通表单
+  eventsHtml += '<div class="mx-4 mb-6">'
+    + '<button onclick="openCommForm()" class="w-full h-[44px] border border-[#2E3440] text-[#848E9C] font-medium text-[14px] rounded-lg active:opacity-80 transition">+ 记录主动沟通</button>'
+    + '</div>';
+
+  document.getElementById('tab-events').innerHTML = eventsHtml;
+
+  // === TAB 2: ASSETS ===
+  var assetsHtml = '';
+
+  // Module: 资沉分布
+  var ddAssets = c.depositDist;
+  var ddAssetsTotal = ddAssets.futures + ddAssets.leverage + ddAssets.savings + ddAssets.card + ddAssets.cloud + ddAssets.mini + (ddAssets.spot||0);
+  var ddItems = [
+    { name: '双仓合约', value: ddAssets.futures, display: ddAssets.futuresDisplay },
+    { name: '超级杠杆', value: ddAssets.leverage, display: ddAssets.leverageDisplay },
+    { name: '理财', value: ddAssets.savings, display: ddAssets.savingsDisplay },
+    { name: '金融卡', value: ddAssets.card, display: ddAssets.cardDisplay },
+    { name: '云算力', value: ddAssets.cloud, display: ddAssets.cloudDisplay },
+    { name: 'Mini合约', value: ddAssets.mini, display: ddAssets.miniDisplay },
+    { name: '现货', value: ddAssets.spot||0, display: ddAssets.spotDisplay||'$0' }
+  ].sort(function(a, b) { return b.value - a.value; });
+  ddItems.forEach(function(item) {
+    item.pct = ddAssetsTotal > 0 ? Math.round(item.value / ddAssetsTotal * 100) : 0;
+  });
+
+  var distChgColor = deltaPct >= 0 ? '#0ECB81' : '#F6465D';
+  var distChgChar = deltaPct >= 0 ? '▲' : '▼';
+  var distChgSign = deltaPct >= 0 ? '+' : '';
+
+  assetsHtml += '<div class="mx-4 mt-3 bg-[#1E2329] rounded-xl border border-[#2E3440] p-3">'
+    + '<div class="flex items-start justify-between mb-3">'
+    + '<div class="text-[13px] font-semibold text-[#EAECEF]">资沉分布</div>'
+    + '<div class="text-right">'
+    + '<div class="text-[16px] font-bold tabular-nums" style="color:#F0B90B">' + fmtFlow(c.fMean) + '</div>'
+    + '<div class="text-[10px] mt-0.5"><span style="color:' + distChgColor + '">' + distChgChar + ' ' + distChgSign + deltaPct.toFixed(1) + '%</span> <span class="text-[#474D57]">| </span>均' + fmtAvg(platAvg.depositChg) + '</div>'
+    + '</div>'
+    + '</div>'
+    + '<div class="h-[1px] bg-[#2E3440] mb-3"></div>';
+  ddItems.forEach(function(item, idx) {
+    var barColor = idx < 2 ? '#F0B90B' : '#4DA6FF';
+    assetsHtml += '<div class="mb-2 last:mb-0">'
+      + '<div class="flex items-center justify-between mb-0.5">'
+      + '<span class="text-[11px] text-[#EAECEF]">' + item.name + '</span>'
+      + '<span class="text-[11px] text-[#848E9C]">' + item.display + ' <span class="text-[10px]">' + item.pct + '%</span></span>'
+      + '</div>'
+      + '<div class="w-full h-[5px] rounded-full bg-[#2B3139]">'
+      + '<div class="h-full rounded-full" style="width:' + Math.max(item.pct, 1) + '%;background:' + barColor + '"></div>'
+      + '</div>'
+      + '</div>';
+  });
+  assetsHtml += '</div>';
+
+  // Module: 周冲提 横向双条形图
+  var avgNetPerWeek = Math.round(baselineWeeks.reduce(function(s, w) { return s + w.inflow - w.outflow; }, 0) / baselineWeeks.length);
+  var netFlowColor = avgNetPerWeek >= 0 ? '#0ECB81' : '#F6465D';
+  var netFlowSign = avgNetPerWeek >= 0 ? '+' : '-';
+
+  var thisWeekNet = thisWeekFlow.inflow - thisWeekFlow.outflow;
+  var flowChgPct = Math.abs(avgNetPerWeek) > 0 ? ((thisWeekNet - avgNetPerWeek) / Math.abs(avgNetPerWeek) * 100) : 0;
+  var flowChgColor = flowChgPct >= 0 ? '#0ECB81' : '#F6465D';
+  var flowChgChar = flowChgPct >= 0 ? '▲' : '▼';
+  var flowChgSign = flowChgPct >= 0 ? '+' : '';
+
+  assetsHtml += '<div class="mx-4 mt-3 bg-[#1E2329] rounded-xl border border-[#2E3440] p-3">'
+    + '<div class="flex items-start justify-between mb-3">'
+    + '<div class="text-[13px] font-semibold text-[#EAECEF]">周冲提</div>'
+    + '<div class="text-right">'
+    + '<div class="text-[16px] font-bold tabular-nums" style="color:' + netFlowColor + '">' + netFlowSign + fmtFlow(Math.abs(avgNetPerWeek)) + '</div>'
+    + '<div class="text-[10px] mt-0.5"><span style="color:' + flowChgColor + '">' + flowChgChar + ' ' + flowChgSign + flowChgPct.toFixed(1) + '%</span> <span class="text-[#474D57]">| </span>均' + fmtAvg(platAvg.depositChg) + '</div>'
+    + '</div>'
+    + '</div>'
+    + '<div class="h-[1px] bg-[#2E3440] mb-3"></div>';
+
+  var chartWeeks = flowWeeks.slice(0, -1);
+  var maxChartFlow = Math.max.apply(null, chartWeeks.map(function(w) { return Math.max(w.inflow, w.outflow); }).concat([1]));
+  chartWeeks.forEach(function(w, wi) {
+    var inflowPct = Math.max(1, Math.round(w.inflow / maxChartFlow * 100));
+    var outflowPct = Math.max(1, Math.round(w.outflow / maxChartFlow * 100));
+    var wLabel = 'W' + (wi + 2);
+    assetsHtml += '<div class="flex items-center mb-2">'
+      + '<div style="width:28px" class="text-right pr-2 text-[10px] text-[#848E9C] flex-shrink-0">' + wLabel + '</div>'
+      + '<div class="flex-1">'
+      + '<div style="width:' + inflowPct + '%;height:8px;background:#0ECB81;border-radius:2px;margin-bottom:2px"></div>'
+      + '<div style="width:' + outflowPct + '%;height:8px;background:#F6465D;border-radius:2px"></div>'
+      + '</div>'
+      + '</div>';
+  });
+  assetsHtml += '<div class="flex items-center gap-4 mt-2 pt-2 border-t border-[#2E3440]">'
+    + '<div class="flex items-center gap-1"><span class="w-2 h-2 rounded-sm bg-[#0ECB81]"></span><span class="text-[10px] text-[#848E9C]">流入</span></div>'
+    + '<div class="flex items-center gap-1"><span class="w-2 h-2 rounded-sm bg-[#F6465D]"></span><span class="text-[10px] text-[#848E9C]">流出</span></div>'
+    + '</div></div>';
+
+  // Module: 月利润贡献（周值 × 4.3）
+  var nc = c.netContribution;
+  var ncWowColor = nc.wow >= 0 ? '#0ECB81' : '#F6465D';
+  var monthMult = 4.3;
+  var ncItems = [
+    { name: '合约', value: Math.round(nc.futures * monthMult), isRevenue: true },
+    { name: '杠杆', value: Math.round(nc.leverage * monthMult), isRevenue: true },
+    { name: 'Mini合约', value: Math.round(nc.mini * monthMult), isRevenue: true },
+    { name: '现货', value: Math.round((nc.spot || 0) * monthMult), isRevenue: true },
+    { name: '金融卡', value: Math.round(nc.card * monthMult), isRevenue: true },
+    { name: '云算力', value: Math.round(nc.cloud * monthMult), isRevenue: true },
+    { name: '理财利息', value: Math.round(nc.savingsInterest * monthMult), isRevenue: false },
+    { name: '返佣', value: Math.round(nc.rebate * monthMult), isRevenue: false }
+  ];
+  var ncMax = Math.max.apply(null, ncItems.map(function(i) { return Math.abs(i.value); }));
+  var ncMonthTotal = Math.round(nc.total * monthMult);
+  var ncWowChar = nc.wow >= 0 ? '▲' : '▼';
+
+  assetsHtml += '<div class="mx-4 mt-3 bg-[#1E2329] rounded-xl border border-[#2E3440] p-3">'
+    + '<div class="flex items-start justify-between mb-3">'
+    + '<div class="text-[13px] font-semibold text-[#EAECEF]">月利润贡献</div>'
+    + '<div class="text-right">'
+    + '<div class="text-[16px] font-bold tabular-nums" style="color:' + (ncMonthTotal >= 0 ? '#0ECB81' : '#F6465D') + '">' + (ncMonthTotal >= 0 ? '+' : '-') + fmtFlow(Math.abs(ncMonthTotal)) + '</div>'
+    + '<div class="text-[10px] mt-0.5"><span style="color:' + ncWowColor + '">' + ncWowChar + ' ' + nc.wowDisplay + '</span> <span class="text-[#474D57]">| </span>均' + fmtAvg(platAvg.profitChg) + '</div>'
+    + '</div>'
+    + '</div>'
+    + '<div class="h-[1px] bg-[#2E3440] mb-3"></div>';
+  ncItems.forEach(function(item) {
+    var color = item.isRevenue ? '#0ECB81' : '#F6465D';
+    var s = item.value >= 0 ? '+' : '';
+    var displayVal = s + (Math.abs(item.value) >= 10000 ? (item.value / 10000).toFixed(1) + '万' : Math.round(item.value));
+    var barW = ncMax > 0 ? Math.round(Math.abs(item.value) / ncMax * 100) : 0;
+    assetsHtml += '<div class="flex items-center gap-2 mb-1.5">'
+      + '<span class="w-[52px] text-[10px] text-[#848E9C] flex-shrink-0">' + item.name + '</span>'
+      + '<div class="flex-1 h-[4px] rounded-full bg-[#2B3139]">'
+      + '<div class="h-full rounded-full" style="width:' + Math.max(barW, 2) + '%;background:' + color + '"></div>'
+      + '</div>'
+      + '<span class="text-[10px] font-medium w-[48px] text-right flex-shrink-0" style="color:' + color + '">$ ' + displayVal + '</span>'
+      + '</div>';
+  });
+  assetsHtml += '</div>';
+
+  // Module: 月交易盈亏（周值 × 4.3）
+  var pnl = c.clientPnl;
+  var pnlMonthTotal = Math.round(pnl.total7d.value * monthMult);
+  var pnlItems = [
+    { name: '双仓合约', value: Math.round(pnl.futures7d.value * monthMult), color: pnl.futures7d.color },
+    { name: '超级杠杆', value: Math.round(pnl.leverage7d.value * monthMult), color: pnl.leverage7d.color },
+    { name: 'Mini合约', value: Math.round(pnl.mini7d.value * monthMult), color: pnl.mini7d.color },
+    { name: '现货', value: Math.round(pnl.spot7d.value * monthMult), color: pnl.spot7d.color }
+  ];
+  var pnlMax = Math.max.apply(null, pnlItems.map(function(i) { return Math.abs(i.value); }).concat([1]));
+  var pnlAvgVal = pnl.weeklyAvg8w.value * monthMult;
+  var pnlChgPct = Math.abs(pnlAvgVal) > 0 ? ((pnlMonthTotal - pnlAvgVal) / Math.abs(pnlAvgVal) * 100) : 0;
+  var pnlChgColor = pnlChgPct >= 0 ? '#0ECB81' : '#F6465D';
+  var pnlChgChar = pnlChgPct >= 0 ? '▲' : '▼';
+  var pnlChgSign = pnlChgPct >= 0 ? '+' : '';
+  var pnlMonthColor = pnlMonthTotal >= 0 ? '#0ECB81' : '#F6465D';
+
+  assetsHtml += '<div class="mx-4 mt-3 mb-4 bg-[#1E2329] rounded-xl border border-[#2E3440] p-3">'
+    + '<div class="flex items-start justify-between mb-3">'
+    + '<div class="text-[13px] font-semibold text-[#EAECEF]">月交易盈亏</div>'
+    + '<div class="text-right">'
+    + '<div class="text-[16px] font-bold tabular-nums" style="color:' + pnlMonthColor + '">' + (pnlMonthTotal >= 0 ? '+' : '-') + fmtFlow(Math.abs(pnlMonthTotal)) + '</div>'
+    + '<div class="text-[10px] mt-0.5"><span style="color:' + pnlChgColor + '">' + pnlChgChar + ' ' + pnlChgSign + pnlChgPct.toFixed(1) + '%</span> <span class="text-[#474D57]">| </span>均' + fmtAvg(platAvg.pnlChg) + '</div>'
+    + '</div>'
+    + '</div>'
+    + '<div class="h-[1px] bg-[#2E3440] mb-3"></div>';
+  pnlItems.forEach(function(item) {
+    var barW = pnlMax > 0 ? Math.round(Math.abs(item.value) / pnlMax * 100) : 0;
+    var s = item.value >= 0 ? '+' : '-';
+    var displayAmt = s + fmtFlow(Math.abs(item.value));
+    assetsHtml += '<div>'
+      + '<div class="flex items-center justify-between mb-0.5">'
+      + '<span class="text-[11px] text-[#EAECEF]">' + item.name + '</span>'
+      + '<span class="text-[11px] font-medium" style="color:' + item.color + '">' + displayAmt + '</span>'
+      + '</div>'
+      + '<div class="w-full h-[4px] rounded-full bg-[#2B3139]">'
+      + '<div class="h-full rounded-full" style="width:' + Math.max(barW, 2) + '%;background:' + item.color + '"></div>'
+      + '</div>'
+      + '</div>';
+  });
+  assetsHtml += '</div>';
+
+  document.getElementById('tab-assets').innerHTML = assetsHtml;
+
+  // === TAB 3: PROFILE ===
+  document.getElementById('tab-profile').innerHTML = ''
+    + '<div class="mx-4 mt-3 bg-[#1E2329] rounded-xl border border-[#2E3440] p-4">'
+    + '<div class="text-[13px] font-semibold text-[#EAECEF] mb-3">基础信息</div>'
+    + '<div id="nickname-display-row" class="flex items-center justify-between py-2 border-b border-[#2E3440]">'
+    + '<span class="text-[12px] text-[#848E9C]">昵称</span>'
+    + '<div class="flex items-center gap-2">'
+    + '<span id="nickname-val" class="text-[12px] text-[#474D57]">未设置</span>'
+    + '<button onclick="editNickname()" class="text-[#848E9C] text-[12px]">✎</button>'
+    + '</div>'
+    + '</div>'
+    + '<div id="nickname-edit-row" class="flex items-center justify-between py-2 border-b border-[#2E3440]" style="display:none!important">'
+    + '<span class="text-[12px] text-[#848E9C]">昵称</span>'
+    + '<div class="flex items-center gap-2">'
+    + '<input id="nickname-input" type="text" class="bg-[#2B3139] text-[#EAECEF] text-[12px] rounded-lg px-2 py-1 border border-[#F0B90B] outline-none w-28" placeholder="输入昵称" />'
+    + '<button onclick="saveNickname()" class="text-[12px] font-semibold text-[#F0B90B]">✓ 保存</button>'
+    + '</div>'
+    + '</div>'
+    + '<div class="flex items-center justify-between py-2 border-b border-[#2E3440]">'
+    + '<span class="text-[12px] text-[#848E9C]">KYC 等级</span>'
+    + '<span class="text-[12px] text-[#EAECEF]">LV2 · 已认证</span>'
+    + '</div>'
+    + '<div class="flex items-center justify-between py-2">'
+    + '<span class="text-[12px] text-[#848E9C]">VIP 等级</span>'
+    + '<span class="text-[12px] text-[#EAECEF]">VIP 3</span>'
+    + '</div>'
+    + '</div>'
+    + '<div class="mx-4 mt-3 bg-[#1E2329] rounded-xl border border-[#2E3440] p-4">'
+    + '<div class="text-[13px] font-semibold text-[#EAECEF] mb-3">联系方式</div>'
+    + '<div id="contact-list"></div>'
+    + '<button onclick="openContactForm()" class="w-full mt-2 py-2 text-[12px] text-[#848E9C] border border-dashed border-[#2E3440] rounded-lg">+ 添加联系方式</button>'
+    + '<div id="contact-form" style="display:none" class="mt-3">'
+    + '<div class="flex gap-2 mb-2">'
+    + '<select id="contact-channel" onchange="updateContactPlaceholder()" class="bg-[#2B3139] text-[#EAECEF] text-[12px] rounded-lg px-3 py-2 border border-[#2E3440] outline-none flex-shrink-0">'
+    + '<option>Telegram</option><option>WhatsApp</option><option>微信</option><option>电话</option><option>邮件</option>'
+    + '</select>'
+    + '<input id="contact-value" type="text" class="flex-1 bg-[#2B3139] text-[#EAECEF] text-[12px] rounded-lg px-3 py-2 border border-[#2E3440] outline-none" placeholder="@username" />'
+    + '</div>'
+    + '<div class="flex gap-2">'
+    + '<button onclick="saveContact()" class="flex-1 py-2 rounded-lg text-[13px] font-semibold bg-[#F0B90B] text-[#0B0E11]">保存</button>'
+    + '<button onclick="closeContactForm()" class="py-2 px-4 rounded-lg text-[13px] text-[#848E9C] border border-[#2E3440]">取消</button>'
+    + '</div>'
+    + '</div>'
+    + '</div>'
+    + '<div class="mx-4 mt-3 mb-6 bg-[#1E2329] rounded-xl border border-[#2E3440] p-4">'
+    + '<div class="text-[13px] font-semibold text-[#EAECEF] mb-3">笔记</div>'
+    + '<textarea id="client-notes" rows="6" class="w-full bg-[#2B3139] text-[#EAECEF] text-[12px] rounded-lg px-3 py-2 border border-[#2E3440] outline-none placeholder-[#474D57] resize-none leading-relaxed" placeholder="记录客户背景、沟通风格、历史关系等..."></textarea>'
+    + '</div>';
+
+  (function initProfile() {
+    var nn = localStorage.getItem('nickname_' + uid) || '';
+    var nnVal = document.getElementById('nickname-val');
+    if (nnVal) { nnVal.textContent = nn || '未设置'; nnVal.style.color = nn ? '#EAECEF' : '#474D57'; }
+    var notesEl = document.getElementById('client-notes');
+    if (notesEl) {
+      notesEl.value = localStorage.getItem('notes_' + uid) || '';
+      notesEl.addEventListener('input', function() { localStorage.setItem('notes_' + uid, notesEl.value); });
+    }
+  })();
+
+})();
+
+// === 主动沟通 JS ===
+window.openCommForm = function() {
+  window._commStatus = '跟进中';
+  var sheet = document.getElementById('comm-sheet');
+  sheet.style.display = 'flex';
+  var now = new Date();
+  var pad = function(n) { return n < 10 ? '0' + n : n; };
+  var dt = now.getFullYear() + '-' + pad(now.getMonth()+1) + '-' + pad(now.getDate())
+           + 'T' + pad(now.getHours()) + ':' + pad(now.getMinutes());
+  document.getElementById('comm-occurred-at').value = dt;
+};
+
+window.closeCommForm = function() {
+  document.getElementById('comm-sheet').style.display = 'none';
+};
+
+window.selectPill = function(el, group) {
+  var cls = 'comm-pill-' + group;
+  document.querySelectorAll('.' + cls).forEach(function(p) {
+    p.style.background = '#2B3139';
+    p.style.color = '#848E9C';
+    p.style.border = '1px solid #2E3440';
+    p.style.fontWeight = '';
+    p.removeAttribute('data-active');
+  });
+  el.style.background = '#F0B90B';
+  el.style.color = '#0B0E11';
+  el.style.border = 'none';
+  el.style.fontWeight = '600';
+  el.setAttribute('data-active', '1');
+};
+
+window.submitComm = function() {
+  var params = new URLSearchParams(location.search);
+  var uid = params.get('uid');
+  var channelEl = document.querySelector('.comm-pill-channel[data-active="1"]');
+  var channel = channelEl ? channelEl.getAttribute('data-val') : 'Telegram';
+  var resultEl = document.querySelector('.comm-pill-result[data-active="1"]');
+  var result = resultEl ? resultEl.getAttribute('data-val') : '已联系上';
+  var occurredAt = document.getElementById('comm-occurred-at').value || new Date().toISOString();
+  var summaryEl = document.getElementById('comm-summary');
+  var summary = summaryEl ? summaryEl.value.trim() : '';
+  var text = channel + ' · ' + result;
+  if (summary) text += '：' + summary;
+  var commTitleVal = ((document.getElementById('comm-follow-up-title') || {}).value || '').trim();
+  var newEventStatus = window._commStatus || '跟进中';
+  var fuEvents = [];
+  try { fuEvents = JSON.parse(sessionStorage.getItem('follow_up_events') || '[]'); } catch(e) {}
+  fuEvents.forEach(function(e) {
+    if (e.client_uid === uid && e.status === '跟进中') {
+      e.status = '已结束'; e.done_note = '被新事件替代'; e.done_at = new Date().toISOString();
+    }
+  });
+  var clientNameEl = document.getElementById('client-uid');
+  var newEventId    = 'fu_' + uid + '_' + Date.now();
+  var newEventTitle = commTitleVal || summary || '主动沟通';
+  var initActivities = [{ type: '创建', note: text, occurred_at: new Date().toISOString() }];
+  if (newEventStatus === '已结束') {
+    initActivities.push({ type: '结束', note: '', occurred_at: new Date().toISOString() });
+  }
+  fuEvents.push({
+    id: newEventId, client_uid: uid,
+    client_name: clientNameEl ? clientNameEl.textContent : uid,
+    status: newEventStatus, created_at: new Date().toISOString(),
+    title: newEventTitle,
+    activities: initActivities
+  });
+  sessionStorage.setItem('follow_up_events', JSON.stringify(fuEvents));
+
+  var commKey = 'comm_records_' + uid;
+  var records = [];
+  try { records = JSON.parse(sessionStorage.getItem(commKey) || '[]'); } catch(e) {}
+  var rec = { date: occurredAt, bd: 'BD', channel: channel, result: result, occurred_at: occurredAt, summary: summary, text: text };
+  if (commTitleVal) { rec.title = commTitleVal; }
+  rec.event_id = newEventId; rec.event_title = newEventTitle;
+  records.unshift(rec);
+  sessionStorage.setItem(commKey, JSON.stringify(records));
+  sessionStorage.setItem('last_contact_' + uid, new Date().toISOString());
+
+  location.reload();
+};
+
+window._commStatus = '跟进中';
+window.selectCommStatus = function(status) {
+  window._commStatus = status;
+  var styles = {
+    '跟进中': { bg: 'rgba(77,166,255,0.15)',  color: '#4DA6FF', border: '#4DA6FF' },
+    '已结束': { bg: 'rgba(14,203,129,0.12)',  color: '#0ECB81', border: '#0ECB81' },
+  };
+  ['跟进中','已结束'].forEach(function(s) {
+    var idMap = { '跟进中': 'comm-status-following', '已结束': 'comm-status-done' };
+    var btn = document.getElementById(idMap[s]);
+    if (!btn) return;
+    if (s === status) {
+      btn.style.background = styles[s].bg; btn.style.color = styles[s].color; btn.style.borderColor = styles[s].border; btn.style.fontWeight = '600';
+    } else {
+      btn.style.background = '#1E2329'; btn.style.color = '#848E9C'; btn.style.borderColor = '#2E3440'; btn.style.fontWeight = '400';
+    }
+  });
+};
+
+var _markDoneEventId = null;
+window.markEventDone = function(eventId) {
+  _markDoneEventId = eventId;
+  var el = document.getElementById('mark-done-note');
+  if (el) el.value = '';
+  document.getElementById('mark-done-sheet').style.display = 'flex';
+};
+window.closeDoneSheet = function() {
+  document.getElementById('mark-done-sheet').style.display = 'none';
+  _markDoneEventId = null;
+};
+window.confirmEventDone = function() {
+  if (!_markDoneEventId) return;
+  var note = (document.getElementById('mark-done-note') || {}).value || '';
+  var fuEvents = [];
+  try { fuEvents = JSON.parse(sessionStorage.getItem('follow_up_events') || '[]'); } catch(e) {}
+  fuEvents.forEach(function(e) {
+    if (e.id === _markDoneEventId) {
+      e.status = '已结束';
+      e.done_note = note.trim();
+      e.done_at = new Date().toISOString();
+    }
+  });
+  sessionStorage.setItem('follow_up_events', JSON.stringify(fuEvents));
+  window.closeDoneSheet();
+  location.reload();
+};
+window.postponeEvent = function() {
+  if (!_markDoneEventId) return;
+  var fuEvents = [];
+  try { fuEvents = JSON.parse(sessionStorage.getItem('follow_up_events') || '[]'); } catch(e) {}
+  fuEvents.forEach(function(e) {
+    if (e.id === _markDoneEventId) {
+      var d = new Date(e.follow_up_at || new Date()); d.setDate(d.getDate() + 3);
+      var pad = function(n) { return n < 10 ? '0' + n : '' + n; };
+      e.follow_up_at = d.getFullYear() + '-' + pad(d.getMonth()+1) + '-' + pad(d.getDate());
+      e.status = '跟进中';
+    }
+  });
+  sessionStorage.setItem('follow_up_events', JSON.stringify(fuEvents));
+  window.closeDoneSheet();
+  location.reload();
+};
+window.setEventFollowing = function(eventId) {
+  var fuEvents = [];
+  try { fuEvents = JSON.parse(sessionStorage.getItem('follow_up_events') || '[]'); } catch(e) {}
+  fuEvents.forEach(function(e) { if (e.id === eventId) e.status = '跟进中'; });
+  sessionStorage.setItem('follow_up_events', JSON.stringify(fuEvents));
+  location.reload();
+};
+
+// === 档案 Tab JS ===
+window.editNickname = function() {
+  document.getElementById('nickname-display-row').style.display = 'none';
+  document.getElementById('nickname-edit-row').style.removeProperty('display');
+  var params = new URLSearchParams(location.search);
+  var uid = params.get('uid');
+  var cur = localStorage.getItem('nickname_' + uid) || '';
+  document.getElementById('nickname-input').value = cur;
+  document.getElementById('nickname-input').focus();
+};
+
+window.saveNickname = function() {
+  var params = new URLSearchParams(location.search);
+  var uid = params.get('uid');
+  var val = document.getElementById('nickname-input').value.trim();
+  localStorage.setItem('nickname_' + uid, val);
+  document.getElementById('nickname-val').textContent = val || '未设置';
+  document.getElementById('nickname-val').style.color = val ? '#EAECEF' : '#474D57';
+  document.getElementById('nickname-edit-row').style.display = 'none';
+  document.getElementById('nickname-display-row').style.display = '';
+  var nnSpan = document.getElementById('top-nickname');
+  if (nnSpan) nnSpan.textContent = val;
+};
+
+window.renderContacts = function() {
+  var params = new URLSearchParams(location.search);
+  var uid = params.get('uid');
+  var contacts = [];
+  try { contacts = JSON.parse(localStorage.getItem('contacts_' + uid) || '[]'); } catch(e) {}
+  var list = document.getElementById('contact-list');
+  if (!list) return;
+  if (contacts.length === 0) { list.innerHTML = ''; return; }
+  list.innerHTML = contacts.map(function(c, i) {
+    return '<div class="flex items-center justify-between py-2 border-b border-[#2E3440]">'
+      + '<div class="flex items-center gap-2">'
+      + '<span class="text-[11px] bg-[#2B3139] text-[#848E9C] px-2 py-0.5 rounded-full">' + c.channel + '</span>'
+      + '<span class="text-[12px] text-[#EAECEF]">' + c.value + '</span>'
+      + '</div>'
+      + '<button onclick="deleteContact(' + i + ')" class="text-[#474D57] text-[14px] px-1">×</button>'
+      + '</div>';
+  }).join('');
+};
+
+window.openContactForm = function() {
+  document.getElementById('contact-form').style.display = 'block';
+};
+window.closeContactForm = function() {
+  document.getElementById('contact-form').style.display = 'none';
+  document.getElementById('contact-value').value = '';
+};
+window.updateContactPlaceholder = function() {
+  var ch = document.getElementById('contact-channel').value;
+  var ph = { '电话': '+86 138...', '邮件': 'user@example.com' };
+  document.getElementById('contact-value').placeholder = ph[ch] || '@username';
+};
+window.saveContact = function() {
+  var params = new URLSearchParams(location.search);
+  var uid = params.get('uid');
+  var channel = document.getElementById('contact-channel').value;
+  var value = document.getElementById('contact-value').value.trim();
+  if (!value) return;
+  var contacts = [];
+  try { contacts = JSON.parse(localStorage.getItem('contacts_' + uid) || '[]'); } catch(e) {}
+  contacts.push({ channel: channel, value: value });
+  localStorage.setItem('contacts_' + uid, JSON.stringify(contacts));
+  closeContactForm();
+  renderContacts();
+};
+window.deleteContact = function(idx) {
+  var params = new URLSearchParams(location.search);
+  var uid = params.get('uid');
+  var contacts = [];
+  try { contacts = JSON.parse(localStorage.getItem('contacts_' + uid) || '[]'); } catch(e) {}
+  contacts.splice(idx, 1);
+  localStorage.setItem('contacts_' + uid, JSON.stringify(contacts));
+  renderContacts();
+};
+
+window.renderContacts();
+</script>
+
+<!-- 主动沟通 Bottom Sheet -->
+<div id="comm-sheet" style="display:none;position:fixed;inset:0;z-index:50;align-items:flex-end;justify-content:center" onclick="if(event.target===this)window.closeCommForm()">
+  <div style="position:absolute;inset:0;background:rgba(0,0,0,0.6);pointer-events:none"></div>
+  <div style="position:relative;width:393px;background:#1E2329;border-radius:16px 16px 0 0;padding:20px;padding-bottom:calc(20px + env(safe-area-inset-bottom));max-height:88vh;overflow-y:auto;z-index:1">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+      <span style="font-size:15px;font-weight:600;color:#EAECEF">记录主动沟通</span>
+      <button onclick="window.closeCommForm()" style="width:28px;height:28px;display:flex;align-items:center;justify-content:center;color:#848E9C;font-size:18px;background:none;border:0;cursor:pointer">✕</button>
+    </div>
+    <div style="font-size:11px;color:#848E9C;margin-bottom:4px">任务名称</div>
+    <input type="text" id="comm-follow-up-title" style="width:100%;background:#2B3139;color:#EAECEF;font-size:12px;border-radius:8px;padding:8px 12px;border:1px solid #2E3440;outline:none;margin-bottom:12px;box-sizing:border-box;font-family:inherit" placeholder="如：客户维护、理财拜访">
+    <div style="font-size:11px;color:#848E9C;margin-bottom:4px">渠道</div>
+    <div style="display:flex;gap:8px;overflow-x:auto;padding-bottom:4px;margin-bottom:12px;scrollbar-width:none">
+      <button class="comm-pill-channel" data-val="Telegram" data-active="1" onclick="selectPill(this,'channel')" style="flex-shrink:0;border-radius:999px;padding:4px 12px;font-size:12px;background:#F0B90B;color:#0B0E11;font-weight:600;border:none;cursor:pointer">Telegram</button>
+      <button class="comm-pill-channel" data-val="WhatsApp" onclick="selectPill(this,'channel')" style="flex-shrink:0;border-radius:999px;padding:4px 12px;font-size:12px;background:#2B3139;color:#848E9C;border:1px solid #2E3440;cursor:pointer">WhatsApp</button>
+      <button class="comm-pill-channel" data-val="微信" onclick="selectPill(this,'channel')" style="flex-shrink:0;border-radius:999px;padding:4px 12px;font-size:12px;background:#2B3139;color:#848E9C;border:1px solid #2E3440;cursor:pointer">微信</button>
+      <button class="comm-pill-channel" data-val="电话" onclick="selectPill(this,'channel')" style="flex-shrink:0;border-radius:999px;padding:4px 12px;font-size:12px;background:#2B3139;color:#848E9C;border:1px solid #2E3440;cursor:pointer">电话</button>
+      <button class="comm-pill-channel" data-val="线下" onclick="selectPill(this,'channel')" style="flex-shrink:0;border-radius:999px;padding:4px 12px;font-size:12px;background:#2B3139;color:#848E9C;border:1px solid #2E3440;cursor:pointer">线下</button>
+      <button class="comm-pill-channel" data-val="邮件" onclick="selectPill(this,'channel')" style="flex-shrink:0;border-radius:999px;padding:4px 12px;font-size:12px;background:#2B3139;color:#848E9C;border:1px solid #2E3440;cursor:pointer">邮件</button>
+    </div>
+    <div style="font-size:11px;color:#848E9C;margin-bottom:4px">结果</div>
+    <div style="display:flex;gap:8px;overflow-x:auto;padding-bottom:4px;margin-bottom:12px;scrollbar-width:none">
+      <button class="comm-pill-result" data-val="已联系上" data-active="1" onclick="selectPill(this,'result')" style="flex-shrink:0;border-radius:999px;padding:4px 12px;font-size:12px;background:#F0B90B;color:#0B0E11;font-weight:600;border:none;cursor:pointer">已联系上</button>
+      <button class="comm-pill-result" data-val="有回复" onclick="selectPill(this,'result')" style="flex-shrink:0;border-radius:999px;padding:4px 12px;font-size:12px;background:#2B3139;color:#848E9C;border:1px solid #2E3440;cursor:pointer">有回复</button>
+      <button class="comm-pill-result" data-val="已见面" onclick="selectPill(this,'result')" style="flex-shrink:0;border-radius:999px;padding:4px 12px;font-size:12px;background:#2B3139;color:#848E9C;border:1px solid #2E3440;cursor:pointer">已见面</button>
+      <button class="comm-pill-result" data-val="未接通" onclick="selectPill(this,'result')" style="flex-shrink:0;border-radius:999px;padding:4px 12px;font-size:12px;background:#2B3139;color:#848E9C;border:1px solid #2E3440;cursor:pointer">未接通</button>
+      <button class="comm-pill-result" data-val="未回复" onclick="selectPill(this,'result')" style="flex-shrink:0;border-radius:999px;padding:4px 12px;font-size:12px;background:#2B3139;color:#848E9C;border:1px solid #2E3440;cursor:pointer">未回复</button>
+      <button class="comm-pill-result" data-val="仅发送消息" onclick="selectPill(this,'result')" style="flex-shrink:0;border-radius:999px;padding:4px 12px;font-size:12px;background:#2B3139;color:#848E9C;border:1px solid #2E3440;cursor:pointer">仅发送消息</button>
+    </div>
+    <div style="font-size:11px;color:#848E9C;margin-bottom:4px">联系时间</div>
+    <input type="datetime-local" id="comm-occurred-at" style="width:100%;background:#2B3139;color:#EAECEF;font-size:12px;border-radius:8px;padding:8px 12px;border:1px solid #2E3440;outline:none;margin-bottom:12px;box-sizing:border-box;color-scheme:dark">
+    <div style="font-size:11px;color:#848E9C;margin-bottom:4px">内容摘要（选填）</div>
+    <textarea id="comm-summary" rows="2" style="width:100%;background:#2B3139;color:#EAECEF;font-size:12px;border-radius:8px;padding:8px 12px;border:1px solid #2E3440;outline:none;resize:none;margin-bottom:12px;box-sizing:border-box;font-family:inherit" placeholder="简要说明聊了什么"></textarea>
+    <div style="font-size:11px;color:#848E9C;margin-bottom:4px">状态</div>
+    <div style="display:flex;gap:8px;margin-bottom:12px">
+      <button id="comm-status-following" data-val="跟进中" onclick="selectCommStatus('跟进中')" style="flex:1;border-radius:8px;padding:6px 8px;font-size:12px;font-weight:600;background:rgba(77,166,255,0.15);color:#4DA6FF;border:1px solid #4DA6FF;cursor:pointer">跟进中</button>
+      <button id="comm-status-done" data-val="已结束" onclick="selectCommStatus('已结束')" style="flex:1;border-radius:8px;padding:6px 8px;font-size:12px;background:#1E2329;color:#848E9C;border:1px solid #2E3440;cursor:pointer">已结束</button>
+    </div>
+    <button onclick="window.submitComm()" style="width:100%;padding:12px;border-radius:12px;font-size:14px;font-weight:600;background:#F0B90B;color:#0B0E11;border:0;cursor:pointer">创建</button>
+  </div>
+</div>
+
+<!-- Mark Done Bottom Sheet -->
+<div id="mark-done-sheet" style="display:none" class="fixed inset-0 z-50 flex items-end justify-center" onclick="if(event.target===this)window.closeDoneSheet()">
+  <div class="absolute inset-0 bg-black/60"></div>
+  <div class="relative w-[393px] bg-[#1E2329] rounded-t-2xl p-5" style="padding-bottom:calc(1.25rem + env(safe-area-inset-bottom))">
+    <div class="flex items-center justify-between mb-4">
+      <span class="text-[15px] font-semibold text-[#EAECEF]">标记完成</span>
+      <button onclick="window.closeDoneSheet()" class="w-7 h-7 flex items-center justify-center text-[#848E9C] text-[18px]">✕</button>
+    </div>
+    <div class="text-[11px] text-[#848E9C] mb-1">备注（选填）</div>
+    <textarea id="mark-done-note" rows="3" class="w-full bg-[#2B3139] text-[#EAECEF] text-[13px] rounded-lg px-3 py-2.5 border border-[#2E3440] outline-none placeholder-[#474D57] resize-none mb-4" placeholder="记录一下结果..."></textarea>
+    <div class="flex gap-2">
+      <button onclick="window.confirmEventDone()" class="flex-1 py-3 rounded-xl text-[14px] font-semibold bg-[#F0B90B] text-[#0B0E11] active:opacity-80">确认完成</button>
+      <button onclick="window.postponeEvent()" class="py-3 px-4 rounded-xl text-[13px] border active:opacity-80" style="color:#4DA6FF;border-color:#4DA6FF">推迟3天</button>
+    </div>
+  </div>
+</div>
+
+<!-- FAB: 快速笔记 -->
+<button id="note-fab" onclick="openNote()"
+  class="fixed z-40 flex items-center justify-center rounded-full shadow-lg active:scale-95 transition-all duration-200"
+  style="width:52px;height:52px;bottom:calc(56px + 34px + 16px);right:calc(50vw - 196px + 16px);background:#F0B90B;transition: opacity 0.2s, transform 0.2s;">
+  <i class="fa-solid fa-pen text-[18px] text-[#0B0E11]"></i>
+</button>
+
+<!-- Note Drawer (方案B) -->
+<div id="note-drawer-overlay" class="hidden fixed inset-0 z-50 bg-black/60" onclick="closeNote()"></div>
+<div id="note-drawer" class="hidden fixed bottom-0 left-1/2 -translate-x-1/2 w-[393px] z-50 bg-[#1E2329] rounded-t-2xl border-t border-[#2E3440] flex-col" style="max-height:75vh;">
+  <div class="px-4 pt-4 pb-3 flex items-center justify-between flex-shrink-0 border-b border-[#2E3440]">
+    <span class="text-[15px] font-bold text-[#EAECEF]">笔记</span>
+    <button onclick="closeNote()" class="w-7 h-7 flex items-center justify-center rounded-full bg-[#2B3139] text-[#848E9C]">
+      <i class="fa-solid fa-xmark text-[12px]"></i>
+    </button>
+  </div>
+  <div class="px-4 pt-3 pb-3 flex-shrink-0">
+    <textarea id="note-input" rows="3" class="w-full bg-[#2B3139] text-[#EAECEF] text-[13px] rounded-xl px-3 py-2.5 border border-[#2E3440] outline-none placeholder-[#474D57] resize-none focus:border-[#F0B90B]/40" placeholder="输入笔记..."></textarea>
+    <button onclick="saveNote()" class="mt-2 w-full h-10 bg-[#F0B90B] text-[#0B0E11] text-[13px] font-bold rounded-xl active:scale-[0.98] transition-transform">保存</button>
+  </div>
+  <div class="border-t border-[#2E3440] flex-shrink-0"></div>
+  <div id="notes-list" class="overflow-y-auto flex-1 py-3 pl-8 pr-4"></div>
+  <div class="h-[34px] flex-shrink-0"></div>
+</div>
+
+<script>
+  // === 方案B：笔记抽屉 ===
+  (function() {
+    var params = new URLSearchParams(location.search);
+    var uid = params.get('uid');
+    var notesKey = 'notes_' + uid;
+    var notes = [];
+    try { notes = JSON.parse(localStorage.getItem(notesKey) || '[]'); } catch(e) {}
+
+    function esc(s) { return String(s).replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
+
+    function timeAgo(isoStr) {
+      if (!isoStr) return '';
+      var now = new Date();
+      var then = new Date(isoStr);
+      if (isNaN(then.getTime())) return '';
+      var diff = Math.floor((now - then) / 1000);
+      if (diff < 3600) return '刚刚';
+      if (diff < 86400) return Math.floor(diff / 3600) + '小时前';
+      var days = Math.floor(diff / 86400);
+      if (days < 7) return days + '天前';
+      if (days < 30) return Math.floor(days / 7) + '周前';
+      return (then.getMonth() + 1) + '月' + then.getDate() + '日';
+    }
+
+    function renderNotesList() {
+      var listEl = document.getElementById('notes-list');
+      if (!notes.length) {
+        listEl.innerHTML = '<p class="text-[12px] text-[#474D57] text-center py-6">还没有笔记</p>';
+        return;
+      }
+      var items = notes.slice().reverse().map(function(n) {
+        return '<div class="relative">'
+          + '<div class="absolute -left-[17px] top-[5px] w-2 h-2 rounded-full bg-[#F0B90B]"></div>'
+          + '<div class="text-[10px] text-[#848E9C]">' + timeAgo(n.created_at) + '</div>'
+          + '<p class="text-[12px] text-[#EAECEF] mt-0.5 leading-relaxed">' + esc(n.text) + '</p>'
+          + '</div>';
+      }).join('');
+      listEl.innerHTML = '<div class="border-l-2 border-[#2E3440] pl-3 space-y-4">' + items + '</div>';
+    }
+
+    window.openNote = function() {
+      var overlay = document.getElementById('note-drawer-overlay');
+      var drawer = document.getElementById('note-drawer');
+      overlay.classList.remove('hidden');
+      drawer.classList.remove('hidden');
+      drawer.style.display = 'flex';
+      document.getElementById('note-input').value = '';
+      renderNotesList();
+      document.getElementById('note-input').focus();
+    };
+    window.closeNote = function() {
+      document.getElementById('note-drawer-overlay').classList.add('hidden');
+      var drawer = document.getElementById('note-drawer');
+      drawer.classList.add('hidden');
+      drawer.style.display = '';
+    };
+    window.saveNote = function() {
+      var text = document.getElementById('note-input').value.trim();
+      if (!text) return;
+      notes.push({ id: Date.now(), text: text, created_at: new Date().toISOString() });
+      localStorage.setItem(notesKey, JSON.stringify(notes));
+      document.getElementById('note-input').value = '';
+      renderNotesList();
+    };
+
+    // FAB 滚动隐藏
+    (function() {
+      var fab = document.getElementById('note-fab');
+      var lastScrollY = window.scrollY;
+      var ticking = false;
+      window.addEventListener('scroll', function() {
+        if (!ticking) {
+          requestAnimationFrame(function() {
+            var currentY = window.scrollY;
+            if (currentY > lastScrollY + 10) {
+              fab.style.opacity = '0';
+              fab.style.pointerEvents = 'none';
+              fab.style.transform = 'scale(0.8)';
+            } else if (currentY < lastScrollY - 5) {
+              fab.style.opacity = '1';
+              fab.style.pointerEvents = '';
+              fab.style.transform = 'scale(1)';
+            }
+            lastScrollY = currentY;
+            ticking = false;
+          });
+          ticking = true;
+        }
+      }, { passive: true });
+    })();
+  })();
+</script>
+
+</body>
+</html>

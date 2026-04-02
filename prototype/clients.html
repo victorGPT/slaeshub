@@ -234,16 +234,6 @@
     return sorted;
   }
 
-  function lastContact(c) {
-    var evts = D.eventsByClientUid[c.uid];
-    if (!evts || evts.length === 0) return { label: '未联系', color: '#F6465D' };
-    var minH = Infinity;
-    evts.forEach(function(e) { if (e.age_hours < minH) minH = e.age_hours; });
-    var label = minH < 24 ? '今天联系' : Math.floor(minH / 24) + '天前联系';
-    var color = minH >= 720 ? '#F6465D' : minH >= 168 ? '#F0B90B' : '#0ECB81';
-    return { label: label, color: color };
-  }
-
   // 渲染单行
   function rowHTML(c, sort) {
     var color = SORT_CONFIG[sort].color;
@@ -251,25 +241,17 @@
     var metricHTML = metric
       ? '<span class="text-[13px] font-bold flex-shrink-0" style="color:' + color + '">' + metric + '</span>'
       : '<span class="text-[13px] flex-shrink-0 text-[#474D57]">—</span>';
-    var lc = lastContact(c);
     var label = c.name ? c.uid + ' (' + c.name + ')' : c.uid;
-    var faved = isFav(c.uid);
-    var starColor = faved ? '#F0B90B' : '#474D57';
-
     var dotColor = getFollowUpDot(c.uid);
     var dotHTML = dotColor
       ? '<span style="width:7px;height:7px;border-radius:50%;background:' + dotColor + ';flex-shrink:0;display:inline-block"></span>'
       : '<span style="width:7px;height:7px;flex-shrink:0;display:inline-block"></span>';
-    return '<div class="flex items-center px-4 py-3 border-b border-[#2E3440] gap-2">'
+    return '<div class="flex items-center mx-3 mb-2 px-3 py-3 rounded-xl bg-[#1E2329] gap-2">'
       + '<a href="client-detail.html?uid=' + c.uid + '" class="flex items-center gap-2 flex-1 min-w-0 active:opacity-70">'
       +   dotHTML
       +   '<span class="flex-1 text-[13px] text-[#EAECEF] truncate min-w-0">' + label + '</span>'
       +   metricHTML
-      +   '<span class="text-[11px] flex-shrink-0 text-right" style="color:' + lc.color + ';min-width:42px">' + lc.label + '</span>'
       + '</a>'
-      + '<button onclick="onToggleFav(\'' + c.uid + '\',this)" class="flex-shrink-0 bg-transparent border-0 cursor-pointer p-1" style="color:' + starColor + '">'
-      +   '<i class="fa-' + (faved ? 'solid' : 'regular') + ' fa-star text-[14px]"></i>'
-      + '</button>'
       + '</div>';
   }
 
@@ -318,7 +300,7 @@
 
     // 分页控件
     var paginationHTML = totalPages > 1 ? (
-      '<div style="display:flex;align-items:center;justify-content:center;gap:12px;padding:16px;border-top:1px solid #2E3440">'
+      '<div style="display:flex;align-items:center;justify-content:center;gap:12px;padding:16px;">'
       + '<button onclick="goPage(' + (currentPage - 1) + ')" style="background:#2E3440;border:0;border-radius:8px;padding:6px 14px;color:' + (currentPage <= 1 ? '#474D57' : '#EAECEF') + ';font-size:13px;cursor:' + (currentPage <= 1 ? 'default' : 'pointer') + '">'
       +   '<i class="fa-solid fa-chevron-left"></i>'
       + '</button>'
