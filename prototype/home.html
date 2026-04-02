@@ -196,7 +196,7 @@
 
     // 跟进中事件：从 sessionStorage follow_up_events 读取（前5条）
     var fuEvents = [];
-    try { fuEvents = JSON.parse(sessionStorage.getItem('follow_up_events') || '[]'); } catch(e) {}
+    try { fuEvents = JSON.parse(localStorage.getItem('follow_up_events') || '[]'); } catch(e) {}
     var topTasks = fuEvents.filter(function(e) { return e.status === '跟进中'; }).slice(0, 5);
 
     var taskPanelHtml;

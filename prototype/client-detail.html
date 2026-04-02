@@ -488,7 +488,7 @@
   // 构建 event status 查询 map
   var fuEventsMap = {};
   try {
-    JSON.parse(sessionStorage.getItem('follow_up_events') || '[]').forEach(function(e) { fuEventsMap[e.id] = e; });
+    JSON.parse(localStorage.getItem('follow_up_events') || '[]').forEach(function(e) { fuEventsMap[e.id] = e; });
   } catch(e) {}
 
   var statusBadgeColors = { '跟进中': '#4DA6FF', '已结束': '#0ECB81' };
@@ -514,7 +514,7 @@
 
   // 读取全局跟进事件
   var allFollowUpEvents = [];
-  try { allFollowUpEvents = JSON.parse(sessionStorage.getItem('follow_up_events') || '[]'); } catch(e) {}
+  try { allFollowUpEvents = JSON.parse(localStorage.getItem('follow_up_events') || '[]'); } catch(e) {}
   var clientActiveEvents = allFollowUpEvents.filter(function(e) {
     return e.client_uid === uid && e.status !== '已结束';
   });
@@ -700,14 +700,12 @@
     + '<div class="h-[1px] bg-[#2E3440] mb-3"></div>';
   ddItems.forEach(function(item, idx) {
     var barColor = '#EAECEF';
-    assetsHtml += '<div class="mb-2 last:mb-0">'
-      + '<div class="flex items-center justify-between mb-0.5">'
-      + '<span class="text-[11px] text-[#EAECEF]">' + item.name + '</span>'
-      + '<span class="text-[11px] text-[#848E9C]">' + fmtUSDT(item.value) + ' <span class="text-[10px]">' + item.pct + '%</span></span>'
+    assetsHtml += '<div style="display:flex;align-items:center;gap:6px;margin-bottom:6px">'
+      + '<span style="width:52px;font-size:10px;color:#848E9C;flex-shrink:0">' + item.name + '</span>'
+      + '<div style="flex:1;height:4px;border-radius:999px;background:#2B3139">'
+      + '<div style="height:100%;border-radius:999px;width:' + item.pct + '%;background:' + barColor + '"></div>'
       + '</div>'
-      + '<div class="w-full h-[5px] rounded-full bg-[#2B3139]">'
-      + '<div class="h-full rounded-full" style="width:' + Math.max(item.pct, 1) + '%;background:' + barColor + '"></div>'
-      + '</div>'
+      + '<span style="width:52px;font-size:10px;font-weight:500;text-align:right;flex-shrink:0;color:' + barColor + '">' + fmtUSDT(item.value) + '</span>'
       + '</div>';
   });
   assetsHtml += '</div>';
@@ -733,23 +731,46 @@
     + '</div>'
     + '<div class="h-[1px] bg-[#2E3440] mb-3"></div>';
 
-  var chartWeeks = flowWeeks.slice(0, -1);
-  var maxChartFlow = Math.max.apply(null, chartWeeks.map(function(w) { return Math.max(w.inflow, w.outflow); }).concat([1]));
-  chartWeeks.forEach(function(w, wi) {
-    var inflowPct = Math.max(1, Math.round(w.inflow / maxChartFlow * 100));
-    var outflowPct = Math.max(1, Math.round(w.outflow / maxChartFlow * 100));
-    var wLabel = 'W' + (wi + 2);
-    assetsHtml += '<div class="flex items-center mb-2">'
-      + '<div style="width:28px" class="text-right pr-2 text-[10px] text-[#848E9C] flex-shrink-0">' + wLabel + '</div>'
-      + '<div class="flex-1">'
-      + '<div style="width:' + inflowPct + '%;height:8px;background:#0ECB81;border-radius:2px;margin-bottom:2px"></div>'
-      + '<div style="width:' + outflowPct + '%;height:8px;background:#F6465D;border-radius:2px"></div>'
-      + '</div>'
+  var allChartWeeks = flowWeeks; // W1-W8 全部显示
+  var maxChartFlow = Math.max.apply(null, allChartWeeks.map(function(w) { return Math.max(w.inflow, w.outflow); }).concat([1]));
+  var chartH = 80; // px
+
+  // Y 轴标签 + 图表区域
+  assetsHtml += '<div style="display:flex;gap:6px;margin-bottom:4px">'
+    // Y 轴
+    + '<div style="display:flex;flex-direction:column;justify-content:space-between;width:34px;height:' + chartH + 'px;flex-shrink:0">'
+    + '<span style="font-size:9px;color:#474D57;text-align:right">' + fmtUSDT(maxChartFlow) + '</span>'
+    + '<span style="font-size:9px;color:#474D57;text-align:right">$0</span>'
+    + '</div>'
+    // 柱状图区
+    + '<div style="flex:1;display:flex;align-items:flex-end;gap:3px;height:' + chartH + 'px;border-left:1px solid #2E3440;border-bottom:1px solid #2E3440;padding:0 2px">';
+
+  allChartWeeks.forEach(function(w, wi) {
+    var isCurrent = wi === allChartWeeks.length - 1;
+    var inflowH = Math.max(2, Math.round(w.inflow / maxChartFlow * chartH));
+    var outflowH = Math.max(2, Math.round(w.outflow / maxChartFlow * chartH));
+    var inflowColor = isCurrent ? '#0ECB81' : 'rgba(14,203,129,0.45)';
+    var outflowColor = isCurrent ? '#F6465D' : 'rgba(246,70,93,0.45)';
+    assetsHtml += '<div style="flex:1;display:flex;align-items:flex-end;gap:1px">'
+      + '<div style="flex:1;height:' + inflowH + 'px;background:' + inflowColor + ';border-radius:2px 2px 0 0"></div>'
+      + '<div style="flex:1;height:' + outflowH + 'px;background:' + outflowColor + ';border-radius:2px 2px 0 0"></div>'
       + '</div>';
   });
-  assetsHtml += '<div class="flex items-center gap-4 mt-2 pt-2 border-t border-[#2E3440]">'
+
+  assetsHtml += '</div></div>';
+
+  // X 轴标签
+  assetsHtml += '<div style="display:flex;padding-left:40px;gap:3px;margin-bottom:8px">';
+  allChartWeeks.forEach(function(w, wi) {
+    var isCurrent = wi === allChartWeeks.length - 1;
+    assetsHtml += '<div style="flex:1;text-align:center;font-size:9px;color:' + (isCurrent ? '#EAECEF' : '#474D57') + '">W' + (wi + 1) + '</div>';
+  });
+  assetsHtml += '</div>';
+
+  assetsHtml += '<div class="flex items-center gap-4 pt-2 border-t border-[#2E3440]">'
     + '<div class="flex items-center gap-1"><span class="w-2 h-2 rounded-sm bg-[#0ECB81]"></span><span class="text-[10px] text-[#848E9C]">流入</span></div>'
     + '<div class="flex items-center gap-1"><span class="w-2 h-2 rounded-sm bg-[#F6465D]"></span><span class="text-[10px] text-[#848E9C]">流出</span></div>'
+    + '<span class="text-[10px] text-[#474D57] ml-auto">W8 = 本周</span>'
     + '</div></div>';
 
   // Module: 月利润贡献（周值 × 4.3）
@@ -782,12 +803,12 @@
   ncItems.forEach(function(item) {
     var color = item.isRevenue ? '#0ECB81' : '#F6465D';
     var barW = ncMax > 0 ? Math.round(Math.abs(item.value) / ncMax * 100) : 0;
-    assetsHtml += '<div class="flex items-center gap-2 mb-1.5">'
-      + '<span class="w-[52px] text-[10px] text-[#848E9C] flex-shrink-0">' + item.name + '</span>'
-      + '<div class="flex-1 h-[4px] rounded-full bg-[#2B3139]">'
-      + '<div class="h-full rounded-full" style="width:' + Math.max(barW, 2) + '%;background:' + color + '"></div>'
+    assetsHtml += '<div style="display:flex;align-items:center;gap:6px;margin-bottom:6px">'
+      + '<span style="width:52px;font-size:10px;color:#848E9C;flex-shrink:0">' + item.name + '</span>'
+      + '<div style="flex:1;height:4px;border-radius:999px;background:#2B3139">'
+      + '<div style="height:100%;border-radius:999px;width:' + barW + '%;background:' + color + '"></div>'
       + '</div>'
-      + '<span class="text-[10px] font-medium w-[48px] text-right flex-shrink-0" style="color:' + color + '">' + fmtUSDT(item.value, true) + '</span>'
+      + '<span style="width:52px;font-size:10px;font-weight:500;text-align:right;flex-shrink:0;color:' + color + '">' + fmtUSDT(item.value, true) + '</span>'
       + '</div>';
   });
   assetsHtml += '</div>';
@@ -820,15 +841,12 @@
     + '<div class="h-[1px] bg-[#2E3440] mb-3"></div>';
   pnlItems.forEach(function(item) {
     var barW = pnlMax > 0 ? Math.round(Math.abs(item.value) / pnlMax * 100) : 0;
-    var displayAmt = fmtUSDT(item.value, true);
-    assetsHtml += '<div>'
-      + '<div class="flex items-center justify-between mb-0.5">'
-      + '<span class="text-[11px] text-[#EAECEF]">' + item.name + '</span>'
-      + '<span class="text-[11px] font-medium" style="color:' + item.color + '">' + displayAmt + '</span>'
+    assetsHtml += '<div style="display:flex;align-items:center;gap:6px;margin-bottom:6px">'
+      + '<span style="width:52px;font-size:10px;color:#848E9C;flex-shrink:0">' + item.name + '</span>'
+      + '<div style="flex:1;height:4px;border-radius:999px;background:#2B3139">'
+      + '<div style="height:100%;border-radius:999px;width:' + barW + '%;background:' + item.color + '"></div>'
       + '</div>'
-      + '<div class="w-full h-[4px] rounded-full bg-[#2B3139]">'
-      + '<div class="h-full rounded-full" style="width:' + Math.max(barW, 2) + '%;background:' + item.color + '"></div>'
-      + '</div>'
+      + '<span style="width:52px;font-size:10px;font-weight:500;text-align:right;flex-shrink:0;color:' + item.color + '">' + fmtUSDT(item.value, true) + '</span>'
       + '</div>';
   });
   assetsHtml += '</div>';
@@ -946,7 +964,7 @@ window.submitComm = function() {
   var commTitleVal = ((document.getElementById('comm-follow-up-title') || {}).value || '').trim();
   var newEventStatus = window._commStatus || '跟进中';
   var fuEvents = [];
-  try { fuEvents = JSON.parse(sessionStorage.getItem('follow_up_events') || '[]'); } catch(e) {}
+  try { fuEvents = JSON.parse(localStorage.getItem('follow_up_events') || '[]'); } catch(e) {}
   // 关闭该客户现有活跃事件
   fuEvents.forEach(function(e) {
     if (e.client_uid === uid && e.status === '跟进中') {
@@ -967,7 +985,7 @@ window.submitComm = function() {
     title: newEventTitle,
     activities: initActivities
   });
-  sessionStorage.setItem('follow_up_events', JSON.stringify(fuEvents));
+  localStorage.setItem('follow_up_events', JSON.stringify(fuEvents));
 
   // 写 comm_record（带 event 关联）
   var commKey = 'comm_records_' + uid;
@@ -1018,7 +1036,7 @@ window.confirmEventDone = function() {
   if (!_markDoneEventId) return;
   var note = (document.getElementById('mark-done-note') || {}).value || '';
   var fuEvents = [];
-  try { fuEvents = JSON.parse(sessionStorage.getItem('follow_up_events') || '[]'); } catch(e) {}
+  try { fuEvents = JSON.parse(localStorage.getItem('follow_up_events') || '[]'); } catch(e) {}
   fuEvents.forEach(function(e) {
     if (e.id === _markDoneEventId) {
       e.status = '已结束';
@@ -1026,14 +1044,14 @@ window.confirmEventDone = function() {
       e.done_at = new Date().toISOString();
     }
   });
-  sessionStorage.setItem('follow_up_events', JSON.stringify(fuEvents));
+  localStorage.setItem('follow_up_events', JSON.stringify(fuEvents));
   window.closeDoneSheet();
   location.reload();
 };
 window.postponeEvent = function() {
   if (!_markDoneEventId) return;
   var fuEvents = [];
-  try { fuEvents = JSON.parse(sessionStorage.getItem('follow_up_events') || '[]'); } catch(e) {}
+  try { fuEvents = JSON.parse(localStorage.getItem('follow_up_events') || '[]'); } catch(e) {}
   fuEvents.forEach(function(e) {
     if (e.id === _markDoneEventId) {
       var d = new Date(e.follow_up_at || new Date()); d.setDate(d.getDate() + 3);
@@ -1042,15 +1060,15 @@ window.postponeEvent = function() {
       e.status = '跟进中';
     }
   });
-  sessionStorage.setItem('follow_up_events', JSON.stringify(fuEvents));
+  localStorage.setItem('follow_up_events', JSON.stringify(fuEvents));
   window.closeDoneSheet();
   location.reload();
 };
 window.setEventFollowing = function(eventId) {
   var fuEvents = [];
-  try { fuEvents = JSON.parse(sessionStorage.getItem('follow_up_events') || '[]'); } catch(e) {}
+  try { fuEvents = JSON.parse(localStorage.getItem('follow_up_events') || '[]'); } catch(e) {}
   fuEvents.forEach(function(e) { if (e.id === eventId) e.status = '跟进中'; });
-  sessionStorage.setItem('follow_up_events', JSON.stringify(fuEvents));
+  localStorage.setItem('follow_up_events', JSON.stringify(fuEvents));
   location.reload();
 };
 

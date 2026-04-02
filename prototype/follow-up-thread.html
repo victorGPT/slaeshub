@@ -140,7 +140,7 @@
 
   // Load event
   var fuEvents = [];
-  try { fuEvents = JSON.parse(sessionStorage.getItem('follow_up_events') || '[]'); } catch(e) {}
+  try { fuEvents = JSON.parse(localStorage.getItem('follow_up_events') || '[]'); } catch(e) {}
   var ev = fuEvents.find(function(e) { return e.id === fuId; });
 
   if (!ev) {
@@ -318,7 +318,7 @@
 
   function saveStatus(status) {
     var all = [];
-    try { all = JSON.parse(sessionStorage.getItem('follow_up_events') || '[]'); } catch(e) {}
+    try { all = JSON.parse(localStorage.getItem('follow_up_events') || '[]'); } catch(e) {}
     all.forEach(function(e) {
       if (e.id === ev.id) {
         e.status = status;
@@ -327,7 +327,7 @@
         ev.done_note = e.done_note;
       }
     });
-    sessionStorage.setItem('follow_up_events', JSON.stringify(all));
+    localStorage.setItem('follow_up_events', JSON.stringify(all));
   }
 
   // ── 编辑标题 ──
@@ -349,9 +349,9 @@
     if (!newTitle) return;
     ev.title = newTitle;
     var all = [];
-    try { all = JSON.parse(sessionStorage.getItem('follow_up_events') || '[]'); } catch(e) {}
+    try { all = JSON.parse(localStorage.getItem('follow_up_events') || '[]'); } catch(e) {}
     all.forEach(function(e) { if (e.id === ev.id) e.title = newTitle; });
-    sessionStorage.setItem('follow_up_events', JSON.stringify(all));
+    localStorage.setItem('follow_up_events', JSON.stringify(all));
     document.getElementById('event-goal').textContent = newTitle;
     window.cancelEdit();
   };
@@ -371,9 +371,9 @@
   window.confirmDelete = function() {
     var fuId = new URLSearchParams(location.search).get('fuId');
     var all = [];
-    try { all = JSON.parse(sessionStorage.getItem('follow_up_events') || '[]'); } catch(e) {}
+    try { all = JSON.parse(localStorage.getItem('follow_up_events') || '[]'); } catch(e) {}
     all = all.filter(function(e) { return e.id !== fuId; });
-    sessionStorage.setItem('follow_up_events', JSON.stringify(all));
+    localStorage.setItem('follow_up_events', JSON.stringify(all));
     history.back();
   };
 })();

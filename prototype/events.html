@@ -102,7 +102,7 @@
 
   function loadEvents() {
     var arr = [];
-    try { arr = JSON.parse(sessionStorage.getItem('follow_up_events') || '[]'); } catch(e) {}
+    try { arr = JSON.parse(localStorage.getItem('follow_up_events') || '[]'); } catch(e) {}
     return arr;
   }
 

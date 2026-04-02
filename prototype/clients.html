@@ -131,7 +131,7 @@
 
   // 跟进事件：读取一次，供圆点指示使用
   var _fuEvents = [];
-  try { _fuEvents = JSON.parse(sessionStorage.getItem('follow_up_events') || '[]'); } catch(e) {}
+  try { _fuEvents = JSON.parse(localStorage.getItem('follow_up_events') || '[]'); } catch(e) {}
   var _todayStr = new Date().toISOString().split('T')[0];
   function getFollowUpDot(uid) {
     var dot = null;
