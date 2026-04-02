@@ -506,7 +506,7 @@
     active.forEach(function(t) {
       html += '<div class="relative bg-[#1E2329] rounded-xl border border-[#2E3440] px-3 py-2.5 mb-2 flex items-start gap-2 active:opacity-70 cursor-pointer" onclick="openTaskDetail(\'' + t.id + '\')">'
         + '<div class="flex-1 min-w-0">'
-        + '<div class="text-[13px] text-[#EAECEF] leading-snug">' + esc(t.text) + '</div>'
+        + '<div class="text-[13px] text-[#EAECEF] leading-snug" style="display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden">' + esc(t.text) + '</div>'
         + '<div class="text-[10px] text-[#474D57] mt-1">' + t.createdDisplay + '</div>'
         + '</div>'
         + '<button onclick="event.stopPropagation();quickDeleteTask(\'' + t.id + '\')" class="flex-shrink-0 w-5 h-5 flex items-center justify-center rounded-full bg-[#2B3139] active:bg-[#F6465D]/20">'
