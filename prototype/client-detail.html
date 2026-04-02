@@ -882,8 +882,11 @@
     + '</div>'
     + '</div>'
     + '<div class="mx-4 mt-3 mb-6 bg-[#1E2329] rounded-xl border border-[#2E3440] p-4">'
-    + '<div class="text-[13px] font-semibold text-[#EAECEF] mb-3">笔记</div>'
-    + '<textarea id="client-notes" rows="6" class="w-full bg-[#2B3139] text-[#EAECEF] text-[12px] rounded-lg px-3 py-2 border border-[#2E3440] outline-none placeholder-[#474D57] resize-none leading-relaxed" placeholder="记录客户背景、沟通风格、历史关系等..."></textarea>'
+    + '<div class="flex items-center justify-between mb-3">'
+    + '<div class="text-[13px] font-semibold text-[#EAECEF]">笔记</div>'
+    + '<button onclick="openNote()" style="font-size:11px;color:#F0B90B;background:none;border:none;cursor:pointer">+ 新增</button>'
+    + '</div>'
+    + '<div id="profile-notes-list"></div>'
     + '</div>';
 
   // 初始化档案 tab（renderContacts 在 IIFE 外定义，延迟调用）
@@ -891,11 +894,6 @@
     var nn = localStorage.getItem('nickname_' + uid) || '';
     var nnVal = document.getElementById('nickname-val');
     if (nnVal) { nnVal.textContent = nn || '未设置'; nnVal.style.color = nn ? '#EAECEF' : '#474D57'; }
-    var notesEl = document.getElementById('client-notes');
-    if (notesEl) {
-      notesEl.value = localStorage.getItem('notes_' + uid) || '';
-      notesEl.addEventListener('input', function() { localStorage.setItem('notes_' + uid, notesEl.value); });
-    }
   })();
 
 })();
@@ -1136,13 +1134,19 @@ window.deleteContact = function(idx) {
 
 // 所有 window.* 函数定义完毕后，执行档案 tab 初始化
 window.renderContacts();
+// renderNotesList 在下方定义，延迟调用
+setTimeout(function() { if (typeof renderNotesList === 'function') renderNotesList(); }, 0);
 
-  // === 笔记（FAB + 抽屉 + 时间轴列表）===
-  function renderNotesList() {
-    var listEl = document.getElementById('notes-list');
+  // === 笔记（FAB + 抽屉 + 档案 Tab 时间轴）===
+  var _noteParams = new URLSearchParams(location.search);
+  var _noteUid = _noteParams.get('uid');
+  var notesKey = 'notes_' + _noteUid;
+  var notes = [];
+  try { notes = JSON.parse(localStorage.getItem(notesKey) || '[]'); } catch(e) {}
+
+  function buildNotesHtml(emptyMsg) {
     if (!notes.length) {
-      listEl.innerHTML = '<p class="text-[12px] text-[#474D57] text-center py-6">还没有笔记</p>';
-      return;
+      return '<p style="font-size:12px;color:#474D57;text-align:center;padding:24px 0">' + emptyMsg + '</p>';
     }
     var items = notes.slice().reverse().map(function(n) {
       return '<div class="relative">'
@@ -1151,7 +1155,14 @@ window.renderContacts();
         + '<p class="text-[12px] text-[#EAECEF] mt-0.5 leading-relaxed">' + esc(n.text) + '</p>'
         + '</div>';
     }).join('');
-    listEl.innerHTML = '<div class="border-l-2 border-[#2E3440] pl-3 space-y-4">' + items + '</div>';
+    return '<div class="border-l-2 border-[#2E3440] pl-3 space-y-4">' + items + '</div>';
+  }
+
+  function renderNotesList() {
+    var drawerList = document.getElementById('notes-list');
+    if (drawerList) drawerList.innerHTML = buildNotesHtml('还没有笔记');
+    var profileList = document.getElementById('profile-notes-list');
+    if (profileList) profileList.innerHTML = buildNotesHtml('还没有笔记');
   }
 
   window.openNote = function() {
