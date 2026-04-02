@@ -184,13 +184,41 @@
         + t.label + '</button>';
     }).join('');
 
+    // 推荐事件：从 localStorage 汇总所有客户的处理中任务（前5条）
+    var allTasks = [];
+    D.clients.forEach(function(cl) {
+      var raw = [];
+      try { raw = JSON.parse(localStorage.getItem('tasks_' + cl.uid) || '[]'); } catch(e) {}
+      raw.filter(function(t) { return t.status === '处理中'; }).forEach(function(t) {
+        allTasks.push({ task: t, client: cl });
+      });
+    });
+    allTasks.sort(function(a, b) { return new Date(b.task.createdAt) - new Date(a.task.createdAt); });
+    var topTasks = allTasks.slice(0, 5);
+
+    var taskPanelHtml;
+    if (topTasks.length === 0) {
+      taskPanelHtml = '<div style="padding:24px 16px;text-align:center;color:#848E9C;font-size:13px">'
+        + '暂无待处理任务<br><span style="font-size:11px">在客户详情中发起任务后将显示在这里</span></div>';
+    } else {
+      taskPanelHtml = topTasks.map(function(item) {
+        var t = item.task, cl = item.client;
+        return '<a href="client-detail.html?uid=' + cl.uid + '" style="display:flex;align-items:flex-start;gap:10px;padding:11px 14px;border-bottom:1px solid #2E3440;text-decoration:none;active:opacity-70">'
+          + '<div style="flex:1;min-width:0">'
+          + '<div style="font-size:13px;color:#EAECEF;line-height:1.4;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + t.text + '</div>'
+          + '<div style="margin-top:3px;font-size:10px;color:#848E9C">' + cl.name + ' · ' + t.createdDisplay + '</div>'
+          + '</div>'
+          + '<i class="fa-solid fa-chevron-right" style="font-size:10px;color:#474D57;margin-top:3px;flex-shrink:0"></i>'
+          + '</a>';
+      }).join('');
+    }
+
     var panels = [
-      { icon: 'fa-user-check', hint: '将根据客户价值与沟通频率智能推荐' },
-      { icon: 'fa-bolt',       hint: '将展示需要跟进的重要事件' },
+      { content: '<div style="padding:24px 16px;text-align:center;color:#848E9C;font-size:13px">暂无推荐<br><span style="font-size:11px">将根据客户价值与沟通频率智能推荐</span></div>' },
+      { content: taskPanelHtml },
     ].map(function(p, i) {
-      return '<div id="smart-panel-' + i + '" style="display:' + (i === 0 ? 'block' : 'none') + ';'
-        + 'padding:24px 16px;text-align:center;color:#848E9C;font-size:13px">'
-        + '暂无推荐<br><span style="font-size:11px">' + p.hint + '</span>'
+      return '<div id="smart-panel-' + i + '" style="display:' + (i === 0 ? 'block' : 'none') + '">'
+        + p.content
         + '</div>';
     }).join('');
 
@@ -382,7 +410,7 @@
   var now = new Date();
   var hh = String(now.getHours()).padStart(2, '0');
   var mm = String(now.getMinutes()).padStart(2, '0');
-  document.getElementById('refresh-time').textContent = hh + ':' + mm;
+  document.getElementById('refresh-time').textContent = '更新于 ' + hh + ':' + mm;
 
 })();
 </script>
