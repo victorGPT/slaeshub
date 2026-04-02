@@ -362,7 +362,7 @@ function timeAgo(isoStr) {
   var pnlVal = c.clientPnl && c.clientPnl.total7d && c.clientPnl.total7d.value;
   if (pnlVal !== undefined && pnlVal !== null) {
     pnlEl.textContent = fmtUSDT(pnlVal, true);
-    pnlEl.style.color = '#F0B90B';
+    pnlEl.style.color = pnlVal >= 0 ? '#0ECB81' : '#F6465D';
   } else {
     pnlEl.textContent = '--';
     pnlEl.style.color = '#848E9C';
