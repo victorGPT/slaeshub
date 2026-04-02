@@ -154,108 +154,149 @@
     return '<span style="display:inline-flex;align-items:center;justify-content:center;width:16px;height:16px;border-radius:4px;background:' + bg + ';color:' + color + ';font-size:10px;font-weight:700;flex-shrink:0">' + rank + '</span>';
   }
 
-  function lastContact(c) {
-    var evts = D.eventsByClientUid[c.uid];
-    if (!evts || evts.length === 0) return { label: '未联系', color: '#F6465D' };
-    var minH = Infinity;
-    evts.forEach(function(e) { if (e.age_hours < minH) minH = e.age_hours; });
-    var label = minH < 24 ? '今天联系' : Math.floor(minH / 24) + '天前联系';
-    var color = minH >= 720 ? '#F6465D' : minH >= 168 ? '#F0B90B' : '#0ECB81';
-    return { label: label, color: color };
-  }
-
-  // section 卡片包装：mx-4 mb-3
-  function buildSection(iconClass, iconColor, title, sortParam, rows) {
-    var header = '<div style="display:flex;align-items:center;padding:12px 16px 12px 16px;border-bottom:1px solid #2E3440">'
-      + '<i class="' + iconClass + '" style="color:' + iconColor + ';font-size:14px;margin-right:8px"></i>'
-      + '<span style="font-size:14px;font-weight:700;color:#EAECEF;flex:1">' + title + '</span>'
-      + '<a href="clients.html?sort=' + sortParam + '" style="font-size:11px;color:#848E9C;text-decoration:none">查看更多 →</a>'
-      + '</div>';
-
-    var rowsHtml = rows.map(function(r, idx) {
-      var border = (idx < rows.length - 1) ? 'border-bottom:1px solid #2E3440;' : '';
-      var lc = lastContact(r.client);
-      var label = r.client.name ? r.client.uid + ' (' + r.client.name + ')' : r.client.uid;
-      return '<a href="' + r.href + '" style="display:flex;align-items:center;gap:10px;padding:11px 16px;' + border + 'text-decoration:none">'
+  function buildRankRows(list, getVal, valColor) {
+    return list.map(function(c, idx) {
+      var border = idx < list.length - 1 ? 'border-bottom:1px solid #2E3440;' : '';
+      var label = c.name ? c.uid + ' (' + c.name + ')' : c.uid;
+      return '<a href="' + (c.detailHref || 'client-detail.html?uid=' + c.uid) + '" '
+        + 'style="display:flex;align-items:center;gap:10px;padding:11px 16px;' + border + 'text-decoration:none">'
         + rankBadge(idx + 1)
         + '<span style="flex:1;font-size:13px;color:#EAECEF;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + label + '</span>'
-        + '<span style="font-size:13px;font-weight:700;color:' + r.rightColor + ';flex-shrink:0;margin-left:8px">' + r.right + '</span>'
-        + '<span style="font-size:11px;color:' + lc.color + ';flex-shrink:0;margin-left:8px;min-width:30px;text-align:right">' + lc.label + '</span>'
+        + '<span style="font-size:13px;font-weight:700;color:' + valColor + ';flex-shrink:0;margin-left:8px">' + getVal(c) + '</span>'
         + '</a>';
     }).join('');
+  }
 
-    return '<div style="background:#1E2329;border-radius:12px;border:1px solid #2E3440;margin:0 16px 12px 16px;overflow:hidden">'
-      + header
-      + rowsHtml
+  // ---------- 智能推荐（占位） ----------
+
+  function buildSmartSection() {
+    var tabs = [
+      { id: 'smart0', label: '推荐客户' },
+      { id: 'smart1', label: '推荐事件' },
+    ];
+
+    var tabBar = tabs.map(function(t, i) {
+      var active = i === 0;
+      return '<button onclick="switchSmartTab(' + i + ')" id="smart-tab-' + i + '" '
+        + 'style="flex:1;padding:10px 0;border:none;background:none;cursor:pointer;font-size:13px;font-weight:700;'
+        + 'color:' + (active ? '#F0B90B' : '#848E9C') + ';'
+        + 'border-bottom:2px solid ' + (active ? '#F0B90B' : 'transparent') + '">'
+        + t.label + '</button>';
+    }).join('');
+
+    var panels = [
+      { icon: 'fa-user-check', hint: '将根据客户价值与沟通频率智能推荐' },
+      { icon: 'fa-bolt',       hint: '将展示需要跟进的重要事件' },
+    ].map(function(p, i) {
+      return '<div id="smart-panel-' + i + '" style="display:' + (i === 0 ? 'block' : 'none') + ';'
+        + 'padding:24px 16px;text-align:center;color:#848E9C;font-size:13px">'
+        + '暂无推荐<br><span style="font-size:11px">' + p.hint + '</span>'
+        + '</div>';
+    }).join('');
+
+    return '<div style="background:#1E2329;border-radius:12px;border:1px solid #2E3440;margin:0 16px 12px;overflow:hidden">'
+      + '<div style="display:flex;align-items:center;padding:12px 16px;border-bottom:1px solid #2E3440">'
+      +   '<i class="fa-solid fa-sparkles" style="color:#F0B90B;font-size:14px;margin-right:8px"></i>'
+      +   '<span style="font-size:14px;font-weight:700;color:#EAECEF;flex:1">智能推荐</span>'
+      + '</div>'
+      + '<div style="display:flex;border-bottom:1px solid #2E3440">' + tabBar + '</div>'
+      + panels
       + '</div>';
   }
 
-  // ---------- 构建每个 section 的行数据 ----------
+  // ---------- 用户排名（4 Tab） ----------
 
-  var sec1Rows = top5Deposit.map(function(c) {
-    return { client: c, href: c.detailHref || ('client-detail.html?uid=' + c.uid), right: c.depositDisplay, rightColor: '#F0B90B' };
-  });
+  function buildRankSection() {
+    var tabs = [
+      { label: '资沉', color: '#F0B90B', sort: 'deposit',
+        rows: buildRankRows(top5Deposit, function(c) { return c.depositDisplay; }, '#F0B90B') },
+      { label: '入金', color: '#0ECB81', sort: 'inflow',
+        rows: buildRankRows(top5Inflow,  function(c) { return fmtWan(weekDelta(c)); }, '#0ECB81') },
+      { label: '出金', color: '#F6465D', sort: 'outflow',
+        rows: buildRankRows(top5Outflow, function(c) { return fmtWan(weekDelta(c)); }, '#F6465D') },
+      { label: '利润', color: '#4DA6FF', sort: 'profit',
+        rows: buildRankRows(top5Profit,  function(c) {
+          var t = (c.netContribution && c.netContribution.total) || 0;
+          return c.netContribution && c.netContribution.totalDisplay
+            ? c.netContribution.totalDisplay
+            : (t >= 10000 ? (t / 10000).toFixed(1) + '万' : Math.round(t).toLocaleString());
+        }, '#4DA6FF') },
+    ];
 
-  var sec2Rows = top5Inflow.map(function(c) {
-    return { client: c, href: c.detailHref || ('client-detail.html?uid=' + c.uid), right: fmtWan(weekDelta(c)), rightColor: '#0ECB81' };
-  });
+    var tabBar = tabs.map(function(t, i) {
+      var active = i === 0;
+      return '<button onclick="switchRankTab(' + i + ')" id="rank-tab-' + i + '" '
+        + 'data-color="' + t.color + '" '
+        + 'style="flex:1;padding:10px 0;border:none;background:none;cursor:pointer;font-size:13px;font-weight:700;'
+        + 'color:' + (active ? t.color : '#848E9C') + ';'
+        + 'border-bottom:2px solid ' + (active ? t.color : 'transparent') + '">'
+        + t.label + '</button>';
+    }).join('');
 
-  var sec3Rows = top5Outflow.map(function(c) {
-    return { client: c, href: c.detailHref || ('client-detail.html?uid=' + c.uid), right: fmtWan(weekDelta(c)), rightColor: '#F6465D' };
-  });
+    var panels = tabs.map(function(t, i) {
+      return '<div id="rank-panel-' + i + '" style="display:' + (i === 0 ? 'block' : 'none') + '">'
+        + t.rows
+        + '</div>';
+    }).join('');
 
-  var sec4Rows = top5Profit.map(function(c) {
-    var total = (c.netContribution && c.netContribution.total) ? c.netContribution.total : 0;
-    var display = c.netContribution && c.netContribution.totalDisplay
-      ? c.netContribution.totalDisplay
-      : (total >= 10000 ? (total / 10000).toFixed(1) + '万' : Math.round(total).toLocaleString());
-    return { client: c, href: c.detailHref || ('client-detail.html?uid=' + c.uid), right: display, rightColor: '#4DA6FF' };
-  });
+    // 底部"查看更多"随 Tab 联动
+    var firstTab = tabs[0];
+    var moreFooter = '<a id="rank-more" href="clients.html?sort=' + firstTab.sort + '" '
+      + 'style="display:flex;align-items:center;justify-content:center;gap:4px;'
+      + 'padding:11px 16px;border-top:1px solid #2E3440;text-decoration:none;'
+      + 'font-size:13px;font-weight:600;color:' + firstTab.color + '" '
+      + 'data-sorts=\'' + JSON.stringify(tabs.map(function(t){ return t.sort; })) + '\' '
+      + 'data-colors=\'' + JSON.stringify(tabs.map(function(t){ return t.color; })) + '\' '
+      + 'data-labels=\'' + JSON.stringify(tabs.map(function(t){ return t.label; })) + '\'>'
+      + '<span id="rank-more-label">查看更多' + firstTab.label + '</span>'
+      + '<i class="fa-solid fa-chevron-right" style="font-size:10px"></i>'
+      + '</a>';
 
-  // ---------- 收藏 section ----------
-
-  function buildFavsSection() {
-    var FAV_KEY = 'slaeshub_favs';
-    var favUids = [];
-    try { favUids = JSON.parse(localStorage.getItem(FAV_KEY) || '[]'); } catch(e) {}
-    var favClients = favUids.map(function(uid) {
-      return D.clients.filter(function(c) { return c.uid === uid; })[0];
-    }).filter(Boolean).sort(function(a, b) { return b.fMean - a.fMean; });
-
-    var header = '<div style="display:flex;align-items:center;padding:12px 16px;border-bottom:1px solid #2E3440">'
-      + '<i class="fa-solid fa-star" style="color:#F0B90B;font-size:14px;margin-right:8px"></i>'
-      + '<span style="font-size:14px;font-weight:700;color:#EAECEF;flex:1">我的收藏</span>'
-      + '<a href="clients.html?sort=favs" style="font-size:11px;color:#848E9C;text-decoration:none">查看全部 →</a>'
+    return '<div style="background:#1E2329;border-radius:12px;border:1px solid #2E3440;margin:0 16px 12px;overflow:hidden">'
+      + '<div style="display:flex;align-items:center;padding:12px 16px;border-bottom:1px solid #2E3440">'
+      +   '<i class="fa-solid fa-chart-bar" style="color:#F0B90B;font-size:14px;margin-right:8px"></i>'
+      +   '<span style="font-size:14px;font-weight:700;color:#EAECEF">用户排名</span>'
+      + '</div>'
+      + '<div style="display:flex;border-bottom:1px solid #2E3440">' + tabBar + '</div>'
+      + panels
+      + moreFooter
       + '</div>';
-
-    var body;
-    if (favClients.length === 0) {
-      body = '<div style="padding:20px 16px;text-align:center;color:#848E9C;font-size:13px">还没有收藏的客户<br><span style="font-size:11px">在客户列表点击 ☆ 添加</span></div>';
-    } else {
-      body = favClients.map(function(c, idx) {
-        var border = idx < favClients.length - 1 ? 'border-bottom:1px solid #2E3440;' : '';
-        var lc = lastContact(c);
-        var label = c.name ? c.uid + ' (' + c.name + ')' : c.uid;
-        return '<a href="' + (c.detailHref || 'client-detail.html?uid=' + c.uid) + '" style="display:flex;align-items:center;gap:10px;padding:11px 16px;' + border + 'text-decoration:none">'
-          + '<span style="flex:1;font-size:13px;color:#EAECEF;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + label + '</span>'
-          + '<span style="font-size:13px;font-weight:700;color:#F0B90B;flex-shrink:0;margin-left:8px">' + c.depositDisplay + '</span>'
-          + '<span style="font-size:11px;color:' + lc.color + ';flex-shrink:0;margin-left:8px;min-width:42px;text-align:right">' + lc.label + '</span>'
-          + '</a>';
-      }).join('');
-    }
-
-    return '<div style="background:#1E2329;border-radius:12px;border:1px solid #2E3440;margin:0 16px 12px 16px;overflow:hidden">'
-      + header + body + '</div>';
   }
 
   // ---------- 注入页面 ----------
 
   document.getElementById('main-content').innerHTML =
-    buildFavsSection()
-  + buildSection('fa-solid fa-trophy',               '#F0B90B', '资沉前五',     'deposit',  sec1Rows)
-  + buildSection('fa-solid fa-arrow-down-to-line',   '#0ECB81', '本周入金前五', 'inflow',   sec2Rows)
-  + buildSection('fa-solid fa-arrow-up-from-line',   '#F6465D', '本周出金前五', 'outflow',  sec3Rows)
-  + buildSection('fa-solid fa-sack-dollar',          '#4DA6FF', '利润贡献前五', 'profit',   sec4Rows);
+    buildSmartSection()
+  + buildRankSection();
+
+  // ---------- Tab 切换 ----------
+
+  window.switchSmartTab = function(idx) {
+    [0, 1].forEach(function(i) {
+      var active = i === idx;
+      document.getElementById('smart-tab-' + i).style.color = active ? '#F0B90B' : '#848E9C';
+      document.getElementById('smart-tab-' + i).style.borderBottomColor = active ? '#F0B90B' : 'transparent';
+      document.getElementById('smart-panel-' + i).style.display = active ? 'block' : 'none';
+    });
+  };
+
+  window.switchRankTab = function(idx) {
+    [0, 1, 2, 3].forEach(function(i) {
+      var active = i === idx;
+      var btn = document.getElementById('rank-tab-' + i);
+      var col = btn.getAttribute('data-color');
+      btn.style.color = active ? col : '#848E9C';
+      btn.style.borderBottomColor = active ? col : 'transparent';
+      document.getElementById('rank-panel-' + i).style.display = active ? 'block' : 'none';
+    });
+    var more = document.getElementById('rank-more');
+    var sorts  = JSON.parse(more.getAttribute('data-sorts'));
+    var colors = JSON.parse(more.getAttribute('data-colors'));
+    var labels = JSON.parse(more.getAttribute('data-labels'));
+    more.href = 'clients.html?sort=' + sorts[idx];
+    more.style.color = colors[idx];
+    document.getElementById('rank-more-label').textContent = '查看更多' + labels[idx];
+  };
 
   // ---------- Search ----------
 
