@@ -119,7 +119,6 @@
       <button onclick="saveEdit()" class="text-[12px] text-[#0ECB81] active:opacity-70">保存</button>
       <button onclick="cancelEdit()" class="text-[12px] text-[#848E9C] active:opacity-70">取消</button>
     </div>
-    <div id="event-meta" class="text-[11px] text-[#474D57] mb-4"></div>
     <!-- 归档 + 删除 -->
     <div class="flex gap-2">
       <button onclick="archiveEvent()" style="flex:1;height:44px;background:#2B3139;color:#EAECEF;font-size:14px;font-weight:500;border:1px solid #2E3440;border-radius:10px;cursor:pointer">归档</button>
@@ -323,10 +322,6 @@
 
   // ── ② Task info ──
   document.getElementById('event-goal').textContent = ev.title || '—';
-  if (ev.created_at) {
-    var cd = new Date(ev.created_at);
-    document.getElementById('event-meta').textContent = '创建于 ' + (cd.getMonth()+1) + '月' + cd.getDate() + '日 ' + ('0'+cd.getHours()).slice(-2) + ':' + ('0'+cd.getMinutes()).slice(-2);
-  }
 
   function saveStatus(status) {
     var all = [];
