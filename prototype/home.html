@@ -206,7 +206,11 @@
         return '<a href="client-detail.html?uid=' + cl.uid + '" style="display:flex;align-items:flex-start;gap:10px;padding:11px 14px;border-bottom:1px solid #2E3440;text-decoration:none;active:opacity-70">'
           + '<div style="flex:1;min-width:0">'
           + '<div style="font-size:13px;color:#EAECEF;line-height:1.4;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + t.text + '</div>'
-          + '<div style="margin-top:3px;font-size:10px;color:#848E9C">' + cl.name + ' · ' + t.createdDisplay + '</div>'
+          + (function() {
+              var nick = localStorage.getItem('nickname_' + cl.uid) || '';
+              var label = cl.uid + (nick ? ' (' + nick + ')' : '');
+              return '<div style="margin-top:3px;font-size:10px;color:#848E9C">' + label + ' · ' + t.createdDisplay + '</div>';
+            })()
           + '</div>'
           + '<i class="fa-solid fa-chevron-right" style="font-size:10px;color:#474D57;margin-top:3px;flex-shrink:0"></i>'
           + '</a>';
