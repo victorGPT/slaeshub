@@ -105,6 +105,18 @@
         </div>
       </div>
 
+      <!-- Row 4: 利润贡献 + 交易盈亏 -->
+      <div class="flex border-t border-[#2E3440]">
+        <div class="flex-1 px-4 py-2.5 border-r border-[#2E3440]">
+          <div class="text-[10px] text-[#474D57] mb-0.5">利润贡献</div>
+          <span id="profit-hero" class="text-[15px] font-bold text-[#4DA6FF]">--</span>
+        </div>
+        <div class="flex-1 px-4 py-2.5">
+          <div class="text-[10px] text-[#474D57] mb-0.5">交易盈亏</div>
+          <span id="pnl-hero" class="text-[15px] font-bold text-[#848E9C]">--</span>
+        </div>
+      </div>
+
       <!-- Row 5: Last Contact -->
       <div id="last-contact-row" class="hidden px-4 pb-3 flex items-center justify-between"></div>
       <!-- Row 6: Active Follow-up (hidden when none) -->
@@ -303,6 +315,26 @@
 
   // Deposit hero
   document.getElementById('deposit-hero').textContent = c.thisWeekDisplay || '-';
+
+  // 利润贡献
+  var profitEl = document.getElementById('profit-hero');
+  if (c.netContribution && c.netContribution.totalDisplay) {
+    profitEl.textContent = c.netContribution.totalDisplay;
+    profitEl.style.color = '#4DA6FF';
+  } else {
+    profitEl.textContent = '-';
+  }
+
+  // 交易盈亏
+  var pnlEl = document.getElementById('pnl-hero');
+  if (c.pnl !== undefined && c.pnl !== null) {
+    var pnlDisplay = c.pnlDisplay || (c.pnl >= 0 ? '+' : '') + (Math.abs(c.pnl) >= 10000 ? (c.pnl / 10000).toFixed(1) + '万' : Math.round(c.pnl).toLocaleString());
+    pnlEl.textContent = pnlDisplay;
+    pnlEl.style.color = c.pnl >= 0 ? '#0ECB81' : '#F6465D';
+  } else {
+    pnlEl.textContent = '-';
+    pnlEl.style.color = '#848E9C';
+  }
 
   // 刷新时间
   var refreshEl = document.getElementById('data-refresh-time');
