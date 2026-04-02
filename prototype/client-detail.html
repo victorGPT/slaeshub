@@ -386,9 +386,7 @@ function timeAgo(isoStr) {
   // 资沉排名：全平台，前100才显示
   var depositRank = allClients.filter(function(cl) { return cl.fMean > c.fMean; }).length + 1;
   if (depositRank <= 100) {
-    var dc = depositRank <= 10 ? '#F0B90B' : depositRank <= 50 ? '#4DA6FF' : '#848E9C';
-    var dbg = depositRank <= 10 ? 'rgba(240,185,11,0.12)' : depositRank <= 50 ? 'rgba(77,166,255,0.12)' : 'rgba(132,142,156,0.12)';
-    sysTags.push({ label: '资沉 #' + depositRank, color: dc, bg: dbg });
+    sysTags.push({ label: '资沉 #' + depositRank, color: '#F0B90B', bg: 'rgba(240,185,11,0.12)' });
   }
 
   // 利润贡献排名：全平台，前100才显示
@@ -397,9 +395,7 @@ function timeAgo(isoStr) {
     return (cl.netContribution ? cl.netContribution.total : 0) > myProfit;
   }).length + 1;
   if (profitRank <= 100) {
-    var pc = profitRank <= 10 ? '#F0B90B' : profitRank <= 50 ? '#4DA6FF' : '#848E9C';
-    var pbg = profitRank <= 10 ? 'rgba(240,185,11,0.12)' : profitRank <= 50 ? 'rgba(77,166,255,0.12)' : 'rgba(132,142,156,0.12)';
-    sysTags.push({ label: '利润 #' + profitRank, color: pc, bg: pbg });
+    sysTags.push({ label: '利润 #' + profitRank, color: '#F0B90B', bg: 'rgba(240,185,11,0.12)' });
   }
 
   // 交易盈亏排名：全平台，前100才显示
