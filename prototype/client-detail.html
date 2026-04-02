@@ -302,6 +302,10 @@
   // Deposit hero
   document.getElementById('deposit-hero').textContent = c.thisWeekDisplay || '-';
 
+  // commRecords: 需在 tags 之前定义（活跃度标签会用到）
+  var commRecords = [];
+  try { commRecords = JSON.parse(sessionStorage.getItem('comm_records_' + uid) || '[]'); } catch(e) {}
+
   // --- System Tags ---
   var sysTags = [];
 
@@ -456,7 +460,6 @@
   var eventsHtml = '';
 
   // Module: Follow-up Records（跟进记录）
-  // (commRecords already defined above)
 
   // 按 occurred_at 降序排列（最新在前）
   var sortedRecords = commRecords.slice().sort(function(a, b) {
