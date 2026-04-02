@@ -194,33 +194,23 @@
         + t.label + '</button>';
     }).join('');
 
-    // 推荐事件：从 localStorage 汇总所有客户的处理中任务（前5条）
-    var allTasks = [];
-    D.clients.forEach(function(cl) {
-      var raw = [];
-      try { raw = JSON.parse(localStorage.getItem('tasks_' + cl.uid) || '[]'); } catch(e) {}
-      raw.filter(function(t) { return t.status === '处理中'; }).forEach(function(t) {
-        allTasks.push({ task: t, client: cl });
-      });
-    });
-    allTasks.sort(function(a, b) { return new Date(b.task.createdAt) - new Date(a.task.createdAt); });
-    var topTasks = allTasks.slice(0, 5);
+    // 跟进中事件：从 sessionStorage follow_up_events 读取（前5条）
+    var fuEvents = [];
+    try { fuEvents = JSON.parse(sessionStorage.getItem('follow_up_events') || '[]'); } catch(e) {}
+    var topTasks = fuEvents.filter(function(e) { return e.status === '跟进中'; }).slice(0, 5);
 
     var taskPanelHtml;
     if (topTasks.length === 0) {
       taskPanelHtml = '<div style="padding:24px 16px;text-align:center;color:#848E9C;font-size:13px">'
-        + '暂无待处理任务<br><span style="font-size:11px">在客户详情中发起任务后将显示在这里</span></div>';
+        + '暂无跟进事件<br><span style="font-size:11px">在客户详情中创建跟进事件后将显示在这里</span></div>';
     } else {
-      taskPanelHtml = topTasks.map(function(item) {
-        var t = item.task, cl = item.client;
-        return '<a href="task-detail.html?uid=' + cl.uid + '&taskId=' + t.id + '" style="display:flex;align-items:flex-start;gap:10px;padding:11px 14px;border-bottom:1px solid #2E3440;text-decoration:none;active:opacity-70">'
+      taskPanelHtml = topTasks.map(function(ev) {
+        var nick = localStorage.getItem('nickname_' + ev.client_uid) || '';
+        var label = ev.client_uid + (nick ? ' (' + nick + ')' : '');
+        return '<a href="follow-up-thread.html?fuId=' + ev.id + '" style="display:flex;align-items:flex-start;gap:10px;padding:11px 14px;border-bottom:1px solid #2E3440;text-decoration:none;active:opacity-70">'
           + '<div style="flex:1;min-width:0">'
-          + '<div style="font-size:13px;color:#EAECEF;line-height:1.4;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + t.text + '</div>'
-          + (function() {
-              var nick = localStorage.getItem('nickname_' + cl.uid) || '';
-              var label = cl.uid + (nick ? ' (' + nick + ')' : '');
-              return '<div style="margin-top:3px;font-size:10px;color:#848E9C">' + label + ' · ' + t.createdDisplay + '</div>';
-            })()
+          + '<div style="font-size:13px;color:#EAECEF;line-height:1.4;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + (ev.title || '—') + '</div>'
+          + '<div style="margin-top:3px;font-size:10px;color:#848E9C">' + label + '</div>'
           + '</div>'
           + '<i class="fa-solid fa-chevron-right" style="font-size:10px;color:#474D57;margin-top:3px;flex-shrink:0"></i>'
           + '</a>';
