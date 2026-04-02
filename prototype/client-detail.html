@@ -87,34 +87,30 @@
       <!-- Row 2: Tags -->
       <div id="tags-row" class="px-4 pb-2 flex flex-wrap gap-1"></div>
 
-      <!-- Row 3: Deposit Hero + 8w Delta -->
-      <div class="px-4 pb-2">
-        <div class="flex items-end gap-3">
-          <!-- Current deposit -->
-          <div>
-            <div class="text-[10px] text-[#474D57] mb-0.5">7日资沉</div>
-            <span id="deposit-hero" class="text-[28px] font-bold text-[#EAECEF] tracking-tight leading-none"></span>
-          </div>
-          <!-- 8w comparison: delta badge -->
-          <div id="deposit-delta" class="mb-1 flex items-center gap-1">
-            <!-- filled by JS: arrow icon + percentage + absolute change -->
+      <!-- Row 3: 四项核心指标 2×2 -->
+      <div class="grid grid-cols-2 gap-x-4 gap-y-3 px-4 pb-3 pt-1">
+        <div>
+          <div class="text-[10px] text-[#474D57] mb-0.5">资沉</div>
+          <div class="flex items-baseline gap-1.5">
+            <span id="deposit-hero" class="text-[20px] font-bold text-[#EAECEF] tracking-tight leading-none"></span>
+            <div id="deposit-delta" class="flex items-center gap-0.5 text-[11px]"></div>
           </div>
         </div>
-        <div class="flex justify-end mt-0.5">
-          <span id="data-refresh-time" class="text-[9px] text-[#474D57]"></span>
+        <div>
+          <div class="text-[10px] text-[#474D57] mb-0.5">充提</div>
+          <span id="cashflow-hero" class="text-[20px] font-bold leading-none">--</span>
         </div>
-      </div>
-
-      <!-- Row 4: 利润贡献 + 交易盈亏 -->
-      <div class="flex gap-6 px-4 pb-3">
         <div>
           <div class="text-[10px] text-[#474D57] mb-0.5">利润贡献</div>
-          <span id="profit-hero" class="text-[15px] font-bold text-[#4DA6FF]">--</span>
+          <span id="profit-hero" class="text-[20px] font-bold text-[#4DA6FF] leading-none">--</span>
         </div>
         <div>
           <div class="text-[10px] text-[#474D57] mb-0.5">交易盈亏</div>
-          <span id="pnl-hero" class="text-[15px] font-bold text-[#848E9C]">--</span>
+          <span id="pnl-hero" class="text-[20px] font-bold text-[#848E9C] leading-none">--</span>
         </div>
+      </div>
+      <div class="flex justify-end px-4 pb-2">
+        <span id="data-refresh-time" class="text-[9px] text-[#474D57]"></span>
       </div>
 
       <!-- Row 5: Last Contact -->
@@ -315,6 +311,20 @@
 
   // Deposit hero
   document.getElementById('deposit-hero').textContent = c.thisWeekDisplay || '-';
+
+  // 充提（本周净充提 = weekDelta）
+  var cashflowEl = document.getElementById('cashflow-hero');
+  var weeks = c.weeks || [];
+  var delta = weeks.length >= 2 ? weeks[weeks.length - 1] - weeks[weeks.length - 2] : null;
+  if (delta !== null) {
+    var absD = Math.abs(delta);
+    var dStr = (delta >= 0 ? '+' : '-') + (absD >= 10000 ? (absD / 10000).toFixed(1) + '万' : Math.round(absD).toLocaleString());
+    cashflowEl.textContent = dStr;
+    cashflowEl.style.color = delta >= 0 ? '#0ECB81' : '#F6465D';
+  } else {
+    cashflowEl.textContent = '--';
+    cashflowEl.style.color = '#474D57';
+  }
 
   // 利润贡献
   var profitEl = document.getElementById('profit-hero');
