@@ -403,23 +403,6 @@
   var manualTags = [];
   try { manualTags = JSON.parse(localStorage.getItem(manualTagKey) || '[]'); } catch(e) {}
 
-  // 活跃度标签
-  var lastContactDate = null;
-  if (c.lastContact) {
-    lastContactDate = new Date(c.lastContact);
-  } else if (commRecords.length > 0) {
-    var latestRecord = commRecords.reduce(function(a, b) {
-      return new Date(a.occurred_at || a.date || 0) > new Date(b.occurred_at || b.date || 0) ? a : b;
-    });
-    lastContactDate = new Date(latestRecord.occurred_at || latestRecord.date || 0);
-  }
-  if (lastContactDate && !isNaN(lastContactDate.getTime())) {
-    var daysSince = Math.floor((new Date() - lastContactDate) / 86400000);
-    if (daysSince <= 7) sysTags.push({ label: '7天内活跃', color: '#0ECB81', bg: 'rgba(14,203,129,0.12)' });
-    else if (daysSince <= 30) sysTags.push({ label: '近期活跃', color: '#4DA6FF', bg: 'rgba(77,166,255,0.12)' });
-    else if (daysSince > 30) sysTags.push({ label: '30天未联系', color: '#F6465D', bg: 'rgba(246,70,93,0.12)' });
-  }
-
   function renderTags() {
     var tagsHtml = '';
     sysTags.forEach(function(t) {
