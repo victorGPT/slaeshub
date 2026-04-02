@@ -234,25 +234,25 @@
     return sorted;
   }
 
-  // 渲染单行
-  function rowHTML(c, sort) {
+  // 渲染单行（无独立卡片，由外层大卡片包裹）
+  function rowHTML(c, sort, isLast) {
     var color = SORT_CONFIG[sort].color;
     var metric = sort === 'favs' ? c.depositDisplay : getMetricDisplay(c, sort);
     var metricHTML = metric
-      ? '<span class="text-[13px] font-bold flex-shrink-0" style="color:' + color + '">' + metric + '</span>'
-      : '<span class="text-[13px] flex-shrink-0 text-[#474D57]">—</span>';
+      ? '<span style="font-size:13px;font-weight:700;color:' + color + ';flex-shrink:0">' + metric + '</span>'
+      : '<span style="font-size:13px;color:#474D57;flex-shrink:0">—</span>';
     var label = c.name ? c.uid + ' (' + c.name + ')' : c.uid;
     var dotColor = getFollowUpDot(c.uid);
     var dotHTML = dotColor
       ? '<span style="width:7px;height:7px;border-radius:50%;background:' + dotColor + ';flex-shrink:0;display:inline-block"></span>'
       : '<span style="width:7px;height:7px;flex-shrink:0;display:inline-block"></span>';
-    return '<div class="flex items-center mx-3 mb-2 px-3 py-3 rounded-xl bg-[#1E2329] gap-2">'
-      + '<a href="client-detail.html?uid=' + c.uid + '" class="flex items-center gap-2 flex-1 min-w-0 active:opacity-70">'
-      +   dotHTML
-      +   '<span class="flex-1 text-[13px] text-[#EAECEF] truncate min-w-0">' + label + '</span>'
-      +   metricHTML
-      + '</a>'
-      + '</div>';
+    var border = isLast ? '' : 'border-bottom:1px solid #2E3440;';
+    return '<a href="client-detail.html?uid=' + c.uid + '" '
+      + 'style="display:flex;align-items:center;gap:10px;padding:11px 16px;' + border + 'text-decoration:none;active:opacity-70">'
+      + dotHTML
+      + '<span style="flex:1;font-size:13px;color:#EAECEF;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + label + '</span>'
+      + metricHTML
+      + '</a>';
   }
 
   // 更新胶囊样式
@@ -292,11 +292,13 @@
     if (currentPage > totalPages) currentPage = totalPages;
     var pageItems = sorted.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
 
-    var listHTML = pageItems.length
-      ? pageItems.map(function(c) { return rowHTML(c, activeSort); }).join('')
+    var innerHTML = pageItems.length
+      ? pageItems.map(function(c, i) { return rowHTML(c, activeSort, i === pageItems.length - 1); }).join('')
       : activeSort === 'favs'
-        ? '<div class="py-12 text-center text-[#848E9C] text-[13px]">还没有收藏的客户<br><span class="text-[11px]">点击列表右侧 ☆ 添加</span></div>'
-        : '<div class="py-8 text-center text-[#848E9C] text-[13px]">未找到匹配的客户</div>';
+        ? '<div style="padding:48px 16px;text-align:center;color:#848E9C;font-size:13px">还没有收藏的客户</div>'
+        : '<div style="padding:32px 16px;text-align:center;color:#848E9C;font-size:13px">未找到匹配的客户</div>';
+    var listHTML = '<div style="margin:0 12px 8px;background:#1E2329;border-radius:16px;border:1px solid #2E3440;overflow:hidden">'
+      + innerHTML + '</div>';
 
     // 分页控件
     var paginationHTML = totalPages > 1 ? (
