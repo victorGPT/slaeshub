@@ -111,12 +111,19 @@
     return w[w.length - 1] - w[w.length - 2];
   }
 
-  // 金额格式化（入金/出金列使用）
-  function fmtWan(val) {
+  // USDT 金额格式化
+  // showSign=true：强制显示 +/-（用于变化量）
+  function fmtUSDT(val, showSign) {
     var abs = Math.abs(val);
-    if (abs >= 10000) return (val > 0 ? '+' : '-') + (abs / 10000).toFixed(1) + '万';
-    return (val > 0 ? '+' : '') + Math.round(val).toLocaleString();
+    var sign = showSign ? (val >= 0 ? '+' : '-') : (val < 0 ? '-' : '');
+    var num = abs >= 1000000 ? (abs / 1000000).toFixed(1) + 'M'
+            : abs >= 1000   ? (abs / 1000).toFixed(1) + 'K'
+            :                  Math.round(abs).toString();
+    return sign + '$' + num;
   }
+
+  // 兼容旧调用
+  function fmtWan(val) { return fmtUSDT(val, true); }
 
   // ---------- 排序 ----------
 
@@ -243,7 +250,7 @@
   function buildRankSection() {
     var tabs = [
       { label: '资沉', color: '#F0B90B', sort: 'deposit',
-        rows: buildRankRows(top5Deposit, function(c) { return c.depositDisplay; }, '#F0B90B') },
+        rows: buildRankRows(top5Deposit, function(c) { return fmtUSDT(c.fMean); }, '#F0B90B') },
       { label: '入金', color: '#0ECB81', sort: 'inflow',
         rows: buildRankRows(top5Inflow,  function(c) { return fmtWan(weekDelta(c)); }, '#0ECB81') },
       { label: '出金', color: '#F6465D', sort: 'outflow',
@@ -251,9 +258,7 @@
       { label: '利润', color: '#4DA6FF', sort: 'profit',
         rows: buildRankRows(top5Profit,  function(c) {
           var t = (c.netContribution && c.netContribution.total) || 0;
-          return c.netContribution && c.netContribution.totalDisplay
-            ? c.netContribution.totalDisplay
-            : (t >= 10000 ? (t / 10000).toFixed(1) + '万' : Math.round(t).toLocaleString());
+          return fmtUSDT(t);
         }, '#4DA6FF') },
     ];
 
