@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-  <title>Sales Hub — 跟进详情</title>
+  <title>Sales Hub — 任务详情</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
@@ -43,19 +43,20 @@
   </div>
 
   <!-- Top Nav -->
-  <div class="h-[52px] sticky top-0 z-20 bg-[#0B0E11] border-b border-[#2E3440] flex items-center px-4 gap-3">
+  <div class="h-[44px] sticky top-0 z-20 bg-[#0B0E11] border-b border-[#2E3440] flex items-center justify-between px-4">
     <button onclick="history.back()" class="w-8 h-8 flex items-center justify-center">
       <i class="fa-solid fa-chevron-left text-[16px] text-[#EAECEF]"></i>
     </button>
-    <h1 class="flex-1 text-[16px] font-bold text-[#EAECEF]">跟进详情</h1>
+    <h1 class="text-[16px] font-bold text-[#EAECEF]">任务详情</h1>
     <span id="status-badge" class="text-[11px] px-2.5 py-1 rounded-full font-medium"></span>
   </div>
 
   <!-- ① 客户信息卡 -->
-  <div id="client-card" class="mx-3 mt-3 bg-[#1E2329] rounded-2xl border border-[#2E3440] overflow-hidden">
+  <div id="client-card" class="mx-3 mt-2 mb-2 bg-[#1E2329] rounded-2xl border border-[#2E3440] overflow-hidden">
+    <!-- Row 1: Identity -->
     <div class="flex items-center gap-3 px-4 pt-3 pb-2">
       <div class="w-8 h-8 flex items-center justify-center rounded-full bg-[#2B3139] flex-shrink-0">
-        <i id="fav-icon" class="fa-regular fa-star text-[13px] text-[#474D57]"></i>
+        <i id="fav-icon" class="fa-regular fa-star text-[14px] text-[#474D57]"></i>
       </div>
       <div class="flex-1 min-w-0">
         <div class="flex items-center gap-2">
@@ -67,42 +68,54 @@
         </div>
       </div>
     </div>
+    <!-- Row 2: Tags -->
+    <div id="tags-row" class="px-4 pb-2 flex flex-wrap gap-1"></div>
+    <!-- Row 3: 资沉主指标 -->
     <div class="px-4 pb-2">
-      <div class="text-[10px] text-[#474D57] mb-0.5">周资沉</div>
-      <div class="flex items-end gap-3">
-        <span id="deposit-hero" class="text-[26px] font-bold text-[#EAECEF] tracking-tight leading-none"></span>
-        <div id="deposit-delta" class="mb-0.5 flex items-center gap-1"></div>
+      <div class="text-[10px] text-[#474D57] mb-0.5">资沉</div>
+      <div class="flex items-baseline gap-2">
+        <span id="deposit-hero" class="text-[28px] font-bold text-[#EAECEF] tracking-tight leading-none"></span>
+        <div id="deposit-delta" class="flex items-center gap-0.5 text-[11px]"></div>
       </div>
     </div>
-    <div class="px-4 pb-2">
-      <span id="memo-text" class="text-[11px] text-[#474D57]">暂无备忘</span>
+    <!-- Row 4: 充提 / 利润贡献 / 交易盈亏 -->
+    <div class="flex px-4 pb-3 gap-0">
+      <div class="flex-1">
+        <div class="text-[10px] text-[#474D57] mb-0.5">充提</div>
+        <span id="cashflow-hero" class="text-[15px] font-bold leading-none">--</span>
+      </div>
+      <div class="flex-1">
+        <div class="text-[10px] text-[#474D57] mb-0.5">利润贡献</div>
+        <span id="profit-hero" class="text-[15px] font-bold text-[#4DA6FF] leading-none">--</span>
+      </div>
+      <div class="flex-1">
+        <div class="text-[10px] text-[#474D57] mb-0.5">交易盈亏</div>
+        <span id="pnl-hero" class="text-[15px] font-bold text-[#848E9C] leading-none">--</span>
+      </div>
     </div>
-    <div class="px-4 pb-3 flex items-center justify-between">
-      <span class="text-[11px] text-[#848E9C]">上次联系</span>
-      <span id="last-contact" class="text-[12px] text-[#474D57]">暂无记录</span>
+    <div class="flex justify-end px-4 pb-2 -mt-1">
+      <span id="data-refresh-time" class="text-[9px] text-[#474D57]"></span>
     </div>
+    <!-- Row 6: Link -->
     <div class="px-4 pb-3 border-t border-[#2E3440] pt-2">
       <a id="full-profile-link" href="#" class="text-[12px] text-[#4DA6FF]">查看完整资料 →</a>
     </div>
   </div>
 
-  <!-- ② 事件内容卡 -->
+  <!-- ② 任务信息卡 -->
   <div class="mx-3 mt-3 bg-[#1E2329] rounded-2xl border border-[#2E3440] p-4">
-    <div class="flex items-start justify-between mb-3">
-      <div>
-        <div class="text-[11px] text-[#848E9C] mb-1">跟进目标</div>
-        <div id="event-goal" class="text-[15px] font-semibold text-[#EAECEF]"></div>
-      </div>
-      <div class="text-right flex-shrink-0 ml-3">
-        <div class="text-[11px] text-[#848E9C] mb-1">截止日期</div>
-        <div id="due-label" class="text-[13px] font-semibold"></div>
-        <div id="due-date" class="text-[10px] text-[#474D57] mt-0.5"></div>
-      </div>
+    <div class="mb-3">
+      <div class="text-[11px] text-[#848E9C] mb-1">任务名称</div>
+      <div id="event-goal" class="text-[15px] font-semibold text-[#EAECEF]"></div>
+      <div id="event-meta" class="text-[11px] text-[#848E9C] mt-1.5"></div>
     </div>
     <!-- 活动记录 -->
     <div class="border-t border-[#2E3440] pt-3">
       <div class="text-[12px] text-[#848E9C] mb-2">活动记录</div>
       <div id="activities-list" class="border-l-2 border-[#2E3440] pl-3 space-y-3"></div>
+    </div>
+    <div class="border-t border-[#2E3440] mt-3 pt-3">
+      <button onclick="openDeleteSheet()" style="font-size:12px;color:#F6465D;background:none;border:none;cursor:pointer;padding:0">删除任务</button>
     </div>
   </div>
 
@@ -221,22 +234,65 @@
   if (c) {
     var nickname = localStorage.getItem('nickname_' + c.uid) || '';
     document.getElementById('client-nickname').textContent = nickname;
-    document.getElementById('deposit-hero').textContent = c.thisWeekDisplay || '-';
 
-    var thisW = c.weeks[c.weeks.length - 1], avg = c.fMean;
-    var pct = avg > 0 ? ((thisW - avg) / avg * 100) : 0;
-    var isUp = pct >= 0;
-    var dColor = isUp ? '#0ECB81' : '#F6465D';
-    document.getElementById('deposit-delta').innerHTML =
-      '<div class="flex items-center gap-1 px-1.5 py-0.5 rounded" style="background:' + (isUp ? 'rgba(14,203,129,0.12)' : 'rgba(246,70,93,0.12)') + '">'
-      + '<span style="color:' + dColor + ';font-size:11px">' + (isUp ? '▲' : '▼') + '</span>'
-      + '<span style="color:' + dColor + ';font-size:12px;font-weight:700">' + (isUp ? '+' : '') + pct.toFixed(1) + '%</span>'
-      + '</div>';
+    function fmtUSDT(val, showSign) {
+      var abs = Math.abs(val);
+      var sign = showSign ? (val >= 0 ? '+' : '-') : (val < 0 ? '-' : '');
+      var num = abs >= 1000000 ? (abs / 1000000).toFixed(1) + 'M'
+              : abs >= 1000   ? (abs / 1000).toFixed(1) + 'K'
+              :                  Math.round(abs).toString();
+      return sign + '$' + num;
+    }
 
-    var memo = localStorage.getItem('memo_' + c.uid) || '';
-    var memoEl = document.getElementById('memo-text');
-    memoEl.textContent = memo || '暂无备忘';
-    memoEl.style.color = memo ? '#EAECEF' : '#474D57';
+    // 资沉
+    document.getElementById('deposit-hero').textContent = fmtUSDT(c.fMean);
+
+    // deposit-delta（用均值对比）
+    var allClients2 = (window.PROTOTYPE_DATA || {}).clients || [];
+    var weeks = c.weeks || [];
+    var depDeltaEl = document.getElementById('deposit-delta');
+    if (weeks.length >= 2) {
+      var avg8 = 0;
+      for (var j = 0; j < weeks.length - 1; j++) avg8 += weeks[j];
+      avg8 = avg8 / (weeks.length - 1);
+      var pct = avg8 > 0 ? ((weeks[weeks.length - 1] - avg8) / avg8 * 100) : 0;
+      var isUp = pct >= 0;
+      var dColor = isUp ? '#0ECB81' : '#F6465D';
+      depDeltaEl.innerHTML = '<span style="color:' + dColor + ';font-size:11px">' + (isUp ? '+' : '') + pct.toFixed(1) + '%</span>';
+    }
+
+    // 充提
+    var cashflowEl = document.getElementById('cashflow-hero');
+    var delta = weeks.length >= 2 ? weeks[weeks.length - 1] - weeks[weeks.length - 2] : null;
+    if (delta !== null) {
+      cashflowEl.textContent = fmtUSDT(delta, true);
+      cashflowEl.style.color = delta >= 0 ? '#0ECB81' : '#F6465D';
+    } else {
+      cashflowEl.textContent = '--'; cashflowEl.style.color = '#474D57';
+    }
+
+    // 利润贡献
+    var profitEl = document.getElementById('profit-hero');
+    if (c.netContribution && c.netContribution.total) {
+      profitEl.textContent = fmtUSDT(c.netContribution.total);
+      profitEl.style.color = '#4DA6FF';
+    } else { profitEl.textContent = '--'; }
+
+    // 交易盈亏
+    var pnlEl = document.getElementById('pnl-hero');
+    var pnlVal = c.clientPnl && c.clientPnl.total7d ? c.clientPnl.total7d.value : null;
+    if (pnlVal !== null) {
+      pnlEl.textContent = fmtUSDT(pnlVal, true);
+      pnlEl.style.color = pnlVal >= 0 ? '#0ECB81' : '#F6465D';
+    } else { pnlEl.textContent = '--'; pnlEl.style.color = '#848E9C'; }
+
+    // 刷新时间
+    var refreshEl = document.getElementById('data-refresh-time');
+    var D2 = window.PROTOTYPE_DATA;
+    if (refreshEl && D2 && D2.generatedAt) {
+      var rd = new Date(D2.generatedAt);
+      refreshEl.textContent = '数据截至 ' + (rd.getMonth() + 1) + '月' + rd.getDate() + '日';
+    }
 
     // Fav
     var isFav = localStorage.getItem('fav_' + c.uid) === '1';
@@ -244,18 +300,43 @@
     favIcon.className = isFav
       ? 'fa-solid fa-star text-[13px] text-[#F0B90B]'
       : 'fa-regular fa-star text-[13px] text-[#474D57]';
-  }
 
-  // Last contact
-  var commRecords = [];
-  try { commRecords = JSON.parse(sessionStorage.getItem('comm_records_' + ev.client_uid) || '[]'); } catch(e) {}
-  var lcEl = document.getElementById('last-contact');
-  if (commRecords.length > 0) {
-    var lc = commRecords[0];
-    var lcTime = timeAgo(lc.occurred_at || lc.date) || '';
-    var lcText = (lc.channel && lc.result) ? lc.channel + ' · ' + lc.result : (lc.text || '');
-    lcEl.innerHTML = '<span style="color:#F0B90B;font-weight:600">' + lcTime + '</span>'
-      + ' <span style="color:#848E9C">' + lcText + '</span>';
+    // sysTags 完整版
+    var sysTags = [];
+    var depositRank = allClients2.filter(function(cl) { return cl.fMean > c.fMean; }).length + 1;
+    if (depositRank <= 100) {
+      var dc = depositRank <= 10 ? '#F0B90B' : depositRank <= 50 ? '#4DA6FF' : '#848E9C';
+      var dbg = depositRank <= 10 ? 'rgba(240,185,11,0.12)' : depositRank <= 50 ? 'rgba(77,166,255,0.12)' : 'rgba(132,142,156,0.12)';
+      sysTags.push({ label: '资沉 #' + depositRank, color: dc, bg: dbg });
+    }
+    var myProfit = c.netContribution ? c.netContribution.total : 0;
+    var profitRank = allClients2.filter(function(cl) {
+      return (cl.netContribution ? cl.netContribution.total : 0) > myProfit;
+    }).length + 1;
+    if (profitRank <= 100) {
+      var pc2 = profitRank <= 10 ? '#F0B90B' : profitRank <= 50 ? '#4DA6FF' : '#848E9C';
+      var pbg2 = profitRank <= 10 ? 'rgba(240,185,11,0.12)' : profitRank <= 50 ? 'rgba(77,166,255,0.12)' : 'rgba(132,142,156,0.12)';
+      sysTags.push({ label: '利润 #' + profitRank, color: pc2, bg: pbg2 });
+    }
+    var myPnl = c.clientPnl && c.clientPnl.total7d ? c.clientPnl.total7d.value : 0;
+    var pnlRank = allClients2.filter(function(cl) {
+      return (cl.clientPnl && cl.clientPnl.total7d ? cl.clientPnl.total7d.value : 0) > myPnl;
+    }).length + 1;
+    if (pnlRank <= 100) {
+      var prc2 = pnlRank <= 10 ? '#F0B90B' : pnlRank <= 50 ? '#4DA6FF' : '#848E9C';
+      var prb2 = pnlRank <= 10 ? 'rgba(240,185,11,0.12)' : pnlRank <= 50 ? 'rgba(77,166,255,0.12)' : 'rgba(132,142,156,0.12)';
+      sysTags.push({ label: '盈亏 #' + pnlRank, color: prc2, bg: prb2 });
+    }
+    var manualTags = [];
+    try { manualTags = JSON.parse(localStorage.getItem('bd_tags_' + c.uid) || '[]'); } catch(e) {}
+    var tagsHtml = '';
+    sysTags.forEach(function(t) {
+      tagsHtml += '<span style="font-size:9px;padding:2px 6px;border-radius:4px;border:1px solid ' + t.color + '30;color:' + t.color + ';background:' + t.bg + '">' + t.label + '</span>';
+    });
+    manualTags.forEach(function(t) {
+      tagsHtml += '<span style="font-size:9px;padding:2px 6px;border-radius:4px;background:#2B3139;color:#EAECEF">' + t + '</span>';
+    });
+    document.getElementById('tags-row').innerHTML = tagsHtml;
   }
 
   // Copy UID
@@ -267,13 +348,16 @@
     });
   };
 
-  // ── ② Event content ──
-  var di = daysInfo(ev.follow_up_at);
-  // 事件名称显示在顶部标题
-  document.getElementById('event-goal').textContent = ev.title || ev.follow_up_note || '—';
-  document.getElementById('due-label').textContent = di.text;
-  document.getElementById('due-label').style.color = di.color;
-  document.getElementById('due-date').textContent = ev.follow_up_at || '';
+  // ── ② Task info ──
+  document.getElementById('event-goal').textContent = ev.title || '—';
+  var firstAct = (ev.activities || []).find(function(a) { return a.type === '创建'; });
+  var metaParts = [];
+  if (firstAct && firstAct.note) metaParts.push(firstAct.note);
+  if (ev.created_at) {
+    var cd = new Date(ev.created_at);
+    metaParts.push(cd.getFullYear() + '-' + ('0'+(cd.getMonth()+1)).slice(-2) + '-' + ('0'+cd.getDate()).slice(-2));
+  }
+  document.getElementById('event-meta').textContent = metaParts.join(' · ');
 
   var TYPE_META = {
     '创建': { color: '#F0B90B', label: '创建' },
@@ -388,10 +472,6 @@
 
     closeFollowupSheet();
     renderActivities();
-    var newDi = daysInfo(ev.follow_up_at);
-    document.getElementById('due-label').textContent = newDi.text;
-    document.getElementById('due-label').style.color = newDi.color;
-    document.getElementById('due-date').textContent = ev.follow_up_at || '';
     var ss2 = STATUS_STYLE['跟进中'];
     badge.textContent = '跟进中'; badge.style.background = ss2.bg; badge.style.color = ss2.color;
     renderActionBar();
@@ -501,8 +581,36 @@
     renderActionBar();
   };
 
+  window.openDeleteSheet = function() {
+    var sheet = document.getElementById('delete-sheet');
+    sheet.style.display = 'flex';
+  };
+  window.closeDeleteSheet = function() {
+    document.getElementById('delete-sheet').style.display = 'none';
+  };
+  window.confirmDelete = function() {
+    var fuId = new URLSearchParams(location.search).get('fuId');
+    var all = [];
+    try { all = JSON.parse(sessionStorage.getItem('follow_up_events') || '[]'); } catch(e) {}
+    all = all.filter(function(e) { return e.id !== fuId; });
+    sessionStorage.setItem('follow_up_events', JSON.stringify(all));
+    history.back();
+  };
 })();
 </script>
+
+<!-- 删除确认 Sheet -->
+<div id="delete-sheet" style="display:none;position:fixed;inset:0;z-index:50;align-items:flex-end;justify-content:center" onclick="if(event.target===this)closeDeleteSheet()">
+  <div style="position:absolute;inset:0;background:rgba(0,0,0,0.6);pointer-events:none"></div>
+  <div style="position:relative;width:393px;background:#1E2329;border-radius:16px 16px 0 0;padding:20px;padding-bottom:calc(20px + env(safe-area-inset-bottom));z-index:1">
+    <div style="font-size:15px;font-weight:600;color:#EAECEF;margin-bottom:6px">删除任务</div>
+    <div style="font-size:13px;color:#848E9C;margin-bottom:20px">删除后无法恢复，确认删除这个任务吗？</div>
+    <div style="display:flex;gap:8px">
+      <button onclick="closeDeleteSheet()" style="flex:1;padding:12px;border-radius:12px;font-size:14px;color:#848E9C;border:1px solid #2E3440;background:none;cursor:pointer">取消</button>
+      <button onclick="confirmDelete()" style="flex:1;padding:12px;border-radius:12px;font-size:14px;font-weight:600;background:#F6465D;color:#fff;border:0;cursor:pointer">确认删除</button>
+    </div>
+  </div>
+</div>
 
 </body>
 </html>
