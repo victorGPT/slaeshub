@@ -107,18 +107,28 @@
 
   <!-- ② 任务信息卡 -->
   <div class="mx-3 mt-3 bg-[#1E2329] rounded-2xl border border-[#2E3440] p-4">
-    <div class="mb-3">
-      <div class="text-[11px] text-[#848E9C] mb-1">任务名称</div>
-      <div id="event-goal" class="text-[15px] font-semibold text-[#EAECEF]"></div>
-      <div id="event-meta" class="text-[11px] text-[#848E9C] mt-1.5"></div>
+    <!-- 标题（可编辑） -->
+    <div id="task-title-view" class="flex items-start gap-2 mb-1">
+      <div id="event-goal" class="text-[15px] font-semibold text-[#EAECEF] flex-1 leading-snug"></div>
+      <button onclick="enterEditMode()" class="flex-shrink-0 w-6 h-6 flex items-center justify-center rounded active:opacity-70">
+        <i class="fa-solid fa-pen text-[10px] text-[#474D57]"></i>
+      </button>
     </div>
+    <textarea id="task-title-edit" rows="2" class="hidden w-full bg-[#2B3139] text-[#EAECEF] text-[14px] rounded-lg px-3 py-2 border border-[#F0B90B] outline-none resize-none mb-1 font-semibold" style="font-family:inherit"></textarea>
+    <div id="edit-actions" class="hidden flex gap-2 mb-3">
+      <button onclick="saveEdit()" class="text-[12px] text-[#0ECB81] active:opacity-70">保存</button>
+      <button onclick="cancelEdit()" class="text-[12px] text-[#848E9C] active:opacity-70">取消</button>
+    </div>
+    <div id="event-meta" class="text-[11px] text-[#474D57] mb-4"></div>
     <!-- 活动记录 -->
-    <div class="border-t border-[#2E3440] pt-3">
+    <div class="border-t border-[#2E3440] pt-3 mb-4">
       <div class="text-[12px] text-[#848E9C] mb-2">活动记录</div>
       <div id="activities-list" class="border-l-2 border-[#2E3440] pl-3 space-y-3"></div>
     </div>
-    <div class="border-t border-[#2E3440] mt-3 pt-3">
-      <button onclick="openDeleteSheet()" style="font-size:12px;color:#F6465D;background:none;border:none;cursor:pointer;padding:0">删除任务</button>
+    <!-- 归档 + 删除 -->
+    <div class="flex gap-2">
+      <button onclick="archiveEvent()" style="flex:1;height:44px;background:#2B3139;color:#EAECEF;font-size:14px;font-weight:500;border:1px solid #2E3440;border-radius:10px;cursor:pointer">归档</button>
+      <button onclick="openDeleteSheet()" style="flex:1;height:44px;background:rgba(246,70,93,0.12);color:#F6465D;font-size:14px;font-weight:500;border:1px solid rgba(246,70,93,0.2);border-radius:10px;cursor:pointer">删除</button>
     </div>
   </div>
 
@@ -590,6 +600,40 @@
     var ss2 = STATUS_STYLE['已结束'];
     badge.textContent = '已结束'; badge.style.background = ss2.bg; badge.style.color = ss2.color;
     renderActivities();
+    renderActionBar();
+  };
+
+  // ── 编辑标题 ──
+  window.enterEditMode = function() {
+    var textarea = document.getElementById('task-title-edit');
+    textarea.value = ev.title || '';
+    document.getElementById('task-title-view').classList.add('hidden');
+    textarea.classList.remove('hidden');
+    document.getElementById('edit-actions').classList.remove('hidden');
+    textarea.focus();
+  };
+  window.cancelEdit = function() {
+    document.getElementById('task-title-view').classList.remove('hidden');
+    document.getElementById('task-title-edit').classList.add('hidden');
+    document.getElementById('edit-actions').classList.add('hidden');
+  };
+  window.saveEdit = function() {
+    var newTitle = document.getElementById('task-title-edit').value.trim();
+    if (!newTitle) return;
+    ev.title = newTitle;
+    var all = [];
+    try { all = JSON.parse(sessionStorage.getItem('follow_up_events') || '[]'); } catch(e) {}
+    all.forEach(function(e) { if (e.id === ev.id) e.title = newTitle; });
+    sessionStorage.setItem('follow_up_events', JSON.stringify(all));
+    document.getElementById('event-goal').textContent = newTitle;
+    window.cancelEdit();
+  };
+
+  // ── 归档（= 已结束，一键） ──
+  window.archiveEvent = function() {
+    saveStatus('已结束');
+    var ss2 = STATUS_STYLE['已结束'];
+    badge.textContent = '已结束'; badge.style.background = ss2.bg; badge.style.color = ss2.color;
     renderActionBar();
   };
 
