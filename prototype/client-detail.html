@@ -385,6 +385,17 @@
     sysTags.push({ label: '利润 #' + profitRank, color: pc, bg: pbg });
   }
 
+  // 交易盈亏排名：全平台，前100才显示
+  var myPnl = c.clientPnl && c.clientPnl.total7d ? c.clientPnl.total7d.value : 0;
+  var pnlRank = allClients.filter(function(cl) {
+    return (cl.clientPnl && cl.clientPnl.total7d ? cl.clientPnl.total7d.value : 0) > myPnl;
+  }).length + 1;
+  if (pnlRank <= 100) {
+    var prc = pnlRank <= 10 ? '#F0B90B' : pnlRank <= 50 ? '#4DA6FF' : '#848E9C';
+    var prb = pnlRank <= 10 ? 'rgba(240,185,11,0.12)' : pnlRank <= 50 ? 'rgba(77,166,255,0.12)' : 'rgba(132,142,156,0.12)';
+    sysTags.push({ label: '盈亏 #' + pnlRank, color: prc, bg: prb });
+  }
+
   var manualTagKey = 'bd_tags_' + c.uid;
   var manualTags = [];
   try { manualTags = JSON.parse(localStorage.getItem(manualTagKey) || '[]'); } catch(e) {}
