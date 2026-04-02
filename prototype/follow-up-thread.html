@@ -51,7 +51,7 @@
       <i class="fa-solid fa-chevron-left text-[16px] text-[#EAECEF]"></i>
     </button>
     <h1 class="text-[16px] font-bold text-[#EAECEF]">任务详情</h1>
-    <span id="status-badge" class="text-[11px] px-2.5 py-1 rounded-full font-medium"></span>
+    <div class="w-8"></div>
   </div>
 
   <!-- ① 客户信息卡 -->
@@ -181,17 +181,6 @@
     return { text: d + '天后', color: '#4DA6FF' };
   }
 
-  // ── Status badge ──
-  var STATUS_STYLE = {
-    '未开始': { bg: 'rgba(240,185,11,0.15)', color: '#F0B90B' },
-    '跟进中': { bg: 'rgba(77,166,255,0.15)', color: '#4DA6FF' },
-    '已结束': { bg: 'rgba(14,203,129,0.15)', color: '#0ECB81' },
-  };
-  var ss = STATUS_STYLE[ev.status] || STATUS_STYLE['已结束'];
-  var badge = document.getElementById('status-badge');
-  badge.textContent = ev.status;
-  badge.style.background = ss.bg;
-  badge.style.color = ss.color;
 
   // ── ① Client header ──
   document.getElementById('client-uid').textContent = ev.client_uid;
@@ -369,8 +358,6 @@
   // ── 归档（= 已结束，一键） ──
   window.archiveEvent = function() {
     saveStatus('已结束');
-    var ss2 = STATUS_STYLE['已结束'];
-    badge.textContent = '已结束'; badge.style.background = ss2.bg; badge.style.color = ss2.color;
   };
 
   window.openDeleteSheet = function() {
