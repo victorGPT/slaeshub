@@ -243,16 +243,16 @@
   function buildRankSection() {
     var tabs = [
       { label: '资沉', color: '#F0B90B', sort: 'deposit',
-        rows: buildRankRows(top5Deposit, function(c) { return fmtUSDT(c.fMean); }, '#F0B90B') },
+        rows: buildRankRows(top5Deposit, function(c) { return fmtUSDT(c.fMean); }, '#EAECEF') },
       { label: '入金', color: '#0ECB81', sort: 'inflow',
         rows: buildRankRows(top5Inflow,  function(c) { return fmtWan(weekDelta(c)); }, '#0ECB81') },
       { label: '出金', color: '#F6465D', sort: 'outflow',
         rows: buildRankRows(top5Outflow, function(c) { return fmtWan(weekDelta(c)); }, '#F6465D') },
-      { label: '利润', color: '#4DA6FF', sort: 'profit',
+      { label: '利润', color: '#0ECB81', sort: 'profit',
         rows: buildRankRows(top5Profit,  function(c) {
           var t = (c.netContribution && c.netContribution.total) || 0;
           return fmtUSDT(t);
-        }, '#4DA6FF') },
+        }, '#0ECB81') },
     ];
 
     var tabBar = tabs.map(function(t, i) {
