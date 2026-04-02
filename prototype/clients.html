@@ -66,6 +66,10 @@
   <!-- Sort Tabs + 方向切换 -->
   <div class="flex items-center gap-2 px-4 py-2">
     <div class="flex gap-2 overflow-x-auto flex-1" style="scrollbar-width:none">
+      <button data-sort="favs"
+        class="sort-tab text-[12px] px-3 py-1 rounded-full whitespace-nowrap flex-shrink-0 cursor-pointer border-0">
+        <i class="fa-solid fa-star text-[11px] mr-1"></i>收藏
+      </button>
       <button data-sort="deposit"
         class="sort-tab text-[12px] px-3 py-1 rounded-full whitespace-nowrap flex-shrink-0 cursor-pointer border-0">
         资沉
@@ -81,10 +85,6 @@
       <button data-sort="profit"
         class="sort-tab text-[12px] px-3 py-1 rounded-full whitespace-nowrap flex-shrink-0 cursor-pointer border-0">
         利润贡献
-      </button>
-      <button data-sort="favs"
-        class="sort-tab text-[12px] px-3 py-1 rounded-full whitespace-nowrap flex-shrink-0 cursor-pointer border-0">
-        <i class="fa-solid fa-star text-[11px] mr-1"></i>收藏
       </button>
     </div>
     <button id="dir-btn" class="flex-shrink-0 bg-[#2E3440] border-0 rounded-lg px-2 py-1 cursor-pointer text-[#848E9C] text-[13px]">
@@ -145,7 +145,7 @@
     deposit:  { color: '#F0B90B' },
     inflow:   { color: '#0ECB81' },
     outflow:  { color: '#F6465D' },
-    profit:   { color: '#4DA6FF' },
+    profit:   { color: '#0ECB81' },
     favs:     { color: '#F0B90B' },
   };
 
