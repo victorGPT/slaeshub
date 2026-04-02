@@ -424,7 +424,7 @@ function timeAgo(isoStr) {
         + '<i class="fa-solid fa-xmark text-[7px] text-[#474D57] cursor-pointer hover:text-[#F6465D]" onclick="removeTag(' + i + ')"></i>'
         + '</span>';
     });
-    tagsHtml += '<span class="text-[9px] px-1.5 py-[2px] rounded border border-dashed border-[#474D57] text-[#474D57] cursor-pointer" onclick="addTag()">+ 标签</span>';
+    tagsHtml += '<span class="text-[9px] px-1.5 py-[2px] rounded border border-dashed border-[#474D57] text-[#474D57] cursor-pointer" onclick="openTagSheet()">+ 标签</span>';
     document.getElementById('tags-row').innerHTML = tagsHtml;
   }
 
@@ -434,13 +434,30 @@ function timeAgo(isoStr) {
     renderTags();
   };
 
-  window.addTag = function() {
-    var tag = prompt('输入标签名');
-    if (tag && tag.trim()) {
-      manualTags.push(tag.trim());
-      localStorage.setItem(manualTagKey, JSON.stringify(manualTags));
-      renderTags();
-    }
+  window.openTagSheet = function() {
+    document.getElementById('tag-sheet').style.display = 'flex';
+    document.getElementById('tag-custom-input').value = '';
+    document.querySelectorAll('.preset-tag-btn').forEach(function(btn) {
+      var already = manualTags.indexOf(btn.getAttribute('data-val')) !== -1;
+      btn.style.opacity = already ? '0.35' : '1';
+      btn.style.pointerEvents = already ? 'none' : '';
+    });
+  };
+  window.closeTagSheet = function() {
+    document.getElementById('tag-sheet').style.display = 'none';
+  };
+  window.addPresetTag = function(val) {
+    if (manualTags.indexOf(val) !== -1) return;
+    manualTags.push(val);
+    localStorage.setItem(manualTagKey, JSON.stringify(manualTags));
+    renderTags(); closeTagSheet();
+  };
+  window.addCustomTag = function() {
+    var val = document.getElementById('tag-custom-input').value.trim();
+    if (!val || manualTags.indexOf(val) !== -1) return;
+    manualTags.push(val);
+    localStorage.setItem(manualTagKey, JSON.stringify(manualTags));
+    renderTags(); closeTagSheet();
   };
 
   renderTags();
@@ -1318,6 +1335,35 @@ setTimeout(function() { if (typeof renderNotesList === 'function') renderNotesLi
     <div class="flex gap-2">
       <button onclick="window.confirmEventDone()" class="flex-1 py-3 rounded-xl text-[14px] font-semibold bg-[#F0B90B] text-[#0B0E11] active:opacity-80">确认完成</button>
       <button onclick="window.postponeEvent()" class="py-3 px-4 rounded-xl text-[13px] border active:opacity-80" style="color:#4DA6FF;border-color:#4DA6FF">推迟3天</button>
+    </div>
+  </div>
+</div>
+
+<!-- Tag Sheet -->
+<div id="tag-sheet" style="display:none;position:fixed;inset:0;z-index:50;align-items:flex-end;justify-content:center" onclick="if(event.target===this)closeTagSheet()">
+  <div style="position:absolute;inset:0;background:rgba(0,0,0,0.6);pointer-events:none"></div>
+  <div style="position:relative;z-index:1;width:393px;background:#1E2329;border-radius:20px 20px 0 0;padding:20px 16px;padding-bottom:calc(20px + env(safe-area-inset-bottom))">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+      <span style="font-size:15px;font-weight:600;color:#EAECEF">添加标签</span>
+      <button onclick="closeTagSheet()" style="width:28px;height:28px;border-radius:50%;background:#2B3139;border:none;display:flex;align-items:center;justify-content:center;cursor:pointer">
+        <i class="fa-solid fa-xmark" style="font-size:12px;color:#848E9C"></i>
+      </button>
+    </div>
+    <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px">
+      <button class="preset-tag-btn" data-val="偏好短线" onclick="addPresetTag('偏好短线')" style="border-radius:999px;padding:5px 12px;font-size:12px;background:#2B3139;color:#EAECEF;border:1px solid #2E3440;cursor:pointer">偏好短线</button>
+      <button class="preset-tag-btn" data-val="偏好合约" onclick="addPresetTag('偏好合约')" style="border-radius:999px;padding:5px 12px;font-size:12px;background:#2B3139;color:#EAECEF;border:1px solid #2E3440;cursor:pointer">偏好合约</button>
+      <button class="preset-tag-btn" data-val="长期持有" onclick="addPresetTag('长期持有')" style="border-radius:999px;padding:5px 12px;font-size:12px;background:#2B3139;color:#EAECEF;border:1px solid #2E3440;cursor:pointer">长期持有</button>
+      <button class="preset-tag-btn" data-val="高风险偏好" onclick="addPresetTag('高风险偏好')" style="border-radius:999px;padding:5px 12px;font-size:12px;background:#2B3139;color:#EAECEF;border:1px solid #2E3440;cursor:pointer">高风险偏好</button>
+      <button class="preset-tag-btn" data-val="英文沟通" onclick="addPresetTag('英文沟通')" style="border-radius:999px;padding:5px 12px;font-size:12px;background:#2B3139;color:#EAECEF;border:1px solid #2E3440;cursor:pointer">英文沟通</button>
+      <button class="preset-tag-btn" data-val="需定期跟进" onclick="addPresetTag('需定期跟进')" style="border-radius:999px;padding:5px 12px;font-size:12px;background:#2B3139;color:#EAECEF;border:1px solid #2E3440;cursor:pointer">需定期跟进</button>
+      <button class="preset-tag-btn" data-val="理财偏好" onclick="addPresetTag('理财偏好')" style="border-radius:999px;padding:5px 12px;font-size:12px;background:#2B3139;color:#EAECEF;border:1px solid #2E3440;cursor:pointer">理财偏好</button>
+      <button class="preset-tag-btn" data-val="高净值" onclick="addPresetTag('高净值')" style="border-radius:999px;padding:5px 12px;font-size:12px;background:#2B3139;color:#EAECEF;border:1px solid #2E3440;cursor:pointer">高净值</button>
+    </div>
+    <div style="height:1px;background:#2E3440;margin-bottom:12px"></div>
+    <div style="font-size:11px;color:#848E9C;margin-bottom:6px">自定义标签</div>
+    <div style="display:flex;gap:8px">
+      <input id="tag-custom-input" type="text" maxlength="10" placeholder="最多10个字" style="flex:1;background:#2B3139;color:#EAECEF;font-size:13px;border-radius:8px;padding:8px 12px;border:1px solid #2E3440;outline:none;font-family:inherit" onkeydown="if(event.key==='Enter')addCustomTag()">
+      <button onclick="addCustomTag()" style="padding:8px 16px;background:#F0B90B;color:#0B0E11;font-size:13px;font-weight:600;border:none;border-radius:8px;cursor:pointer">添加</button>
     </div>
   </div>
 </div>
