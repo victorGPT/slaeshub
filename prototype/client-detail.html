@@ -306,29 +306,26 @@
   var commRecords = [];
   try { commRecords = JSON.parse(sessionStorage.getItem('comm_records_' + uid) || '[]'); } catch(e) {}
 
-  // --- System Tags ---
+  // --- System Tags（排名型，直观无需理解）---
   var sysTags = [];
 
-  var dd = c.depositDist;
-  var ddTotal = (dd.futures||0) + (dd.leverage||0) + (dd.mini||0) + (dd.savings||0) + (dd.card||0) + (dd.cloud||0) + (dd.spot||0);
-  if (ddTotal > 0) {
-    var derivRatio = ((dd.futures||0) + (dd.leverage||0) + (dd.mini||0)) / ddTotal;
-    var safeRatio = ((dd.savings||0) + (dd.cloud||0)) / ddTotal;
-    var cardRatio = (dd.card||0) / ddTotal;
-    if (derivRatio > 0.5) sysTags.push({ label: '衍生品偏好高', color: '#F6465D', bg: 'rgba(246,70,93,0.12)' });
-    else if (safeRatio > 0.5) sysTags.push({ label: '理财偏好高', color: '#0ECB81', bg: 'rgba(14,203,129,0.12)' });
-    else if (cardRatio > 0.3) sysTags.push({ label: '消费型', color: '#4DA6FF', bg: 'rgba(77,166,255,0.12)' });
-    else sysTags.push({ label: '多元化', color: '#F0B90B', bg: 'rgba(240,185,11,0.12)' });
+  // 资沉排名：全平台，前100才显示
+  var depositRank = allClients.filter(function(cl) { return cl.fMean > c.fMean; }).length + 1;
+  if (depositRank <= 100) {
+    var dc = depositRank <= 10 ? '#F0B90B' : depositRank <= 50 ? '#4DA6FF' : '#848E9C';
+    var dbg = depositRank <= 10 ? 'rgba(240,185,11,0.12)' : depositRank <= 50 ? 'rgba(77,166,255,0.12)' : 'rgba(132,142,156,0.12)';
+    sysTags.push({ label: '资沉 #' + depositRank, color: dc, bg: dbg });
   }
 
-  var allProfits = allClients.map(function(cl) { return cl.netContribution ? cl.netContribution.total : 0; }).sort(function(a,b){return b-a;});
-  var top20Idx = Math.floor(allProfits.length * 0.2);
-  if (c.netContribution && c.netContribution.total >= allProfits[top20Idx]) {
-    sysTags.push({ label: '高利润贡献', color: '#F0B90B', bg: 'rgba(240,185,11,0.12)' });
-  }
-  var top20DepIdx = Math.floor(allDeposits.length * 0.2);
-  if (c.fMean >= allDeposits[top20DepIdx]) {
-    sysTags.push({ label: '大客户', color: '#F0B90B', bg: 'rgba(240,185,11,0.12)' });
+  // 利润贡献排名：全平台，前100才显示
+  var myProfit = c.netContribution ? c.netContribution.total : 0;
+  var profitRank = allClients.filter(function(cl) {
+    return (cl.netContribution ? cl.netContribution.total : 0) > myProfit;
+  }).length + 1;
+  if (profitRank <= 100) {
+    var pc = profitRank <= 10 ? '#F0B90B' : profitRank <= 50 ? '#4DA6FF' : '#848E9C';
+    var pbg = profitRank <= 10 ? 'rgba(240,185,11,0.12)' : profitRank <= 50 ? 'rgba(77,166,255,0.12)' : 'rgba(132,142,156,0.12)';
+    sysTags.push({ label: '利润 #' + profitRank, color: pc, bg: pbg });
   }
 
   var manualTagKey = 'bd_tags_' + c.uid;
@@ -401,37 +398,7 @@
     + '<span class="text-[16px] font-bold tabular-nums ml-0.5" style="color:' + deltaColor + '">' + signStr + fmtFlow(Math.round(deltaAbs)) + '</span>'
     + '<span class="text-[11px] tabular-nums ml-2" style="color:' + deltaColor + ';opacity:0.55">' + signStr + deltaPct.toFixed(1) + '%</span>';
 
-  // Memo
-  var memoKey = 'memo_' + c.uid;
-  var memoVal = localStorage.getItem(memoKey) || '';
-  var memoDisplay = document.getElementById('memo-display');
-  var memoText = document.getElementById('memo-text');
-  var memoInput = document.getElementById('memo-input');
-
-  function renderMemo() {
-    memoText.textContent = memoVal || '添加备忘...';
-    memoText.style.color = memoVal ? '#EAECEF' : '#474D57';
-  }
-  renderMemo();
-
-  window.startEditMemo = function() {
-    memoDisplay.classList.add('hidden');
-    memoInput.classList.remove('hidden');
-    memoInput.value = memoVal;
-    memoInput.focus();
-  };
-
-  memoInput.addEventListener('blur', function() {
-    memoVal = memoInput.value.trim();
-    localStorage.setItem(memoKey, memoVal);
-    memoInput.classList.add('hidden');
-    memoDisplay.classList.remove('hidden');
-    renderMemo();
-  });
-
-  memoInput.addEventListener('keydown', function(e) {
-    if (e.key === 'Enter') memoInput.blur();
-  });
+  // Memo（DOM 元素已移除，跳过）
 
   // UID copy
   window.copyUid = function() {
