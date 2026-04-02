@@ -89,7 +89,7 @@
       </div>
       <div class="flex-1">
         <div class="text-[10px] text-[#474D57] mb-0.5">利润贡献</div>
-        <span id="profit-hero" class="text-[15px] font-bold text-[#4DA6FF] leading-none">--</span>
+        <span id="profit-hero" class="text-[15px] font-bold leading-none">--</span>
       </div>
       <div class="flex-1">
         <div class="text-[10px] text-[#474D57] mb-0.5">交易盈亏</div>
@@ -228,10 +228,11 @@
 
     // 利润贡献
     var profitEl = document.getElementById('profit-hero');
-    if (c.netContribution && c.netContribution.total) {
-      profitEl.textContent = fmtUSDT(c.netContribution.total);
-      profitEl.style.color = '#4DA6FF';
-    } else { profitEl.textContent = '--'; }
+    if (c.netContribution && c.netContribution.total !== undefined) {
+      var pv2 = c.netContribution.total;
+      profitEl.textContent = fmtUSDT(pv2, true);
+      profitEl.style.color = pv2 >= 0 ? '#0ECB81' : '#F6465D';
+    } else { profitEl.textContent = '--'; profitEl.style.color = '#848E9C'; }
 
     // 交易盈亏
     var pnlEl = document.getElementById('pnl-hero');
