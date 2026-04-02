@@ -87,29 +87,32 @@
       <!-- Row 2: Tags -->
       <div id="tags-row" class="px-4 pb-2 flex flex-wrap gap-1"></div>
 
-      <!-- Row 3: 四项核心指标 2×2 -->
-      <div class="grid grid-cols-2 gap-x-4 gap-y-3 px-4 pb-3 pt-1">
-        <div>
-          <div class="text-[10px] text-[#474D57] mb-0.5">资沉</div>
-          <div class="flex items-baseline gap-1.5">
-            <span id="deposit-hero" class="text-[20px] font-bold text-[#EAECEF] tracking-tight leading-none"></span>
-            <div id="deposit-delta" class="flex items-center gap-0.5 text-[11px]"></div>
-          </div>
-        </div>
-        <div>
-          <div class="text-[10px] text-[#474D57] mb-0.5">充提</div>
-          <span id="cashflow-hero" class="text-[20px] font-bold leading-none">--</span>
-        </div>
-        <div>
-          <div class="text-[10px] text-[#474D57] mb-0.5">利润贡献</div>
-          <span id="profit-hero" class="text-[20px] font-bold text-[#4DA6FF] leading-none">--</span>
-        </div>
-        <div>
-          <div class="text-[10px] text-[#474D57] mb-0.5">交易盈亏</div>
-          <span id="pnl-hero" class="text-[20px] font-bold text-[#848E9C] leading-none">--</span>
+      <!-- Row 3: 资沉主指标 -->
+      <div class="px-4 pb-2">
+        <div class="text-[10px] text-[#474D57] mb-0.5">资沉</div>
+        <div class="flex items-baseline gap-2">
+          <span id="deposit-hero" class="text-[28px] font-bold text-[#EAECEF] tracking-tight leading-none"></span>
+          <div id="deposit-delta" class="flex items-center gap-0.5 text-[11px]"></div>
         </div>
       </div>
-      <div class="flex justify-end px-4 pb-2">
+
+      <!-- Row 4: 充提 / 利润贡献 / 交易盈亏 -->
+      <div class="flex px-4 pb-3 gap-0">
+        <div class="flex-1">
+          <div class="text-[10px] text-[#474D57] mb-0.5">充提</div>
+          <span id="cashflow-hero" class="text-[15px] font-bold leading-none">--</span>
+        </div>
+        <div class="flex-1">
+          <div class="text-[10px] text-[#474D57] mb-0.5">利润贡献</div>
+          <span id="profit-hero" class="text-[15px] font-bold text-[#4DA6FF] leading-none">--</span>
+        </div>
+        <div class="flex-1">
+          <div class="text-[10px] text-[#474D57] mb-0.5">交易盈亏</div>
+          <span id="pnl-hero" class="text-[15px] font-bold text-[#848E9C] leading-none">--</span>
+        </div>
+      </div>
+
+      <div class="flex justify-end px-4 pb-2 -mt-1">
         <span id="data-refresh-time" class="text-[9px] text-[#474D57]"></span>
       </div>
 
