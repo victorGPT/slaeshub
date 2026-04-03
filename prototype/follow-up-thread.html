@@ -165,13 +165,16 @@
 
 <!-- 底部操作栏 -->
 <div class="fixed-bar bg-[#0B0E11] border-t border-[#2E3440] z-30 px-4 pt-3" style="padding-bottom:calc(0.75rem + env(safe-area-inset-bottom))">
-  <!-- 特别关注截止日选择（默认隐藏） -->
-  <div id="flag-chooser" style="display:none;flex-direction:row;align-items:center;gap:8px;margin-bottom:10px">
-    <button id="flag-today-btn" onclick="markFlagToday()" style="height:36px;padding:0 18px;background:#2B3139;color:#EAECEF;font-size:13px;border:1px solid #2E3440;border-radius:999px;cursor:pointer;white-space:nowrap">今天</button>
-    <input type="date" id="flag-custom-date" style="flex:1;height:36px;background:#2B3139;color:#EAECEF;font-size:13px;border:1px solid #2E3440;border-radius:999px;padding:0 12px;outline:none;cursor:pointer" oninput="markFlagCustom(this.value)">
+  <!-- 跟进计划日期选择（默认隐藏） -->
+  <div id="flag-chooser" style="display:none;flex-direction:column;gap:6px;margin-bottom:10px">
+    <span style="font-size:11px;color:#474D57">计划跟进日期</span>
+    <div style="display:flex;flex-direction:row;align-items:center;gap:8px">
+      <button id="flag-today-btn" onclick="markFlagToday()" style="height:36px;padding:0 18px;background:#2B3139;color:#EAECEF;font-size:13px;border:1px solid #2E3440;border-radius:999px;cursor:pointer;white-space:nowrap">今天</button>
+      <input type="date" id="flag-custom-date" style="flex:1;height:36px;background:#2B3139;color:#EAECEF;font-size:13px;border:1px solid #2E3440;border-radius:999px;padding:0 12px;outline:none;cursor:pointer" oninput="markFlagCustom(this.value)">
+    </div>
   </div>
   <div style="display:flex;gap:8px">
-    <button id="flag-btn" onclick="toggleFlagChooser()" style="flex:1;height:44px;font-size:14px;font-weight:500;border-radius:10px;cursor:pointer;background:rgba(240,185,11,0.12);color:#F0B90B;border:1px solid rgba(240,185,11,0.3)">标记特别关注</button>
+    <button id="flag-btn" onclick="toggleFlagChooser()" style="flex:1;height:44px;font-size:14px;font-weight:500;border-radius:10px;cursor:pointer;background:rgba(240,185,11,0.12);color:#F0B90B;border:1px solid rgba(240,185,11,0.3)">列入跟进计划</button>
     <button id="close-event-btn" onclick="closeEvent()" style="flex:1;height:44px;background:#2B3139;color:#EAECEF;font-size:14px;font-weight:500;border:1px solid #2E3440;border-radius:10px;cursor:pointer">归档</button>
   </div>
 </div>
@@ -549,11 +552,11 @@ window.hideTip = function() {
   function syncFlagBtn() {
     var btn = document.getElementById('flag-btn');
     if (isFlagged()) {
-      btn.textContent = '已特别关注 · 取消';
+      btn.textContent = '已列入跟进 · 取消';
       btn.style.background = 'rgba(240,185,11,0.2)';
       btn.style.color = '#F0B90B';
     } else {
-      btn.textContent = '标记特别关注';
+      btn.textContent = '列入跟进计划';
       btn.style.background = 'rgba(240,185,11,0.12)';
       btn.style.color = '#F0B90B';
     }
