@@ -170,6 +170,7 @@
     <span style="font-size:11px;color:#474D57">计划跟进日期</span>
     <div style="display:flex;flex-direction:row;align-items:center;gap:8px">
       <button id="flag-today-btn" onclick="markFlagToday()" style="height:36px;padding:0 18px;background:#2B3139;color:#EAECEF;font-size:13px;border:1px solid #2E3440;border-radius:999px;cursor:pointer;white-space:nowrap">今天</button>
+      <button onclick="markFlagPending()" style="height:36px;padding:0 18px;background:#2B3139;color:#848E9C;font-size:13px;border:1px solid #2E3440;border-radius:999px;cursor:pointer;white-space:nowrap">待定</button>
       <input type="date" id="flag-custom-date" style="flex:1;height:36px;background:#2B3139;color:#EAECEF;font-size:13px;border:1px solid #2E3440;border-radius:999px;padding:0 12px;outline:none;cursor:pointer" oninput="markFlagCustom(this.value)">
     </div>
   </div>
@@ -581,6 +582,9 @@ window.hideTip = function() {
   }
   window.markFlagToday = function() {
     doMarkFlag(new Date().toISOString().split('T')[0]);
+  };
+  window.markFlagPending = function() {
+    doMarkFlag('pending');
   };
   window.markFlagCustom = function(dateStr) {
     if (dateStr) doMarkFlag(dateStr);

@@ -290,6 +290,7 @@
     var todayStr = new Date().toISOString().split('T')[0];
     function deadlineMeta(dl) {
       if (!dl) return null;
+      if (dl === 'pending') return { label: '待定', color: '#474D57', diff: 9999 };
       var now = new Date(); now.setHours(0,0,0,0);
       var due = new Date(dl); due.setHours(0,0,0,0);
       var diff = Math.round((due - now) / 86400000);
@@ -307,7 +308,10 @@
       })
       .filter(Boolean)
       .sort(function(a, b) {
-        var da = a.deadline || '9999-99-99', db = b.deadline || '9999-99-99';
+        var da = a.deadline || 'pending', db = b.deadline || 'pending';
+        if (da === 'pending' && db === 'pending') return 0;
+        if (da === 'pending') return 1;
+        if (db === 'pending') return -1;
         return da < db ? -1 : da > db ? 1 : 0;
       })
       .slice(0, 3);

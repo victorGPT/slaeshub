@@ -64,8 +64,9 @@
   }
 
   function getDeadlineMeta(deadline) {
-    // deadline 现在是 'YYYY-MM-DD' 日期字符串
-    if (!deadline) return { label: '', color: '#848E9C' };
+    if (!deadline) return { label: '', color: '#848E9C', isPending: false };
+    // 待定
+    if (deadline === 'pending') return { label: '待定', color: '#474D57', isPending: true };
     // 向后兼容旧的 keyword 格式
     if (deadline === 'today') deadline = todayStr();
     if (deadline === 'week') {
@@ -82,7 +83,7 @@
     var color = diffDays <= 0 ? '#F6465D' : diffDays <= 3 ? '#F0B90B' : '#848E9C';
     var d3 = new Date(deadline);
     var label = (d3.getMonth()+1) + '月' + d3.getDate() + '日';
-    return { label: label, color: color };
+    return { label: label, color: color, isPending: false };
   }
 
   function getFlaggedBadgeMeta(flaggedEntries) {
@@ -173,6 +174,16 @@
     return right.createdAtMs - left.createdAtMs;
   }
 
+  function sortFlaggedItems(a, b) {
+    // 待定排最后，有日期的按日期从近到远
+    var da = a.deadline || 'pending';
+    var db = b.deadline || 'pending';
+    if (da === 'pending' && db === 'pending') return b.createdAtMs - a.createdAtMs;
+    if (da === 'pending') return 1;
+    if (db === 'pending') return -1;
+    return da < db ? -1 : da > db ? 1 : 0;
+  }
+
   function computeFlaggedView(events, flaggedEntries, closedIds) {
     var normalizedEvents = safeArray(events).map(normalizeEvent);
     var eventMap = new Map();
@@ -185,7 +196,7 @@
       .map(function(fuId) { return eventMap.get(fuId); })
       .filter(Boolean)
       .map(function(event) { return buildDerivedItem(event, flaggedMap, closedSet); })
-      .sort(sortByCreatedDesc);
+      .sort(sortFlaggedItems);
 
     return {
       items: items,
