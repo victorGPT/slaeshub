@@ -1,5 +1,8 @@
 {
   "rewrites": [
-    { "source": "/", "destination": "/prototype/home.html" }
+    { "source": "/", "destination": "/prototype/home.html" },
+    { "source": "/:file.html", "destination": "/prototype/:file.html" },
+    { "source": "/:file.js", "destination": "/prototype/:file.js" },
+    { "source": "/:file.json", "destination": "/prototype/:file.json" }
   ]
 }
