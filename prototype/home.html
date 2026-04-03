@@ -203,7 +203,7 @@
   }
 
   function renderRankTableHeader() {
-    return '<div style="display:grid;grid-template-columns:1fr 60px 56px 56px 52px;padding:7px 12px 5px;border-bottom:1px solid #2E3440">'
+    return '<div style="display:grid;grid-template-columns:1fr 60px 56px 56px 52px;column-gap:8px;padding:7px 12px 5px;border-bottom:1px solid #2E3440">'
       + '<span style="font-size:13px;font-weight:600;color:#848E9C">客户</span>'
       + '<span style="font-size:13px;font-weight:600;text-align:right;color:#848E9C;display:flex;align-items:center;justify-content:flex-end">资沉' + tipIcon('deposit') + '</span>'
       + '<span style="font-size:13px;font-weight:600;text-align:right;color:#848E9C;display:flex;align-items:center;justify-content:flex-end">入金' + tipIcon('inflow')  + '</span>'
@@ -232,7 +232,7 @@
         : '<span style="font-size:13px;color:#474D57">—</span>';
 
       return '<a href="' + (c.detailHref || 'client-detail.html?uid=' + c.uid) + '" '
-        + 'style="display:grid;grid-template-columns:1fr 60px 56px 56px 52px;align-items:center;padding:10px 12px;' + border + 'text-decoration:none">'
+        + 'style="display:grid;grid-template-columns:1fr 60px 56px 56px 52px;column-gap:8px;align-items:center;padding:10px 12px;' + border + 'text-decoration:none">'
         + '<div>'
         +   '<div style="display:flex;align-items:center;gap:6px">'
         +     '<span style="font-size:10px;color:#848E9C;line-height:1;flex-shrink:0;min-width:12px">' + (idx + 1) + '</span>'
