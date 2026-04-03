@@ -95,7 +95,7 @@
 
       <!-- Row 3: 资沉主指标 -->
       <div class="px-4 pb-2">
-        <div class="text-[10px] text-[#474D57] mb-0.5">资沉</div>
+        <div class="text-[10px] text-[#474D57] mb-0.5 flex items-center gap-1">资沉<i onclick="event.stopPropagation();showDetailTip('deposit',this)" class="fa-regular fa-circle-question" style="color:#474D57;font-size:9px;cursor:pointer"></i></div>
         <div class="flex items-baseline gap-2">
           <span id="deposit-hero" class="text-[28px] font-bold text-[#EAECEF] tracking-tight leading-none"></span>
           <div id="deposit-delta" class="flex items-center gap-0.5 text-[11px]"></div>
@@ -105,15 +105,15 @@
       <!-- Row 4: 充提 / 利润贡献 / 交易盈亏 -->
       <div class="flex px-4 pb-3 gap-0">
         <div class="flex-1">
-          <div class="text-[10px] text-[#474D57] mb-0.5">充提</div>
+          <div class="text-[10px] text-[#474D57] mb-0.5 flex items-center gap-1">充提<i onclick="event.stopPropagation();showDetailTip('cashflow',this)" class="fa-regular fa-circle-question" style="color:#474D57;font-size:9px;cursor:pointer"></i></div>
           <span id="cashflow-hero" class="text-[15px] font-bold leading-none">--</span>
         </div>
         <div class="flex-1">
-          <div class="text-[10px] text-[#474D57] mb-0.5">利润贡献</div>
+          <div class="text-[10px] text-[#474D57] mb-0.5 flex items-center gap-1">月利润贡献<i onclick="event.stopPropagation();showDetailTip('profit',this)" class="fa-regular fa-circle-question" style="color:#474D57;font-size:9px;cursor:pointer"></i></div>
           <span id="profit-hero" class="text-[15px] font-bold leading-none">--</span>
         </div>
         <div class="flex-1">
-          <div class="text-[10px] text-[#474D57] mb-0.5">交易盈亏</div>
+          <div class="text-[10px] text-[#474D57] mb-0.5 flex items-center gap-1">月交易盈亏<i onclick="event.stopPropagation();showDetailTip('pnl',this)" class="fa-regular fa-circle-question" style="color:#474D57;font-size:9px;cursor:pointer"></i></div>
           <span id="pnl-hero" class="text-[15px] font-bold text-[#848E9C] leading-none">--</span>
         </div>
       </div>
@@ -175,8 +175,39 @@
   <div style="height:env(safe-area-inset-bottom,34px)"></div>
 </div>
 
+<!-- Tooltip overlay -->
+<div id="tip-overlay" onclick="hideTip()" style="display:none;position:fixed;inset:0;z-index:100"></div>
+<div id="tip-box" style="display:none;position:fixed;z-index:101;background:#2B3139;border:1px solid #2E3440;border-radius:10px;padding:10px 14px;max-width:180px;font-size:12px;color:#EAECEF;line-height:1.5;box-shadow:0 8px 24px rgba(0,0,0,0.5)"></div>
+
 <script src="mock-data.js"></script>
 <script>
+var DETAIL_TIPS = {
+  deposit:  '客户过去 8 周持仓资产均值（USDT），旁边变化值为本周资产与 8 周均值的偏差',
+  cashflow: '本周充值减提现估算合计，基于持仓周变化推算，仅供参考',
+  profit:   '客户本月为平台贡献的可统计利润，含手续费、利差、理财利息等；由周数据 × 4.3 估算',
+  pnl:      '客户本月交易持仓方向盈亏，含合约、杠杆、迷你等品种；由 7 日数据 × 4.3 估算',
+  distCard:   '客户各业务线持仓资产占比，总量为 8 周均值，变化率与平台均值对比',
+  flowCard:   '过去 8 周每周充值（绿）与提现（红）对比，右侧为历史周均净流入，W8 = 本周',
+  profitCard: '本月各业务线为平台贡献的利润明细，绿色为收入来源，红色为成本项',
+  pnlCard:    '本月各品种客户持仓盈亏明细，正值对平台有利（客户亏损），负值反之',
+};
+window.showDetailTip = function(key, el) {
+  var box = document.getElementById('tip-box');
+  var overlay = document.getElementById('tip-overlay');
+  box.textContent = DETAIL_TIPS[key] || '';
+  var rect = el.getBoundingClientRect();
+  var boxW = 180;
+  var left = Math.min(rect.left, window.innerWidth - boxW - 12);
+  box.style.left = Math.max(12, left) + 'px';
+  box.style.top = (rect.bottom + 6) + 'px';
+  box.style.display = 'block';
+  overlay.style.display = 'block';
+};
+window.hideTip = function() {
+  document.getElementById('tip-box').style.display = 'none';
+  document.getElementById('tip-overlay').style.display = 'none';
+};
+
 function esc(s) { return String(s).replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
 function timeAgo(isoStr) {
   if (!isoStr) return '';
@@ -342,22 +373,21 @@ function timeAgo(isoStr) {
   // 资沉
   document.getElementById('deposit-hero').textContent = fmtUSDT(c.fMean);
 
-  // 充提（本周净充提 = weekDelta）
+  // 充提（本周充值减提现估算合计）
   var cashflowEl = document.getElementById('cashflow-hero');
-  var weeks = c.weeks || [];
-  var delta = weeks.length >= 2 ? weeks[weeks.length - 1] - weeks[weeks.length - 2] : null;
-  if (delta !== null) {
-    cashflowEl.textContent = fmtUSDT(delta, true);
-    cashflowEl.style.color = delta >= 0 ? '#0ECB81' : '#F6465D';
+  if (thisWeekFlow) {
+    var netFlow = thisWeekFlow.inflow - thisWeekFlow.outflow;
+    cashflowEl.textContent = fmtUSDT(netFlow, true);
+    cashflowEl.style.color = netFlow >= 0 ? '#0ECB81' : '#F6465D';
   } else {
     cashflowEl.textContent = '--';
     cashflowEl.style.color = '#474D57';
   }
 
-  // 利润贡献
+  // 月利润贡献（周数据 × 4.3）
   var profitEl = document.getElementById('profit-hero');
   if (c.netContribution && c.netContribution.total !== undefined) {
-    var pv = c.netContribution.total;
+    var pv = c.netContribution.total * 4.3;
     profitEl.textContent = fmtUSDT(pv, true);
     profitEl.style.color = pv >= 0 ? '#0ECB81' : '#F6465D';
   } else {
@@ -365,12 +395,13 @@ function timeAgo(isoStr) {
     profitEl.style.color = '#848E9C';
   }
 
-  // 交易盈亏
+  // 月交易盈亏（7日数据 × 4.3）
   var pnlEl = document.getElementById('pnl-hero');
   var pnlVal = c.clientPnl && c.clientPnl.total7d && c.clientPnl.total7d.value;
   if (pnlVal !== undefined && pnlVal !== null) {
-    pnlEl.textContent = fmtUSDT(pnlVal, true);
-    pnlEl.style.color = pnlVal >= 0 ? '#0ECB81' : '#F6465D';
+    var pnlMonth = pnlVal * 4.3;
+    pnlEl.textContent = fmtUSDT(pnlMonth, true);
+    pnlEl.style.color = pnlMonth >= 0 ? '#0ECB81' : '#F6465D';
   } else {
     pnlEl.textContent = '--';
     pnlEl.style.color = '#848E9C';
@@ -573,12 +604,43 @@ function timeAgo(isoStr) {
 
   function saveTasks() { localStorage.setItem(taskKey, JSON.stringify(tasks)); }
 
+  function taskNote(t) {
+    return t && (t.note || t.text || '');
+  }
+
+  function formatTaskDateTime(val) {
+    if (!val) return '';
+    var d = val instanceof Date ? val : new Date(val);
+    if (isNaN(d.getTime())) return '';
+    var hh = String(d.getHours()).padStart(2, '0');
+    var mm = String(d.getMinutes()).padStart(2, '0');
+    return (d.getMonth() + 1) + '月' + d.getDate() + '日 ' + hh + ':' + mm;
+  }
+
+  function taskMetaHtml(t) {
+    var meta = [];
+    if (t.type) {
+      meta.push('<span style="display:inline-flex;align-items:center;font-size:10px;padding:1px 7px;border-radius:999px;background:#2B3139;color:#F0B90B">' + esc(t.type) + '</span>');
+    }
+    var remindDisplay = formatTaskDateTime(t.remindAt);
+    if (remindDisplay) {
+      meta.push('<span style="color:#848E9C;font-size:10px">🔔 ' + remindDisplay + '</span>');
+    }
+    if (!meta.length) return '';
+    return '<div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-top:6px">' + meta.join('') + '</div>';
+  }
+
   var taskTab = 'active'; // 'active' | 'archived'
+  var selectedType = '';
 
   function taskCard(t, isArchived) {
+    var noteText = taskNote(t);
+    var noteDisplay = noteText || '未填写备注';
+    var noteClass = isArchived ? 'text-[#848E9C] line-through' : (noteText ? 'text-[#EAECEF]' : 'text-[#848E9C]');
     return '<div class="relative bg-[#1E2329] rounded-xl border border-[#2E3440] px-3 py-2.5 mb-2 flex items-start gap-2 cursor-pointer' + (isArchived ? ' opacity-50' : '') + '" onclick="openTaskDetail(\'' + t.id + '\')">'
       + '<div class="flex-1 min-w-0">'
-      + '<div class="text-[13px] ' + (isArchived ? 'text-[#848E9C] line-through' : 'text-[#EAECEF]') + ' leading-snug" style="display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden">' + esc(t.text) + '</div>'
+      + '<div class="text-[13px] ' + noteClass + ' leading-snug" style="display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden">' + esc(noteDisplay) + '</div>'
+      + taskMetaHtml(t)
       + '<div class="text-[10px] text-[#474D57] mt-1">' + t.createdDisplay + '</div>'
       + '</div>'
       + '<button onclick="event.stopPropagation();quickDeleteTask(\'' + t.id + '\')" class="flex-shrink-0 w-5 h-5 flex items-center justify-center rounded-full bg-[#2B3139] active:bg-[#F6465D]/20">'
@@ -627,7 +689,30 @@ function timeAgo(isoStr) {
   window.openTaskDetail = function(id) {
     var t = tasks.find(function(t) { return t.id === id; });
     if (!t) return;
-    document.getElementById('task-detail-text').textContent = t.text;
+    var noteText = taskNote(t);
+    var remindDisplay = formatTaskDateTime(t.remindAt);
+    var detailText = document.getElementById('task-detail-text');
+    var detailMeta = document.getElementById('task-detail-meta');
+    var detailType = document.getElementById('task-detail-type');
+    var detailRemind = document.getElementById('task-detail-remind');
+
+    detailText.textContent = noteText || '未填写备注';
+    detailText.style.color = noteText ? '#EAECEF' : '#848E9C';
+    if (t.type) {
+      detailType.textContent = t.type;
+      detailType.style.display = 'inline-flex';
+    } else {
+      detailType.textContent = '';
+      detailType.style.display = 'none';
+    }
+    if (remindDisplay) {
+      detailRemind.textContent = '🔔 ' + remindDisplay;
+      detailRemind.style.display = 'inline-flex';
+    } else {
+      detailRemind.textContent = '';
+      detailRemind.style.display = 'none';
+    }
+    detailMeta.style.display = (t.type || remindDisplay) ? 'flex' : 'none';
     document.getElementById('task-detail-time').textContent = t.createdDisplay;
     document.getElementById('task-detail-sheet').dataset.taskId = id;
     var archiveBtn = document.getElementById('task-archive-btn');
@@ -657,10 +742,76 @@ function timeAgo(isoStr) {
     saveTasks(); renderTasks(); closeTaskDetail();
   };
 
+  function setTaskTypePillStyle(el, isActive) {
+    el.dataset.active = isActive ? '1' : '0';
+    el.style.background = isActive ? 'rgba(240,185,11,0.15)' : '#2B3139';
+    el.style.color = isActive ? '#F0B90B' : '#848E9C';
+    el.style.border = isActive ? '1px solid rgba(240,185,11,0.4)' : '1px solid #2E3440';
+  }
+
+  function syncCreateTaskButton() {
+    var btn = document.getElementById('create-task-submit');
+    var enabled = !!selectedType;
+    btn.disabled = !enabled;
+    btn.style.background = enabled ? '#F0B90B' : '#2B3139';
+    btn.style.color = enabled ? '#0B0E11' : '#474D57';
+    btn.style.cursor = enabled ? 'pointer' : 'not-allowed';
+  }
+
+  function renderSelectedTaskType() {
+    document.querySelectorAll('.task-type-pill').forEach(function(el) {
+      setTaskTypePillStyle(el, el.dataset.type === selectedType);
+    });
+    syncCreateTaskButton();
+  }
+
+  function setTaskRemindPickerOpen(isOpen) {
+    document.getElementById('create-task-remind-wrap').style.display = isOpen ? 'block' : 'none';
+    document.getElementById('create-task-remind-chevron').style.transform = isOpen ? 'rotate(180deg)' : 'rotate(0deg)';
+  }
+
+  function updateTaskRemindDisplay() {
+    var input = document.getElementById('create-task-remind-input');
+    var label = document.getElementById('create-task-remind-text');
+    var remindDisplay = input.value ? formatTaskDateTime(new Date(input.value)) : '';
+    label.textContent = remindDisplay || '设置提醒时间';
+    label.style.color = remindDisplay ? '#EAECEF' : '#848E9C';
+  }
+
+  window.selectTaskType = function(el) {
+    selectedType = el.dataset.type || '';
+    renderSelectedTaskType();
+  };
+
+  window.toggleTaskRemindPicker = function() {
+    var wrap = document.getElementById('create-task-remind-wrap');
+    var shouldOpen = wrap.style.display !== 'block';
+    setTaskRemindPickerOpen(shouldOpen);
+    if (!shouldOpen) return;
+    var input = document.getElementById('create-task-remind-input');
+    setTimeout(function() {
+      if (input.showPicker) {
+        try {
+          input.showPicker();
+          return;
+        } catch (e) {}
+      }
+      input.focus();
+    }, 0);
+  };
+
+  window.handleTaskRemindChange = function() {
+    updateTaskRemindDisplay();
+  };
+
   window.openCreateTask = function() {
-    document.getElementById('create-task-input').value = '';
+    selectedType = '';
+    document.getElementById('create-task-note').value = '';
+    document.getElementById('create-task-remind-input').value = '';
+    setTaskRemindPickerOpen(false);
+    updateTaskRemindDisplay();
+    renderSelectedTaskType();
     document.getElementById('create-task-sheet').style.display = 'flex';
-    setTimeout(function() { document.getElementById('create-task-input').focus(); }, 100);
   };
 
   window.closeCreateTask = function() {
@@ -668,12 +819,21 @@ function timeAgo(isoStr) {
   };
 
   window.submitCreateTask = function() {
-    var text = document.getElementById('create-task-input').value.trim();
-    if (!text) return;
+    if (!selectedType) return;
+    var note = document.getElementById('create-task-note').value.trim();
+    var remindValue = document.getElementById('create-task-remind-input').value;
+    var remindAt = remindValue ? new Date(remindValue).toISOString() : null;
     var now = new Date();
-    var mo = now.getMonth() + 1, dd2 = now.getDate(), hh = now.getHours(), mm = String(now.getMinutes()).padStart(2, '0');
-    var display = mo + '月' + dd2 + '日 ' + hh + ':' + mm;
-    tasks.unshift({ id: Date.now().toString(), text: text, status: '处理中', createdAt: now.toISOString(), createdDisplay: display });
+    var display = formatTaskDateTime(now);
+    tasks.unshift({
+      id: Date.now().toString(),
+      type: selectedType,
+      note: note,
+      remindAt: remindAt,
+      status: '处理中',
+      createdAt: now.toISOString(),
+      createdDisplay: display
+    });
     saveTasks(); renderTasks(); closeCreateTask();
   };
 
@@ -685,6 +845,12 @@ function timeAgo(isoStr) {
 
   // === TAB 2: ASSETS ===
   var assetsHtml = '';
+  var refreshStr = '';
+  if (D.generatedAt) {
+    var _rd = new Date(D.generatedAt);
+    refreshStr = '数据截至 ' + (_rd.getMonth() + 1) + '月' + _rd.getDate() + '日';
+  }
+  var refreshFooter = '<div style="border-top:1px solid #2E3440;margin-top:10px;padding-top:8px;text-align:right;font-size:9px;color:#474D57">' + (refreshStr || '数据实时更新') + '</div>';
 
   // Module: 资沉分布
   var ddAssets = c.depositDist;
@@ -708,7 +874,7 @@ function timeAgo(isoStr) {
 
   assetsHtml += '<div class="mx-4 mt-3 bg-[#1E2329] rounded-xl border border-[#2E3440] p-3">'
     + '<div class="flex items-start justify-between mb-3">'
-    + '<div class="text-[13px] font-semibold text-[#EAECEF]">资沉分布</div>'
+    + '<div class="text-[13px] font-semibold text-[#EAECEF] flex items-center gap-1">资沉分布<i onclick="event.stopPropagation();showDetailTip(\'distCard\',this)" class="fa-regular fa-circle-question" style="color:#474D57;font-size:10px;cursor:pointer"></i></div>'
     + '<div class="text-right">'
     + '<div class="text-[16px] font-bold tabular-nums text-[#EAECEF]">' + fmtFlow(c.fMean) + '</div>'
     + '<div class="text-[10px] mt-0.5"><span style="color:' + distChgColor + '">' + distChgChar + ' ' + distChgSign + deltaPct.toFixed(1) + '%</span> <span class="text-[#474D57]">| </span>均' + fmtAvg(platAvg.depositChg) + '</div>'
@@ -725,7 +891,7 @@ function timeAgo(isoStr) {
       + '<span style="width:52px;font-size:10px;font-weight:500;text-align:right;flex-shrink:0;color:' + barColor + '">' + fmtUSDT(item.value) + '</span>'
       + '</div>';
   });
-  assetsHtml += '</div>';
+  assetsHtml += refreshFooter + '</div>';
 
   // Module: 周冲提 横向双条形图
   var avgNetPerWeek = Math.round(baselineWeeks.reduce(function(s, w) { return s + w.inflow - w.outflow; }, 0) / baselineWeeks.length);
@@ -740,7 +906,7 @@ function timeAgo(isoStr) {
 
   assetsHtml += '<div class="mx-4 mt-3 bg-[#1E2329] rounded-xl border border-[#2E3440] p-3">'
     + '<div class="flex items-start justify-between mb-3">'
-    + '<div class="text-[13px] font-semibold text-[#EAECEF]">周冲提</div>'
+    + '<div class="text-[13px] font-semibold text-[#EAECEF] flex items-center gap-1">周冲提<i onclick="event.stopPropagation();showDetailTip(\'flowCard\',this)" class="fa-regular fa-circle-question" style="color:#474D57;font-size:10px;cursor:pointer"></i></div>'
     + '<div class="text-right">'
     + '<div class="text-[16px] font-bold tabular-nums" style="color:' + netFlowColor + '">' + fmtUSDT(avgNetPerWeek, true) + '</div>'
     + '<div class="text-[10px] mt-0.5"><span style="color:' + flowChgColor + '">' + flowChgChar + ' ' + flowChgSign + flowChgPct.toFixed(1) + '%</span> <span class="text-[#474D57]">| </span>均' + fmtAvg(platAvg.depositChg) + '</div>'
@@ -788,7 +954,9 @@ function timeAgo(isoStr) {
     + '<div class="flex items-center gap-1"><span class="w-2 h-2 rounded-sm bg-[#0ECB81]"></span><span class="text-[10px] text-[#848E9C]">流入</span></div>'
     + '<div class="flex items-center gap-1"><span class="w-2 h-2 rounded-sm bg-[#F6465D]"></span><span class="text-[10px] text-[#848E9C]">流出</span></div>'
     + '<span class="text-[10px] text-[#474D57] ml-auto">W8 = 本周</span>'
-    + '</div></div>';
+    + '</div>'
+    + refreshFooter
+    + '</div>';
 
   // Module: 月利润贡献（周值 × 4.3）
   var nc = c.netContribution;
@@ -810,7 +978,7 @@ function timeAgo(isoStr) {
 
   assetsHtml += '<div class="mx-4 mt-3 bg-[#1E2329] rounded-xl border border-[#2E3440] p-3">'
     + '<div class="flex items-start justify-between mb-3">'
-    + '<div class="text-[13px] font-semibold text-[#EAECEF]">月利润贡献</div>'
+    + '<div class="text-[13px] font-semibold text-[#EAECEF] flex items-center gap-1">月利润贡献<i onclick="event.stopPropagation();showDetailTip(\'profitCard\',this)" class="fa-regular fa-circle-question" style="color:#474D57;font-size:10px;cursor:pointer"></i></div>'
     + '<div class="text-right">'
     + '<div class="text-[16px] font-bold tabular-nums" style="color:' + (ncMonthTotal >= 0 ? '#0ECB81' : '#F6465D') + '">' + fmtUSDT(ncMonthTotal, true) + '</div>'
     + '<div class="text-[10px] mt-0.5"><span style="color:' + ncWowColor + '">' + ncWowChar + ' ' + nc.wowDisplay + '</span> <span class="text-[#474D57]">| </span>均' + fmtAvg(platAvg.profitChg) + '</div>'
@@ -828,7 +996,7 @@ function timeAgo(isoStr) {
       + '<span style="width:52px;font-size:10px;font-weight:500;text-align:right;flex-shrink:0;color:' + color + '">' + fmtUSDT(item.value, true) + '</span>'
       + '</div>';
   });
-  assetsHtml += '</div>';
+  assetsHtml += refreshFooter + '</div>';
 
   // Module: 月交易盈亏（周值 × 4.3）
   var pnl = c.clientPnl;
@@ -849,7 +1017,7 @@ function timeAgo(isoStr) {
 
   assetsHtml += '<div class="mx-4 mt-3 mb-4 bg-[#1E2329] rounded-xl border border-[#2E3440] p-3">'
     + '<div class="flex items-start justify-between mb-3">'
-    + '<div class="text-[13px] font-semibold text-[#EAECEF]">月交易盈亏</div>'
+    + '<div class="text-[13px] font-semibold text-[#EAECEF] flex items-center gap-1">月交易盈亏<i onclick="event.stopPropagation();showDetailTip(\'pnlCard\',this)" class="fa-regular fa-circle-question" style="color:#474D57;font-size:10px;cursor:pointer"></i></div>'
     + '<div class="text-right">'
     + '<div class="text-[16px] font-bold tabular-nums" style="color:' + pnlMonthColor + '">' + fmtUSDT(pnlMonthTotal, true) + '</div>'
     + '<div class="text-[10px] mt-0.5"><span style="color:' + pnlChgColor + '">' + pnlChgChar + ' ' + pnlChgSign + pnlChgPct.toFixed(1) + '%</span> <span class="text-[#474D57]">| </span>均' + fmtAvg(platAvg.pnlChg) + '</div>'
@@ -866,7 +1034,7 @@ function timeAgo(isoStr) {
       + '<span style="width:52px;font-size:10px;font-weight:500;text-align:right;flex-shrink:0;color:' + item.color + '">' + fmtUSDT(item.value, true) + '</span>'
       + '</div>';
   });
-  assetsHtml += '</div>';
+  assetsHtml += refreshFooter + '</div>';
 
   document.getElementById('tab-assets').innerHTML = assetsHtml;
 
@@ -1263,8 +1431,49 @@ setTimeout(function() { if (typeof renderNotesList === 'function') renderNotesLi
         <i class="fa-solid fa-xmark" style="font-size:12px;color:#848E9C"></i>
       </button>
     </div>
-    <textarea id="create-task-input" rows="3" placeholder="描述这个任务..." style="width:100%;background:#2B3139;color:#EAECEF;font-size:14px;border-radius:10px;padding:10px 12px;border:1px solid #2E3440;outline:none;resize:none;box-sizing:border-box;font-family:inherit"></textarea>
-    <button onclick="submitCreateTask()" style="width:100%;height:44px;margin-top:12px;background:#F0B90B;color:#0B0E11;font-size:15px;font-weight:600;border:none;border-radius:10px;cursor:pointer">创建</button>
+    <div style="font-size:12px;color:#848E9C;margin-bottom:8px">类型</div>
+
+    <div style="margin-bottom:12px">
+      <div style="font-size:11px;color:#848E9C;margin-bottom:8px">交易异动</div>
+      <div style="display:flex;gap:8px;overflow-x:auto;padding-bottom:4px;scrollbar-width:none;-webkit-overflow-scrolling:touch">
+        <button class="task-type-pill" data-type="大额充值" onclick="selectTaskType(this)" style="flex-shrink:0;background:#2B3139;color:#848E9C;border:1px solid #2E3440;border-radius:999px;padding:5px 12px;font-size:12px;white-space:nowrap;cursor:pointer">大额充值</button>
+        <button class="task-type-pill" data-type="大额提现" onclick="selectTaskType(this)" style="flex-shrink:0;background:#2B3139;color:#848E9C;border:1px solid #2E3440;border-radius:999px;padding:5px 12px;font-size:12px;white-space:nowrap;cursor:pointer">大额提现</button>
+        <button class="task-type-pill" data-type="大额盈利" onclick="selectTaskType(this)" style="flex-shrink:0;background:#2B3139;color:#848E9C;border:1px solid #2E3440;border-radius:999px;padding:5px 12px;font-size:12px;white-space:nowrap;cursor:pointer">大额盈利</button>
+        <button class="task-type-pill" data-type="大额亏损" onclick="selectTaskType(this)" style="flex-shrink:0;background:#2B3139;color:#848E9C;border:1px solid #2E3440;border-radius:999px;padding:5px 12px;font-size:12px;white-space:nowrap;cursor:pointer">大额亏损</button>
+      </div>
+    </div>
+
+    <div style="margin-bottom:12px">
+      <div style="font-size:11px;color:#848E9C;margin-bottom:8px">客户维护</div>
+      <div style="display:flex;gap:8px;overflow-x:auto;padding-bottom:4px;scrollbar-width:none;-webkit-overflow-scrolling:touch">
+        <button class="task-type-pill" data-type="主动联系" onclick="selectTaskType(this)" style="flex-shrink:0;background:#2B3139;color:#848E9C;border:1px solid #2E3440;border-radius:999px;padding:5px 12px;font-size:12px;white-space:nowrap;cursor:pointer">主动联系</button>
+        <button class="task-type-pill" data-type="客户反馈" onclick="selectTaskType(this)" style="flex-shrink:0;background:#2B3139;color:#848E9C;border:1px solid #2E3440;border-radius:999px;padding:5px 12px;font-size:12px;white-space:nowrap;cursor:pointer">客户反馈</button>
+      </div>
+    </div>
+
+    <div style="margin-bottom:16px">
+      <div style="font-size:11px;color:#848E9C;margin-bottom:8px">风控</div>
+      <div style="display:flex;gap:8px;overflow-x:auto;padding-bottom:4px;scrollbar-width:none;-webkit-overflow-scrolling:touch">
+        <button class="task-type-pill" data-type="账户封禁" onclick="selectTaskType(this)" style="flex-shrink:0;background:#2B3139;color:#848E9C;border:1px solid #2E3440;border-radius:999px;padding:5px 12px;font-size:12px;white-space:nowrap;cursor:pointer">账户封禁</button>
+      </div>
+    </div>
+
+    <div style="font-size:12px;color:#848E9C;margin-bottom:8px">备注</div>
+    <textarea id="create-task-note" rows="3" placeholder="补充说明（可选）" style="width:100%;background:#2B3139;color:#EAECEF;font-size:14px;border-radius:10px;padding:10px 12px;border:1px solid #2E3440;outline:none;resize:none;box-sizing:border-box;font-family:inherit;margin-bottom:16px"></textarea>
+
+    <div style="font-size:12px;color:#848E9C;margin-bottom:8px">提醒时间</div>
+    <button type="button" onclick="toggleTaskRemindPicker()" style="width:100%;display:flex;align-items:center;justify-content:space-between;padding:12px;border-radius:12px;background:#2B3139;border:1px solid #2E3440;cursor:pointer">
+      <div style="display:flex;align-items:center;gap:8px;min-width:0">
+        <span style="font-size:14px;line-height:1">🔔</span>
+        <span id="create-task-remind-text" style="font-size:13px;color:#848E9C;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">设置提醒时间</span>
+      </div>
+      <i id="create-task-remind-chevron" class="fa-solid fa-chevron-down" style="font-size:11px;color:#848E9C;transition:transform 0.2s"></i>
+    </button>
+    <div id="create-task-remind-wrap" style="display:none;margin-top:10px">
+      <input id="create-task-remind-input" type="datetime-local" onchange="handleTaskRemindChange()" style="width:100%;background:#2B3139;color:#EAECEF;font-size:14px;border-radius:10px;padding:10px 12px;border:1px solid #2E3440;outline:none;box-sizing:border-box;font-family:inherit">
+    </div>
+
+    <button id="create-task-submit" onclick="submitCreateTask()" disabled style="width:100%;height:44px;margin-top:16px;background:#2B3139;color:#474D57;font-size:15px;font-weight:600;border:none;border-radius:10px;cursor:not-allowed">创建</button>
   </div>
 </div>
 
@@ -1279,6 +1488,10 @@ setTimeout(function() { if (typeof renderNotesList === 'function') renderNotesLi
       </button>
     </div>
     <div id="task-detail-text" style="font-size:15px;color:#EAECEF;line-height:1.5;margin-bottom:6px"></div>
+    <div id="task-detail-meta" style="display:none;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:8px">
+      <span id="task-detail-type" style="display:none;align-items:center;font-size:10px;padding:1px 7px;border-radius:999px;background:#2B3139;color:#F0B90B"></span>
+      <span id="task-detail-remind" style="display:none;color:#848E9C;font-size:10px"></span>
+    </div>
     <div id="task-detail-time" style="font-size:11px;color:#474D57;margin-bottom:24px"></div>
     <div style="display:flex;gap:10px">
       <button id="task-archive-btn" onclick="archiveTask()" style="flex:1;height:44px;background:#2B3139;color:#EAECEF;font-size:14px;font-weight:500;border:1px solid #2E3440;border-radius:10px;cursor:pointer">归档</button>

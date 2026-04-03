@@ -75,35 +75,6 @@
     <div id="search-dropdown" class="hidden absolute left-4 right-4 top-full z-40 bg-[#1E2329] rounded-b-lg border border-t-0 border-[#2E3440] max-h-[320px] overflow-y-auto shadow-lg"></div>
   </div>
 
-  <!-- Sort Tabs + 方向切换 -->
-  <div class="flex items-center gap-2 px-4 py-2">
-    <div class="flex gap-2 overflow-x-auto flex-1" style="scrollbar-width:none">
-      <button data-sort="favs"
-        class="sort-tab text-[12px] px-3 py-1 rounded-full whitespace-nowrap flex-shrink-0 cursor-pointer border-0">
-        <i class="fa-solid fa-star text-[11px] mr-1"></i>收藏
-      </button>
-      <button data-sort="deposit"
-        class="sort-tab text-[12px] px-3 py-1 rounded-full whitespace-nowrap flex-shrink-0 cursor-pointer border-0">
-        资沉
-      </button>
-      <button data-sort="inflow"
-        class="sort-tab text-[12px] px-3 py-1 rounded-full whitespace-nowrap flex-shrink-0 cursor-pointer border-0">
-        本周入金
-      </button>
-      <button data-sort="outflow"
-        class="sort-tab text-[12px] px-3 py-1 rounded-full whitespace-nowrap flex-shrink-0 cursor-pointer border-0">
-        本周出金
-      </button>
-      <button data-sort="profit"
-        class="sort-tab text-[12px] px-3 py-1 rounded-full whitespace-nowrap flex-shrink-0 cursor-pointer border-0">
-        利润贡献
-      </button>
-    </div>
-    <button id="dir-btn" class="flex-shrink-0 bg-[#2E3440] border-0 rounded-lg px-2 py-1 cursor-pointer text-[#848E9C] text-[13px]">
-      <i id="dir-icon" class="fa-solid fa-arrow-down-wide-short"></i>
-    </button>
-  </div>
-
   <!-- Client List -->
   <div id="client-list" class="overflow-y-auto pb-[100px]" style="scrollbar-width:none;"></div>
 
@@ -130,6 +101,10 @@
   </div>
   <div style="height:env(safe-area-inset-bottom,0px)"></div>
 </div>
+
+<!-- Tooltip overlay -->
+<div id="tip-overlay" onclick="hideTip()" style="display:none;position:fixed;inset:0;z-index:100"></div>
+<div id="tip-box" style="display:none;position:fixed;z-index:101;background:#2B3139;border:1px solid #2E3440;border-radius:10px;padding:10px 14px;max-width:180px;font-size:12px;color:#EAECEF;line-height:1.5;box-shadow:0 8px 24px rgba(0,0,0,0.5)"></div>
 
 <script src="mock-data.js"></script>
 <script>
@@ -186,12 +161,17 @@
     return w[w.length - 1] - w[w.length - 2];
   }
 
-  // 金额格式化（万）
-  function fmtWan(val) {
+  // 金额格式化（K/M/B）
+  function fmt(val, withSign) {
     var abs = Math.abs(val);
-    if (abs >= 10000) return (val > 0 ? '+' : '-') + (abs / 10000).toFixed(1) + '万';
-    return (val > 0 ? '+' : '') + Math.round(val).toLocaleString();
+    var sign = withSign ? (val >= 0 ? '+' : '-') : (val < 0 ? '-' : '');
+    if (abs >= 1e9) return sign + (abs / 1e9).toFixed(1) + 'B';
+    if (abs >= 1e6) return sign + (abs / 1e6).toFixed(1) + 'M';
+    if (abs >= 1e3) return sign + (abs / 1e3).toFixed(1) + 'K';
+    return (withSign && val > 0 ? '+' : (val < 0 ? '-' : '')) + Math.round(abs).toLocaleString();
   }
+  // 兼容旧调用
+  function fmtWan(val) { return fmt(val, true); }
 
   // 获取当前维度的指标值文本
   function getMetricDisplay(c, sort) {
@@ -245,24 +225,81 @@
     return sorted;
   }
 
-  // 渲染单行（无独立卡片，由外层大卡片包裹）
+  var TIPS = {
+    deposit: '客户账户当前持仓总资产价值',
+    inflow:  '客户过去 7 天充值入账的累计金额',
+    outflow: '客户过去 7 天提现出账的累计金额',
+    profit:  '客户过去 30 天为平台贡献的可统计利润',
+  };
+
+  // 表头
+  function headerHTML() {
+    var s = activeSort;
+    var hc = function(col) {
+      if (col === 'deposit') return s === 'deposit' ? '#F0B90B' : '#474D57';
+      if (col === 'inflow')  return s === 'inflow'  ? '#0ECB81' : '#474D57';
+      if (col === 'outflow') return s === 'outflow' ? '#F6465D' : '#474D57';
+      if (col === 'profit')  return s === 'profit'  ? '#0ECB81' : '#474D57';
+    };
+    var sortIcon = function(col) {
+      if (col !== s) return '<i class="fa-solid fa-sort" style="font-size:8px;margin-left:2px;color:#474D57;opacity:0.5"></i>';
+      return '<i class="fa-solid fa-sort-' + (sortAsc ? 'up' : 'down') + '" style="font-size:9px;margin-left:2px;color:' + hc(col) + '"></i>';
+    };
+    var col = function(key, label, align) {
+      var a = align || 'right';
+      return '<span onclick="sortBy(\'' + key + '\')" style="font-size:13px;font-weight:600;text-align:' + a + ';color:' + hc(key) + ';cursor:pointer;display:flex;align-items:center;justify-content:flex-end;gap:1px;user-select:none">'
+        + '<span>' + label + '</span>'
+        + sortIcon(key)
+        + '<i onclick="event.stopPropagation();showTip(\'' + key + '\',this)" class="fa-regular fa-circle-question" style="color:#474D57;font-size:9px;margin-left:3px;cursor:pointer"></i>'
+        + '</span>';
+    };
+    return '<div style="display:grid;grid-template-columns:1fr 60px 56px 56px 52px;padding:7px 12px 5px;border-bottom:1px solid #2E3440">'
+      + '<span style="font-size:13px;font-weight:600;color:#848E9C">客户</span>'
+      + col('deposit', '资沉')
+      + col('inflow',  '入金')
+      + col('outflow', '出金')
+      + col('profit',  '利润')
+      + '</div>';
+  }
+
+  // 渲染单行
   function rowHTML(c, sort, isLast) {
-    var color = SORT_CONFIG[sort].color;
-    var metric = sort === 'favs' ? c.depositDisplay : getMetricDisplay(c, sort);
-    var metricHTML = metric
-      ? '<span style="font-size:13px;font-weight:700;color:' + color + ';flex-shrink:0">' + metric + '</span>'
-      : '<span style="font-size:13px;color:#474D57;flex-shrink:0">—</span>';
-    var label = c.name ? c.uid + ' (' + c.name + ')' : c.uid;
+    var border = isLast ? '' : 'border-bottom:1px solid #2E3440;';
+    var delta = getWeekDelta(c);
+
+    var depositVal = c.fMean != null ? c.fMean : null;
+    var depositHTML = depositVal != null
+      ? '<span style="font-size:13px;font-weight:700;color:#F0B90B">' + fmt(depositVal, false) + '</span>'
+      : '<span style="font-size:13px;color:#474D57">—</span>';
+
+    var inflowHTML = delta > 0
+      ? '<span style="font-size:13px;font-weight:600;color:#0ECB81">' + fmtWan(delta) + '</span>'
+      : '<span style="font-size:13px;color:#474D57">—</span>';
+
+    var outflowHTML = delta < 0
+      ? '<span style="font-size:13px;font-weight:600;color:#F6465D">' + fmtWan(delta) + '</span>'
+      : '<span style="font-size:13px;color:#474D57">—</span>';
+
+    var profitVal = c.netContribution ? c.netContribution.total : null;
+    var profitHTML = profitVal != null
+      ? '<span style="font-size:13px;font-weight:600;color:#0ECB81">' + fmt(profitVal, false) + '</span>'
+      : '<span style="font-size:13px;color:#474D57">—</span>';
+
     var dotColor = getFollowUpDot(c.uid);
     var dotHTML = dotColor
-      ? '<span style="width:7px;height:7px;border-radius:50%;background:' + dotColor + ';flex-shrink:0;display:inline-block"></span>'
-      : '<span style="width:7px;height:7px;flex-shrink:0;display:inline-block"></span>';
-    var border = isLast ? '' : 'border-bottom:1px solid #2E3440;';
+      ? '<span style="width:6px;height:6px;border-radius:50%;background:' + dotColor + ';display:inline-block;margin-right:4px;flex-shrink:0;position:relative;top:-1px"></span>'
+      : '';
+
     return '<a href="client-detail.html?uid=' + c.uid + '" '
-      + 'style="display:flex;align-items:center;gap:10px;padding:11px 16px;' + border + 'text-decoration:none;active:opacity-70">'
-      + dotHTML
-      + '<span style="flex:1;font-size:13px;color:#EAECEF;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + label + '</span>'
-      + metricHTML
+      + 'style="display:grid;grid-template-columns:1fr 60px 56px 56px 52px;align-items:center;padding:10px 12px;' + border + 'text-decoration:none">'
+      + '<div>'
+      +   '<div style="font-size:12px;font-weight:600;color:#EAECEF;display:flex;align-items:center">' + dotHTML + c.uid + '</div>'
+      +   (c.name ? '<div style="font-size:11px;color:#848E9C;margin-top:1px">' + c.name + '</div>' : '')
+      + '</div>'
+      + '<div style="text-align:right">' + depositHTML + '</div>'
+      + '<div style="text-align:right">' + inflowHTML  + '</div>'
+      + '<div style="text-align:right">' + outflowHTML + '</div>'
+      + '<div style="text-align:right">' + profitHTML  + '</div>'
       + '</a>';
   }
 
@@ -309,7 +346,7 @@
         ? '<div style="padding:48px 16px;text-align:center;color:#848E9C;font-size:13px">还没有收藏的客户</div>'
         : '<div style="padding:32px 16px;text-align:center;color:#848E9C;font-size:13px">未找到匹配的客户</div>';
     var listHTML = '<div style="margin:0 12px 8px;background:#1E2329;border-radius:16px;border:1px solid #2E3440;overflow:hidden">'
-      + innerHTML + '</div>';
+      + headerHTML() + innerHTML + '</div>';
 
     // 分页控件
     var paginationHTML = totalPages > 1 ? (
@@ -343,24 +380,35 @@
     if (activeSort === 'favs') renderList();
   };
 
-  // 胶囊点击
-  document.querySelectorAll('.sort-tab').forEach(function(btn) {
-    btn.addEventListener('click', function() {
-      activeSort = btn.getAttribute('data-sort');
-      currentPage = 1;
-      updateTabs();
-      renderList();
-    });
-  });
-
-  // 方向切换
-  document.getElementById('dir-btn').addEventListener('click', function() {
-    sortAsc = !sortAsc;
+  // 列标题排序（点同列切换升降序，点不同列默认降序）
+  window.sortBy = function(col) {
+    if (activeSort === col) {
+      sortAsc = !sortAsc;
+    } else {
+      activeSort = col;
+      sortAsc = false;
+    }
     currentPage = 1;
-    var icon = document.getElementById('dir-icon');
-    icon.className = sortAsc ? 'fa-solid fa-arrow-up-wide-short' : 'fa-solid fa-arrow-down-wide-short';
     renderList();
-  });
+  };
+
+  // Tooltip
+  window.showTip = function(col, el) {
+    var box = document.getElementById('tip-box');
+    var overlay = document.getElementById('tip-overlay');
+    box.textContent = TIPS[col] || '';
+    var rect = el.getBoundingClientRect();
+    var boxW = 180;
+    var left = Math.min(rect.left, window.innerWidth - boxW - 12);
+    box.style.left = Math.max(12, left) + 'px';
+    box.style.top = (rect.bottom + 6) + 'px';
+    box.style.display = 'block';
+    overlay.style.display = 'block';
+  };
+  window.hideTip = function() {
+    document.getElementById('tip-box').style.display = 'none';
+    document.getElementById('tip-overlay').style.display = 'none';
+  };
 
   function renderSearchDropdown(query) {
     var dropdown = document.getElementById('search-dropdown');
@@ -410,7 +458,6 @@
   });
 
   // 初始化
-  updateTabs();
   renderList();
 })();
 </script>
