@@ -62,9 +62,6 @@
   <div id="client-card" class="mx-3 mt-2 mb-2 bg-[#1E2329] rounded-2xl border border-[#2E3440] overflow-hidden">
     <!-- Row 1: Identity -->
     <div class="flex items-center gap-3 px-4 pt-3 pb-2">
-      <button id="fav-btn" onclick="toggleFav()" class="w-8 h-8 flex items-center justify-center rounded-full bg-[#2B3139] flex-shrink-0 active:scale-95 transition-transform">
-        <i id="fav-icon" class="fa-regular fa-star text-[14px] text-[#474D57]"></i>
-      </button>
       <div class="flex-1 min-w-0">
         <div class="flex items-center gap-2">
           <button id="uid-btn" onclick="copyUid()" class="flex items-center gap-1.5 active:opacity-70">
@@ -74,29 +71,33 @@
           <span id="client-nickname" class="text-[12px] text-[#848E9C]"></span>
         </div>
       </div>
+      <span id="from-badge" class="text-[9px] px-1.5 py-[1px] rounded hidden flex-shrink-0"></span>
+      <button id="fav-btn" onclick="toggleFav()" class="w-8 h-8 flex items-center justify-center rounded-full bg-[#2B3139] flex-shrink-0 active:scale-95 transition-transform">
+        <i id="fav-icon" class="fa-regular fa-star text-[14px] text-[#474D57]"></i>
+      </button>
     </div>
     <!-- Row 2: Tags -->
     <div id="tags-row" class="px-4 pb-2 flex flex-wrap gap-1"></div>
     <!-- Row 3: 资沉主指标 -->
     <div class="px-4 pb-2">
-      <div class="text-[10px] text-[#474D57] mb-0.5">资沉</div>
+      <div class="text-[10px] text-[#474D57] mb-0.5 flex items-center gap-1">资沉<i onclick="event.stopPropagation();showDetailTip('deposit',this)" class="fa-regular fa-circle-question" style="color:#474D57;font-size:9px;cursor:pointer"></i></div>
       <div class="flex items-baseline gap-2">
         <span id="deposit-hero" class="text-[28px] font-bold text-[#EAECEF] tracking-tight leading-none"></span>
         <div id="deposit-delta" class="flex items-center gap-0.5 text-[11px]"></div>
       </div>
     </div>
-    <!-- Row 4: 充提 / 利润贡献 / 交易盈亏 -->
+    <!-- Row 4: 充提 / 月利润贡献 / 月交易盈亏 -->
     <div class="flex px-4 pb-3 gap-0">
       <div class="flex-1">
-        <div class="text-[10px] text-[#474D57] mb-0.5">充提</div>
+        <div class="text-[10px] text-[#474D57] mb-0.5 flex items-center gap-1">充提<i onclick="event.stopPropagation();showDetailTip('cashflow',this)" class="fa-regular fa-circle-question" style="color:#474D57;font-size:9px;cursor:pointer"></i></div>
         <span id="cashflow-hero" class="text-[15px] font-bold leading-none">--</span>
       </div>
       <div class="flex-1">
-        <div class="text-[10px] text-[#474D57] mb-0.5">利润贡献</div>
+        <div class="text-[10px] text-[#474D57] mb-0.5 flex items-center gap-1">月利润贡献<i onclick="event.stopPropagation();showDetailTip('profit',this)" class="fa-regular fa-circle-question" style="color:#474D57;font-size:9px;cursor:pointer"></i></div>
         <span id="profit-hero" class="text-[15px] font-bold leading-none">--</span>
       </div>
       <div class="flex-1">
-        <div class="text-[10px] text-[#474D57] mb-0.5">交易盈亏</div>
+        <div class="text-[10px] text-[#474D57] mb-0.5 flex items-center gap-1">月交易盈亏<i onclick="event.stopPropagation();showDetailTip('pnl',this)" class="fa-regular fa-circle-question" style="color:#474D57;font-size:9px;cursor:pointer"></i></div>
         <span id="pnl-hero" class="text-[15px] font-bold text-[#848E9C] leading-none">--</span>
       </div>
     </div>
@@ -109,38 +110,104 @@
     <a id="full-profile-link" href="#" class="text-[11px] text-[#4DA6FF]">查看完整资料 →</a>
   </div>
 
-  <!-- ② 任务信息卡 -->
+  <!-- ② 事件详情卡 -->
   <div class="mx-3 mt-3 bg-[#1E2329] rounded-2xl border border-[#2E3440] p-4">
-    <!-- 标题（可编辑） -->
-    <div id="task-title-view" class="flex items-start gap-2 mb-1">
-      <div id="event-goal" class="text-[15px] font-semibold text-[#EAECEF] flex-1 leading-snug"></div>
-      <button onclick="enterEditMode()" class="flex-shrink-0 w-6 h-6 flex items-center justify-center rounded active:opacity-70">
-        <i class="fa-solid fa-pen text-[10px] text-[#474D57]"></i>
-      </button>
+    <!-- 类型 + 来源 + 时间 -->
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">
+      <span id="event-type-badge" style="font-size:10px;padding:2px 8px;border-radius:999px;background:rgba(240,185,11,0.12);border:1px solid rgba(240,185,11,0.22);color:#F0B90B"></span>
+      <span id="event-source-badge" style="font-size:10px;padding:2px 8px;border-radius:999px;background:#2B3139;color:#848E9C"></span>
+      <span style="flex:1"></span>
+      <span id="event-time" style="font-size:11px;color:#474D57"></span>
     </div>
-    <textarea id="task-title-edit" rows="2" class="hidden w-full bg-[#2B3139] text-[#EAECEF] text-[14px] rounded-lg px-3 py-2 border border-[#F0B90B] outline-none resize-none mb-1 font-semibold" style="font-family:inherit"></textarea>
-    <div id="edit-actions" class="hidden flex gap-2">
-      <button onclick="saveEdit()" class="text-[12px] text-[#0ECB81] active:opacity-70">保存</button>
-      <button onclick="cancelEdit()" class="text-[12px] text-[#848E9C] active:opacity-70">取消</button>
+    <!-- 主要内容 -->
+    <div id="event-goal" style="font-size:16px;font-weight:600;color:#EAECEF;line-height:1.4"></div>
+    <!-- 说明（手动事件的备注） -->
+    <div id="event-note" style="font-size:13px;color:#848E9C;margin-top:6px;line-height:1.5"></div>
+  </div>
+
+  <!-- ③ AI 行动建议 -->
+  <div class="mx-3 mt-3 bg-[#1E2329] rounded-2xl border border-[#2E3440] p-4">
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
+      <i class="fa-solid fa-robot" style="color:#F0B90B;font-size:13px"></i>
+      <span style="font-size:13px;font-weight:600;color:#EAECEF">AI 行动建议</span>
+      <span style="font-size:10px;color:#474D57;margin-left:auto">仅供参考</span>
+    </div>
+    <div id="ai-strategy-tags" style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px"></div>
+    <div id="ai-suggestions" style="display:flex;flex-direction:column;gap:10px"></div>
+    <div style="margin-top:12px;padding-top:10px;border-top:1px solid #2E3440;font-size:10px;color:#474D57;line-height:1.6">
+      基于事件类型与客户数据生成 · 建议仅供参考，请结合实际情况判断
+    </div>
+  </div>
+
+  <!-- ④ 跟进记录 -->
+  <div class="mx-3 mt-3 mb-4 bg-[#1E2329] rounded-2xl border border-[#2E3440] overflow-hidden">
+    <div style="display:flex;align-items:center;gap:8px;padding:14px 16px 10px">
+      <i class="fa-solid fa-pen-to-square" style="color:#4DA6FF;font-size:12px"></i>
+      <span style="font-size:13px;font-weight:600;color:#EAECEF">跟进记录</span>
+      <span id="fu-records-count" style="font-size:10px;color:#474D57;margin-left:auto"></span>
+    </div>
+    <!-- 已有记录列表 -->
+    <div id="fu-records-list" style="padding:0 16px"></div>
+    <!-- 输入区 -->
+    <div style="padding:10px 16px 14px">
+      <textarea id="fu-record-input" placeholder="记录跟进结果、客户反馈…" rows="3"
+        style="width:100%;box-sizing:border-box;background:#2B3139;color:#EAECEF;border:1px solid #2E3440;border-radius:10px;padding:10px 12px;font-size:13px;font-family:inherit;line-height:1.6;resize:none;outline:none;caret-color:#F0B90B"></textarea>
+      <button onclick="addFuRecord()" style="margin-top:8px;width:100%;height:38px;background:rgba(77,166,255,0.12);color:#4DA6FF;border:1px solid rgba(77,166,255,0.3);border-radius:10px;font-size:13px;font-weight:600;cursor:pointer">保存记录</button>
     </div>
   </div>
 
 </div>
 </div>
 
-<!-- 底部操作栏：归档 + 删除 -->
+<!-- Tooltip overlay -->
+<div id="tip-overlay" onclick="hideTip()" style="display:none;position:fixed;inset:0;z-index:100"></div>
+<div id="tip-box" style="display:none;position:fixed;z-index:101;background:#2B3139;border:1px solid #2E3440;border-radius:10px;padding:10px 14px;max-width:180px;font-size:12px;color:#EAECEF;line-height:1.5;box-shadow:0 8px 24px rgba(0,0,0,0.5)"></div>
+
+<!-- 底部操作栏 -->
 <div class="fixed-bar bg-[#0B0E11] border-t border-[#2E3440] z-30 px-4 pt-3" style="padding-bottom:calc(0.75rem + env(safe-area-inset-bottom))">
-  <div class="flex gap-2">
-    <button onclick="archiveEvent()" style="flex:1;height:44px;background:#2B3139;color:#EAECEF;font-size:14px;font-weight:500;border:1px solid #2E3440;border-radius:10px;cursor:pointer">归档</button>
-    <button onclick="openDeleteSheet()" style="flex:1;height:44px;background:rgba(246,70,93,0.12);color:#F6465D;font-size:14px;font-weight:500;border:1px solid rgba(246,70,93,0.2);border-radius:10px;cursor:pointer">删除</button>
+  <!-- 特别关注截止日选择（默认隐藏） -->
+  <div id="flag-chooser" style="display:none;flex-direction:row;align-items:center;gap:8px;margin-bottom:10px">
+    <button id="flag-today-btn" onclick="markFlagToday()" style="height:36px;padding:0 18px;background:#2B3139;color:#EAECEF;font-size:13px;border:1px solid #2E3440;border-radius:999px;cursor:pointer;white-space:nowrap">今天</button>
+    <input type="date" id="flag-custom-date" style="flex:1;height:36px;background:#2B3139;color:#EAECEF;font-size:13px;border:1px solid #2E3440;border-radius:999px;padding:0 12px;outline:none;cursor:pointer" oninput="markFlagCustom(this.value)">
+  </div>
+  <div style="display:flex;gap:8px">
+    <button id="flag-btn" onclick="toggleFlagChooser()" style="flex:1;height:44px;font-size:14px;font-weight:500;border-radius:10px;cursor:pointer;background:rgba(240,185,11,0.12);color:#F0B90B;border:1px solid rgba(240,185,11,0.3)">标记特别关注</button>
+    <button id="close-event-btn" onclick="closeEvent()" style="flex:1;height:44px;background:#2B3139;color:#EAECEF;font-size:14px;font-weight:500;border:1px solid #2E3440;border-radius:10px;cursor:pointer">归档</button>
   </div>
 </div>
 
 <script src="mock-data.js"></script>
+<script src="mock-events.js"></script>
+<script src="event-center-shared.js"></script>
+<script>
+var DETAIL_TIPS = {
+  deposit:  '客户过去 8 周持仓资产均值（USDT），旁边变化值为本周资产与 8 周均值的偏差',
+  cashflow: '本周充值减提现估算合计，基于持仓周变化推算，仅供参考',
+  profit:   '客户本月为平台贡献的可统计利润，含手续费、利差、理财利息等；由周数据 × 4.3 估算',
+  pnl:      '客户本月交易持仓方向盈亏，含合约、杠杆、迷你等品种；由 7 日数据 × 4.3 估算',
+};
+window.showDetailTip = function(key, el) {
+  var box = document.getElementById('tip-box');
+  var overlay = document.getElementById('tip-overlay');
+  box.textContent = DETAIL_TIPS[key] || '';
+  var rect = el.getBoundingClientRect();
+  var boxW = 180;
+  var left = Math.min(rect.left, window.innerWidth - boxW - 12);
+  box.style.left = Math.max(12, left) + 'px';
+  box.style.top = (rect.bottom + 6) + 'px';
+  box.style.display = 'block';
+  overlay.style.display = 'block';
+};
+window.hideTip = function() {
+  document.getElementById('tip-box').style.display = 'none';
+  document.getElementById('tip-overlay').style.display = 'none';
+};
+</script>
 <script>
 (function() {
   var params = new URLSearchParams(location.search);
   var fuId = params.get('fuId');
+  var shared = window.EventCenterShared;
 
   // Load event
   var fuEvents = [];
@@ -183,6 +250,21 @@
     if (d === 0) return { text: '今天', color: '#F0B90B' };
     if (d === 1) return { text: '明天', color: '#F0B90B' };
     return { text: d + '天后', color: '#4DA6FF' };
+  }
+
+  function isEventClosed() {
+    if (!shared) return false;
+    return shared.loadClosed(localStorage).indexOf(ev.id) !== -1;
+  }
+
+  function syncCloseButton() {
+    var btn = document.getElementById('close-event-btn');
+    if (!btn) return;
+    var closed = isEventClosed();
+    btn.textContent = closed ? '已完成' : '完成';
+    btn.disabled = closed;
+    btn.style.opacity = closed ? '0.55' : '1';
+    btn.style.cursor = closed ? 'default' : 'pointer';
   }
 
 
@@ -317,8 +399,192 @@
     });
   };
 
-  // ── ② Task info ──
+  // ── ② 事件详情 ──
+  document.getElementById('event-type-badge').textContent = ev.type || '事件';
+  document.getElementById('event-source-badge').textContent = ev.source === 'system' ? '系统' : 'BD';
+  var evDate = new Date(ev.created_at || ev.createdAt || '');
+  if (!isNaN(evDate.getTime())) {
+    var mo = evDate.getMonth() + 1, dd = evDate.getDate(), hh = evDate.getHours(), mm = String(evDate.getMinutes()).padStart(2,'0');
+    document.getElementById('event-time').textContent = mo + '月' + dd + '日 ' + hh + ':' + mm;
+  }
   document.getElementById('event-goal').textContent = ev.title || '—';
+  if (ev.note) document.getElementById('event-note').textContent = ev.note;
+
+  // ── ③ AI 行动建议 ──
+  var AI_PLAYBOOKS = {
+    '大额提现': {
+      strategies: ['挽留策略', '主动沟通'],
+      items: [
+        '24小时内主动联系，切入点用「近期资金运作是否顺利」，避免直接追问提现原因，降低客户防御心理。',
+        '若客户透露对平台不满，立即表达重视，提供专属客服跟进通道，必要时可酌情告知权益补偿方案。',
+        '若属于临时资金需求，顺势介绍平台活期理财产品，引导部分资金留存，为下次回流埋好铺垫。'
+      ]
+    },
+    '大额充值': {
+      strategies: ['关系深化', '产品推荐'],
+      items: [
+        '主动感谢客户的信任，肯定其对平台的认可，趁热度建立更强的情感连接。',
+        '根据充值规模匹配专属权益或理财产品，趁资金热度推荐合适的配置方案，提升资金使用效率。',
+        '了解客户的资金配置计划，确认是否有进一步需求，为后续深度服务打好基础。'
+      ]
+    },
+    '大额盈利': {
+      strategies: ['趁势转化', '产品推荐'],
+      items: [
+        '祝贺客户取得良好收益，肯定其投资判断力，借此机会加深关系。',
+        '建议在盈利状态下适度锁定收益，介绍稳健型理财产品，帮助客户规避后续可能的回撤风险。',
+        '趁势推荐相关产品或平台活动，引导客户提升产品使用深度，扩大交叉销售机会。'
+      ]
+    },
+    '大额亏损': {
+      strategies: ['情绪安抚', '风险管理'],
+      items: [
+        '主动联系客户表达关心，措辞注意避免直接提及具体亏损金额，以「近期行情波动较大」作为话题切入。',
+        '提供风险管理建议，推荐止损设置或波动较小的产品，帮助客户恢复信心、稳定情绪。',
+        '持续观察后续操作动态，若出现连续亏损迹象，及时升级关注级别，提前介入防止客户流失。'
+      ]
+    },
+    '账户封禁': {
+      strategies: ['危机处理', '合规沟通'],
+      items: [
+        '第一时间联系客户，使用平台合规话术解释封禁原因，避免客户产生对立情绪。',
+        '明确告知申诉流程与预计解封时间，给客户清晰的处理预期，减少焦虑。',
+        '全程记录沟通情况并同步合规团队，确保流程规范，同时维护好客户关系。'
+      ]
+    },
+    '主动联系': {
+      strategies: ['关系维护'],
+      items: [
+        '了解客户近期的资产配置动向和使用体验，保持关系热度，避免客情冷淡。',
+        '结合客户历史偏好，适时推荐与其匹配的新产品或活动，不强推，以信息分享为主。'
+      ]
+    },
+    '客户反馈': {
+      strategies: ['问题跟进', '关系维护'],
+      items: [
+        '确认反馈已被认真记录，告知客户处理进展，让客户感受到被重视。',
+        '跟进反馈处理结果，闭环后主动回访，将负面反馈转化为加深关系的机会。'
+      ]
+    }
+  };
+
+  var playbook = AI_PLAYBOOKS[ev.type] || {
+    strategies: ['常规跟进'],
+    items: ['根据客户近期动态，保持适当联系频率，了解需求变化，维护良好的客情关系。']
+  };
+
+  var tagsHtml = playbook.strategies.map(function(s) {
+    return '<span style="font-size:10px;padding:2px 8px;border-radius:999px;background:rgba(240,185,11,0.1);color:#F0B90B;border:1px solid rgba(240,185,11,0.25)">' + esc(s) + '</span>';
+  }).join('');
+  document.getElementById('ai-strategy-tags').innerHTML = tagsHtml;
+
+  var suggestionsHtml = playbook.items.map(function(text, idx) {
+    return '<div style="display:flex;align-items:flex-start;gap:8px">'
+      + '<span style="width:16px;height:16px;border-radius:50%;background:rgba(240,185,11,0.12);border:1px solid rgba(240,185,11,0.3);color:#F0B90B;font-size:9px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px">' + (idx + 1) + '</span>'
+      + '<span style="font-size:12px;color:#EAECEF;line-height:1.7">' + esc(text) + '</span>'
+      + '</div>';
+  }).join('');
+  document.getElementById('ai-suggestions').innerHTML = suggestionsHtml;
+
+  // ── ③ 跟进记录 ──
+  var RECORDS_KEY = 'fu_records_' + ev.id;
+
+  function loadRecords() {
+    try { return JSON.parse(localStorage.getItem(RECORDS_KEY) || '[]'); } catch(e) { return []; }
+  }
+
+  function saveRecords(list) {
+    localStorage.setItem(RECORDS_KEY, JSON.stringify(list));
+  }
+
+  function fmtRecordTime(iso) {
+    var d = new Date(iso);
+    if (isNaN(d)) return '';
+    var mo = d.getMonth() + 1, dd = d.getDate(), hh = d.getHours(), mm = String(d.getMinutes()).padStart(2, '0');
+    return mo + '月' + dd + '日 ' + hh + ':' + mm;
+  }
+
+  function renderRecords() {
+    var list = loadRecords();
+    var countEl = document.getElementById('fu-records-count');
+    var listEl = document.getElementById('fu-records-list');
+    countEl.textContent = list.length > 0 ? list.length + ' 条' : '';
+    if (list.length === 0) {
+      listEl.innerHTML = '<div style="padding:4px 0 10px;font-size:12px;color:#474D57">暂无记录，在下方填写跟进结果</div>';
+      return;
+    }
+    listEl.innerHTML = list.slice().reverse().map(function(r, i) {
+      var isFirst = i === 0;
+      return '<div style="padding:10px 0;' + (isFirst ? '' : 'border-top:1px solid #2E3440;') + '">'
+        + '<div style="font-size:10px;color:#474D57;margin-bottom:4px">' + esc(fmtRecordTime(r.at)) + '</div>'
+        + '<div style="font-size:13px;color:#EAECEF;line-height:1.6;white-space:pre-wrap">' + esc(r.text) + '</div>'
+        + '</div>';
+    }).join('');
+  }
+
+  window.addFuRecord = function() {
+    var input = document.getElementById('fu-record-input');
+    var text = (input.value || '').trim();
+    if (!text) return;
+    var list = loadRecords();
+    list.push({ text: text, at: new Date().toISOString() });
+    saveRecords(list);
+    input.value = '';
+    renderRecords();
+  };
+
+  // 支持 Cmd/Ctrl+Enter 快速保存
+  document.getElementById('fu-record-input').addEventListener('keydown', function(e) {
+    if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') { window.addFuRecord(); }
+  });
+
+  renderRecords();
+
+  // ── 特别关注 ──
+  var shared2 = window.EventCenterShared;
+  function getFlagged() { return shared2 ? shared2.loadFlagged(localStorage) : []; }
+  function isFlagged() {
+    return getFlagged().some(function(f) { return f.fuId === ev.id; });
+  }
+  function syncFlagBtn() {
+    var btn = document.getElementById('flag-btn');
+    if (isFlagged()) {
+      btn.textContent = '已特别关注 · 取消';
+      btn.style.background = 'rgba(240,185,11,0.2)';
+      btn.style.color = '#F0B90B';
+    } else {
+      btn.textContent = '标记特别关注';
+      btn.style.background = 'rgba(240,185,11,0.12)';
+      btn.style.color = '#F0B90B';
+    }
+  }
+  window.toggleFlagChooser = function() {
+    if (isFlagged()) {
+      // 已标记 → 直接取消
+      if (shared2) shared2.saveFlagged(localStorage, shared2.removeFlaggedEntry(getFlagged(), ev.id));
+      document.getElementById('flag-chooser').style.display = 'none';
+      syncFlagBtn();
+    } else {
+      var chooser = document.getElementById('flag-chooser');
+      chooser.style.display = chooser.style.display === 'none' ? 'flex' : 'none';
+    }
+  };
+  function doMarkFlag(dateStr) {
+    if (!shared2 || !dateStr) return;
+    var next = shared2.upsertFlaggedEntry(getFlagged(), ev.id, dateStr, new Date().toISOString());
+    shared2.saveFlagged(localStorage, next);
+    document.getElementById('flag-chooser').style.display = 'none';
+    syncFlagBtn();
+  }
+  window.markFlagToday = function() {
+    doMarkFlag(new Date().toISOString().split('T')[0]);
+  };
+  window.markFlagCustom = function(dateStr) {
+    if (dateStr) doMarkFlag(dateStr);
+  };
+  // 初始化 date input 最小值为今天
+  document.getElementById('flag-custom-date').min = new Date().toISOString().split('T')[0];
+  syncFlagBtn();
 
   function saveStatus(status) {
     var all = [];
@@ -361,8 +627,15 @@
   };
 
   // ── 归档（= 已结束，一键） ──
-  window.archiveEvent = function() {
-    saveStatus('已结束');
+  window.closeEvent = function() {
+    if (!shared || isEventClosed()) return;
+    shared.saveClosed(localStorage, shared.closeEventIds(shared.loadClosed(localStorage), ev.id));
+    syncCloseButton();
+    if (history.length > 1) {
+      history.back();
+      return;
+    }
+    location.reload();
   };
 
   window.openDeleteSheet = function() {
@@ -378,8 +651,14 @@
     try { all = JSON.parse(localStorage.getItem('follow_up_events') || '[]'); } catch(e) {}
     all = all.filter(function(e) { return e.id !== fuId; });
     localStorage.setItem('follow_up_events', JSON.stringify(all));
+    if (shared) {
+      shared.saveFlagged(localStorage, shared.removeFlaggedEntry(shared.loadFlagged(localStorage), fuId));
+      shared.saveClosed(localStorage, shared.reopenEventIds(shared.loadClosed(localStorage), fuId));
+    }
     history.back();
   };
+
+  syncCloseButton();
 })();
 </script>
 

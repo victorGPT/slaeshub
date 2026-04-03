@@ -94,6 +94,10 @@
       <i class="fa-solid fa-bell text-[18px] text-[#848E9C]"></i>
       <span class="text-[10px] text-[#848E9C] ">事件</span>
     </a>
+    <a href="star.html" class="flex flex-col items-center gap-0.5">
+      <i class="fa-regular fa-star text-[18px] text-[#848E9C]"></i>
+      <span class="text-[10px] text-[#848E9C]">关注</span>
+    </a>
     <a href="profile.html" class="flex flex-col items-center gap-0.5">
       <i class="fa-solid fa-user text-[18px] text-[#848E9C]"></i>
       <span class="text-[10px] text-[#848E9C] ">我的</span>
@@ -242,8 +246,13 @@
       if (col === 'profit')  return s === 'profit'  ? '#0ECB81' : '#474D57';
     };
     var sortIcon = function(col) {
-      if (col !== s) return '<i class="fa-solid fa-sort" style="font-size:8px;margin-left:2px;color:#474D57;opacity:0.5"></i>';
-      return '<i class="fa-solid fa-sort-' + (sortAsc ? 'up' : 'down') + '" style="font-size:9px;margin-left:2px;color:' + hc(col) + '"></i>';
+      var isActive = col === s;
+      var upColor   = isActive && sortAsc  ? hc(col) : '#474D57';
+      var downColor = isActive && !sortAsc ? hc(col) : '#474D57';
+      return '<span style="display:inline-flex;flex-direction:column;align-items:center;margin-left:3px;gap:0;line-height:1">'
+        + '<i class="fa-solid fa-caret-up"   style="font-size:8px;color:' + upColor   + ';display:block;margin-bottom:-1px"></i>'
+        + '<i class="fa-solid fa-caret-down" style="font-size:8px;color:' + downColor + ';display:block"></i>'
+        + '</span>';
     };
     var col = function(key, label, align) {
       var a = align || 'right';

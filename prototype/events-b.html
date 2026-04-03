@@ -10,7 +10,7 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <meta name="theme-color" content="#0B0E11" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-  <title>Sales Hub -- 事件中心</title>
+  <title>Sales Hub -- 事件中心 B</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
   <style>
     body { font-family: 'PingFang SC', 'Helvetica Neue', sans-serif; background: #0B0E11; color: #EAECEF; }
@@ -20,25 +20,36 @@
     button, a { -webkit-tap-highlight-color: transparent; }
     .fixed-bar { position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); width: 393px; }
     .top-nav { height: 52px; position: sticky; top: 0; z-index: 30; background: #0B0E11; border-bottom: 1px solid #2E3440; display: flex; align-items: center; justify-content: center; }
-    .event-embedded-tabs { position: sticky; top: 52px; z-index: 24; background: #0B0E11; display: flex; gap: 8px; padding: 10px 16px 12px; border-bottom: 1px solid #2E3440; }
-    .event-embedded-tab { flex: 1; display: inline-flex; align-items: center; justify-content: center; gap: 6px; background: #2B3139; color: #848E9C; border: 1px solid #2E3440; border-radius: 999px; padding: 8px 12px; font-size: 13px; font-weight: 500; cursor: pointer; }
-    .event-embedded-tab.active { background: rgba(240,185,11,0.15); color: #F0B90B; border-color: rgba(240,185,11,0.4); }
-    .event-tab-badge { font-size: 11px; color: #F0B90B; }
-    #event-filters { position: sticky; top: 108px; z-index: 20; background: #0B0E11; }
+    #event-filters { position: sticky; top: 52px; z-index: 20; background: #0B0E11; }
     .event-filter-shell { position: relative; padding: 10px 0; border-bottom: 1px solid #2E3440; background: #0B0E11; }
     .event-filter-scroll { display: flex; align-items: center; gap: 8px; overflow-x: auto; padding: 0 16px; white-space: nowrap; scrollbar-width: none; }
     .event-filter-fade::after { content: ''; position: absolute; top: 0; right: 0; bottom: 0; width: 42px; pointer-events: none; background: linear-gradient(270deg, #0B0E11 0%, rgba(11,14,17,0) 100%); }
     .event-filter-pill { display: inline-flex; align-items: center; justify-content: center; background: #2B3139; color: #848E9C; border: 1px solid #2E3440; border-radius: 999px; padding: 5px 12px; font-size: 12px; line-height: 1.2; white-space: nowrap; cursor: pointer; flex-shrink: 0; }
     .event-filter-pill.active { background: rgba(240,185,11,0.15); color: #F0B90B; border-color: rgba(240,185,11,0.4); }
     .event-list-inner { padding: 12px 16px 116px; }
-    .event-card { background: #1E2329; border: 1px solid #2E3440; border-radius: 12px; padding: 10px 12px; margin-bottom: 8px; box-sizing: border-box; }
+    .event-card { background: #1E2329; border: 1px solid #2E3440; border-radius: 16px; padding: 14px; margin-bottom: 10px; box-sizing: border-box; }
     .event-card.closed { opacity: 0.4; }
-    .event-type-badge { display: inline-flex; align-items: center; padding: 2px 7px; border-radius: 999px; font-size: 10px; color: #F0B90B; background: rgba(240,185,11,0.12); border: 1px solid rgba(240,185,11,0.22); flex-shrink: 0; }
-    .event-star-btn { width: 26px; height: 26px; display: inline-flex; align-items: center; justify-content: center; background: none; border: none; padding: 0; cursor: pointer; flex-shrink: 0; }
-    .event-deadline-badge { display: inline-flex; align-items: center; justify-content: center; padding: 2px 8px; border-radius: 999px; border: 1px solid; font-size: 10px; font-weight: 600; white-space: nowrap; flex-shrink: 0; }
-    .event-chooser { display: flex; gap: 8px; margin-top: 10px; }
-    .event-chooser-btn { background: #2B3139; color: #EAECEF; border: 1px solid #2E3440; border-radius: 999px; padding: 5px 14px; font-size: 12px; cursor: pointer; }
-    .event-list-inner { padding: 12px 16px 120px; }
+    .event-card.closed .event-card-line { text-decoration: line-through; }
+    .event-card-anchor { display: block; text-decoration: none; color: inherit; }
+    .event-card-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+    .event-card-meta-group { min-width: 0; flex: 1; }
+    .event-card-client { font-size: 11px; color: #848E9C; line-height: 1.35; }
+    .event-card-title { margin-top: 8px; font-size: 14px; font-weight: 600; line-height: 1.5; color: #EAECEF; word-break: break-word; }
+    .event-card-bottom-meta { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
+    .event-type-badge { display: inline-flex; align-items: center; padding: 3px 8px; border-radius: 999px; font-size: 10px; color: #F0B90B; background: rgba(240,185,11,0.12); border: 1px solid rgba(240,185,11,0.22); }
+    .event-created-at { font-size: 11px; color: #848E9C; }
+    .event-star-btn { width: 28px; height: 28px; display: inline-flex; align-items: center; justify-content: center; background: none; border: none; padding: 0; cursor: pointer; flex-shrink: 0; }
+    .event-star-btn i { font-size: 15px; }
+    .event-deadline-badge { display: inline-flex; align-items: center; justify-content: center; padding: 3px 10px; border-radius: 999px; border: 1px solid; font-size: 11px; font-weight: 600; white-space: nowrap; flex-shrink: 0; }
+    .event-chooser { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px; }
+    .event-chooser-btn { background: #2B3139; color: #EAECEF; border: 1px solid #2E3440; border-radius: 999px; padding: 6px 14px; font-size: 12px; cursor: pointer; }
+    .event-card-actions { display: flex; gap: 8px; margin-top: 12px; }
+    .event-footer-btn { flex: 1; height: 34px; border-radius: 10px; border: 1px solid #2E3440; background: #2B3139; color: #EAECEF; font-size: 12px; cursor: pointer; }
+    .event-footer-btn-danger { color: #F6465D; border-color: rgba(246,70,93,0.25); background: rgba(246,70,93,0.08); }
+    .event-footer-btn-disabled { pointer-events: none; opacity: 0.55; }
+    .event-card-text-actions { display: flex; justify-content: flex-end; margin-top: 10px; }
+    .event-close-link { background: none; border: none; color: #F6465D; font-size: 12px; padding: 0; cursor: pointer; }
+    .event-close-link-disabled { pointer-events: none; opacity: 0.55; }
     .event-empty-state { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 100px 24px 128px; color: #848E9C; text-align: center; }
     .event-empty-icon { font-size: 36px; color: #474D57; margin-bottom: 14px; }
     .event-empty-title { font-size: 15px; color: #EAECEF; }
@@ -60,7 +71,6 @@
       <h1 style="margin:0;font-size:17px;font-weight:700;color:#EAECEF;letter-spacing:0.02em;">事件中心</h1>
     </div>
 
-    <div id="event-tabs"></div>
     <div id="event-filters"></div>
     <div id="event-list"></div>
   </div>
@@ -75,13 +85,13 @@
         <i class="fa-solid fa-users" style="font-size:18px;color:#848E9C;"></i>
         <span style="font-size:10px;color:#848E9C;">客户</span>
       </a>
-      <a href="events.html" style="display:flex;flex-direction:column;align-items:center;gap:2px;text-decoration:none;">
+      <a href="events-b.html" style="display:flex;flex-direction:column;align-items:center;gap:2px;text-decoration:none;">
         <i class="fa-solid fa-bell" style="font-size:18px;color:#F0B90B;"></i>
         <span style="font-size:10px;color:#F0B90B;font-weight:600;">事件</span>
       </a>
       <a href="star.html" style="display:flex;flex-direction:column;align-items:center;gap:2px;text-decoration:none;">
         <i class="fa-regular fa-star" style="font-size:18px;color:#848E9C;"></i>
-        <span style="font-size:10px;color:#848E9C;">特别关注</span>
+        <span style="font-size:10px;color:#848E9C;">关注</span>
       </a>
       <a href="profile.html" style="display:flex;flex-direction:column;align-items:center;gap:2px;text-decoration:none;">
         <i class="fa-solid fa-user" style="font-size:18px;color:#848E9C;"></i>
@@ -91,12 +101,10 @@
     <div style="height:env(safe-area-inset-bottom,0px);"></div>
   </div>
 
-  <script src="mock-events.js"></script>
   <script src="event-center-shared.js"></script>
   <script>
     window.EventCenterShared.mountEventCenter({
-      pageMode: 'embedded',
-      tabsId: 'event-tabs',
+      pageMode: 'all',
       filtersId: 'event-filters',
       listId: 'event-list'
     });

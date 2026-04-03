@@ -93,6 +93,10 @@
       <i class="fa-solid fa-bell text-[18px] text-[#848E9C]"></i>
       <span class="text-[10px] text-[#848E9C] ">事件</span>
     </a>
+    <a href="star.html" class="flex flex-col items-center gap-0.5">
+      <i class="fa-regular fa-star text-[18px] text-[#848E9C]"></i>
+      <span class="text-[10px] text-[#848E9C]">关注</span>
+    </a>
     <a href="profile.html" class="flex flex-col items-center gap-0.5">
       <i class="fa-solid fa-user text-[18px] text-[#848E9C]"></i>
       <span class="text-[10px] text-[#848E9C] ">我的</span>
@@ -100,6 +104,10 @@
   </div>
   <div style="height:env(safe-area-inset-bottom,0px)"></div>
 </div>
+
+<!-- Tooltip overlay -->
+<div id="tip-overlay" onclick="hideTip()" style="display:none;position:fixed;inset:0;z-index:100"></div>
+<div id="tip-box" style="display:none;position:fixed;z-index:101;background:#2B3139;border:1px solid #2E3440;border-radius:10px;padding:10px 14px;max-width:180px;font-size:12px;color:#EAECEF;line-height:1.5;box-shadow:0 8px 24px rgba(0,0,0,0.5)"></div>
 
 <script src="mock-data.js"></script>
 <script>
@@ -157,84 +165,196 @@
     return vb - va;
   }).slice(0, 10);
 
+  var rankTabs = [
+    { label: '资沉', color: '#F0B90B', sort: 'deposit', list: top5Deposit },
+    { label: '入金', color: '#0ECB81', sort: 'inflow',  list: top5Inflow  },
+    { label: '出金', color: '#F6465D', sort: 'outflow', list: top5Outflow },
+    { label: '利润', color: '#0ECB81', sort: 'profit',  list: top5Profit  }
+  ];
+
   // ---------- Render helpers ----------
 
-  function rankBadge(rank) {
-    var bg = rank === 1 ? '#F0B90B' : '#2E3440';
-    var color = rank === 1 ? '#0B0E11' : '#848E9C';
-    return '<span style="display:inline-flex;align-items:center;justify-content:center;width:16px;height:16px;border-radius:4px;background:' + bg + ';color:' + color + ';font-size:10px;font-weight:700;flex-shrink:0">' + rank + '</span>';
+  var TIPS = {
+    deposit: '客户账户当前持仓总资产价值',
+    inflow:  '客户过去 7 天充值入账的累计金额',
+    outflow: '客户过去 7 天提现出账的累计金额',
+    profit:  '客户过去 30 天为平台贡献的可统计利润',
+  };
+
+  window.showTip = function(col, el) {
+    var box = document.getElementById('tip-box');
+    var overlay = document.getElementById('tip-overlay');
+    box.textContent = TIPS[col] || '';
+    var rect = el.getBoundingClientRect();
+    var boxW = 180;
+    var left = Math.min(rect.left, window.innerWidth - boxW - 12);
+    box.style.left = Math.max(12, left) + 'px';
+    box.style.top = (rect.bottom + 6) + 'px';
+    box.style.display = 'block';
+    overlay.style.display = 'block';
+  };
+  window.hideTip = function() {
+    document.getElementById('tip-box').style.display = 'none';
+    document.getElementById('tip-overlay').style.display = 'none';
+  };
+
+  function tipIcon(col) {
+    return '<i onclick="event.stopPropagation();showTip(\'' + col + '\',this)" class="fa-regular fa-circle-question" style="color:#474D57;font-size:9px;margin-left:3px;cursor:pointer"></i>';
   }
 
-  function buildRankRows(list, getVal, valColor) {
+  function renderRankTableHeader() {
+    return '<div style="display:grid;grid-template-columns:1fr 60px 56px 56px 52px;padding:7px 12px 5px;border-bottom:1px solid #2E3440">'
+      + '<span style="font-size:13px;font-weight:600;color:#848E9C">客户</span>'
+      + '<span style="font-size:13px;font-weight:600;text-align:right;color:#848E9C;display:flex;align-items:center;justify-content:flex-end">资沉' + tipIcon('deposit') + '</span>'
+      + '<span style="font-size:13px;font-weight:600;text-align:right;color:#848E9C;display:flex;align-items:center;justify-content:flex-end">入金' + tipIcon('inflow')  + '</span>'
+      + '<span style="font-size:13px;font-weight:600;text-align:right;color:#848E9C;display:flex;align-items:center;justify-content:flex-end">出金' + tipIcon('outflow') + '</span>'
+      + '<span style="font-size:13px;font-weight:600;text-align:right;color:#848E9C;display:flex;align-items:center;justify-content:flex-end">利润' + tipIcon('profit')  + '</span>'
+      + '</div>';
+  }
+
+  function renderRankTableRows(list) {
     return list.map(function(c, idx) {
       var border = idx < list.length - 1 ? 'border-bottom:1px solid #2E3440;' : '';
-      var label = c.name ? c.uid + ' (' + c.name + ')' : c.uid;
+      var delta = weekDelta(c);
+      var depositVal = c.fMean != null ? c.fMean : null;
+      var depositHTML = depositVal != null
+        ? '<span style="font-size:13px;font-weight:700;color:#F0B90B">' + fmtUSDT(depositVal) + '</span>'
+        : '<span style="font-size:13px;color:#474D57">—</span>';
+      var inflowHTML = delta > 0
+        ? '<span style="font-size:13px;font-weight:600;color:#0ECB81">' + fmtWan(delta) + '</span>'
+        : '<span style="font-size:13px;color:#474D57">—</span>';
+      var outflowHTML = delta < 0
+        ? '<span style="font-size:13px;font-weight:600;color:#F6465D">' + fmtWan(delta) + '</span>'
+        : '<span style="font-size:13px;color:#474D57">—</span>';
+      var profitVal = c.netContribution ? c.netContribution.total : null;
+      var profitHTML = profitVal != null
+        ? '<span style="font-size:13px;font-weight:600;color:#0ECB81">' + fmtUSDT(profitVal) + '</span>'
+        : '<span style="font-size:13px;color:#474D57">—</span>';
+
       return '<a href="' + (c.detailHref || 'client-detail.html?uid=' + c.uid) + '" '
-        + 'style="display:flex;align-items:center;gap:10px;padding:11px 16px;' + border + 'text-decoration:none">'
-        + rankBadge(idx + 1)
-        + '<span style="flex:1;font-size:13px;color:#EAECEF;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + label + '</span>'
-        + '<span style="font-size:13px;font-weight:700;color:' + valColor + ';flex-shrink:0;margin-left:8px">' + getVal(c) + '</span>'
+        + 'style="display:grid;grid-template-columns:1fr 60px 56px 56px 52px;align-items:center;padding:10px 12px;' + border + 'text-decoration:none">'
+        + '<div>'
+        +   '<div style="display:flex;align-items:center;gap:6px">'
+        +     '<span style="font-size:10px;color:#848E9C;line-height:1;flex-shrink:0;min-width:12px">' + (idx + 1) + '</span>'
+        +     '<span style="font-size:12px;font-weight:600;color:#EAECEF">' + c.uid + '</span>'
+        +   '</div>'
+        +   (c.name ? '<div style="font-size:11px;color:#848E9C;margin-top:1px;margin-left:18px">' + c.name + '</div>' : '')
+        + '</div>'
+        + '<div style="text-align:right">' + depositHTML + '</div>'
+        + '<div style="text-align:right">' + inflowHTML  + '</div>'
+        + '<div style="text-align:right">' + outflowHTML + '</div>'
+        + '<div style="text-align:right">' + profitHTML  + '</div>'
         + '</a>';
     }).join('');
   }
 
-  // ---------- 智能推荐（占位） ----------
+  function renderRankTable(list) {
+    return renderRankTableHeader()
+      + '<div id="rank-table-body">' + renderRankTableRows(list) + '</div>';
+  }
 
-  function buildSmartSection() {
-    var tabs = [
-      { id: 'smart0', label: '推荐客户' },
-      { id: 'smart1', label: '推荐事件' },
-    ];
+  // ---------- 推荐客户 / 跟进事件 ----------
 
-    var tabBar = tabs.map(function(t, i) {
-      var active = i === 0;
-      return '<button onclick="switchSmartTab(' + i + ')" id="smart-tab-' + i + '" '
-        + 'style="flex:1;padding:10px 0;border:none;background:none;cursor:pointer;font-size:13px;font-weight:700;'
-        + 'color:' + (active ? '#F0B90B' : '#848E9C') + ';'
-        + 'border-bottom:2px solid ' + (active ? '#F0B90B' : 'transparent') + '">'
-        + t.label + '</button>';
-    }).join('');
-
-    // 跟进中事件：从 sessionStorage follow_up_events 读取（前5条）
-    var fuEvents = [];
-    try { fuEvents = JSON.parse(localStorage.getItem('follow_up_events') || '[]'); } catch(e) {}
-    var topTasks = fuEvents.filter(function(e) { return e.status === '跟进中'; }).slice(0, 5);
-
-    var taskPanelHtml;
-    if (topTasks.length === 0) {
-      taskPanelHtml = '<div style="padding:24px 16px;text-align:center;color:#848E9C;font-size:13px">'
-        + '暂无跟进事件<br><span style="font-size:11px">在客户详情中创建跟进事件后将显示在这里</span></div>';
-    } else {
-      taskPanelHtml = topTasks.map(function(ev) {
-        var nick = localStorage.getItem('nickname_' + ev.client_uid) || '';
-        var label = ev.client_uid + (nick ? ' (' + nick + ')' : '');
-        return '<a href="follow-up-thread.html?fuId=' + ev.id + '" style="display:flex;align-items:flex-start;gap:10px;padding:11px 14px;border-bottom:1px solid #2E3440;text-decoration:none;active:opacity-70">'
-          + '<div style="flex:1;min-width:0">'
-          + '<div style="font-size:13px;color:#EAECEF;line-height:1.4;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + (ev.title || '—') + '</div>'
-          + '<div style="margin-top:3px;font-size:10px;color:#848E9C">' + label + '</div>'
-          + '</div>'
-          + '<i class="fa-solid fa-chevron-right" style="font-size:10px;color:#474D57;margin-top:3px;flex-shrink:0"></i>'
-          + '</a>';
-      }).join('');
-    }
-
-    var panels = [
-      { content: '<div style="padding:24px 16px;text-align:center;color:#848E9C;font-size:13px">暂无推荐<br><span style="font-size:11px">将根据客户价值与沟通频率智能推荐</span></div>' },
-      { content: taskPanelHtml },
-    ].map(function(p, i) {
-      return '<div id="smart-panel-' + i + '" style="display:' + (i === 0 ? 'block' : 'none') + '">'
-        + p.content
-        + '</div>';
-    }).join('');
+  function buildRecommendClientsSection() {
+    var emptyState = '<div style="padding:24px 16px;text-align:center;color:#848E9C;font-size:13px">暂无推荐<br><span style="font-size:11px">将根据客户价值与沟通频率智能推荐</span></div>';
+    var footer = '<a href="clients.html" style="display:flex;align-items:center;justify-content:center;gap:4px;padding:11px 16px;border-top:1px solid #2E3440;text-decoration:none;font-size:13px;font-weight:600;color:#F0B90B">'
+      + '<span>查看所有客户</span>'
+      + '<i class="fa-solid fa-chevron-right" style="font-size:10px"></i>'
+      + '</a>';
 
     return '<div style="margin:0 16px 12px">'
       + '<div style="display:flex;align-items:center;gap:6px;margin-bottom:8px">'
       +   '<i class="fa-solid fa-sparkles" style="color:#F0B90B;font-size:12px"></i>'
-      +   '<span style="font-size:13px;font-weight:600;color:#848E9C">智能推荐</span>'
+      +   '<span style="font-size:13px;font-weight:600;color:#848E9C">推荐客户</span>'
       + '</div>'
       + '<div style="background:#1E2329;border-radius:12px;border:1px solid #2E3440;overflow:hidden">'
-      + '<div style="display:flex;border-bottom:1px solid #2E3440">' + tabBar + '</div>'
-      + panels
+      + emptyState
+      + footer
+      + '</div>'
+      + '</div>';
+  }
+
+  function buildRecommendEventsSection() {
+    var fuEvents = [];
+    var flagged = [];
+    var closed = [];
+    try { fuEvents = JSON.parse(localStorage.getItem('follow_up_events') || '[]'); } catch(e) {}
+    try { flagged = JSON.parse(localStorage.getItem('slaesh_flagged') || '[]'); } catch(e) {}
+    try { closed = JSON.parse(localStorage.getItem('slaesh_closed') || '[]'); } catch(e) {}
+
+    var evMap = {};
+    fuEvents.forEach(function(ev) { if (ev.id) evMap[ev.id] = ev; });
+    var closedSet = {};
+    closed.forEach(function(id) { closedSet[String(id)] = true; });
+
+    var todayStr = new Date().toISOString().split('T')[0];
+    function deadlineMeta(dl) {
+      if (!dl) return null;
+      var now = new Date(); now.setHours(0,0,0,0);
+      var due = new Date(dl); due.setHours(0,0,0,0);
+      var diff = Math.round((due - now) / 86400000);
+      var color = diff <= 0 ? '#F6465D' : diff <= 3 ? '#F0B90B' : '#848E9C';
+      var d = new Date(dl);
+      return { label: (d.getMonth()+1) + '月' + d.getDate() + '日', color: color, diff: diff };
+    }
+
+    // 联表：flagged × events，过滤已归档，按截止日从近到远，取前3
+    var items = flagged
+      .map(function(f) {
+        var ev = evMap[f.fuId];
+        if (!ev || closedSet[f.fuId]) return null;
+        return { ev: ev, deadline: f.deadline, deadlineMeta: deadlineMeta(f.deadline) };
+      })
+      .filter(Boolean)
+      .sort(function(a, b) {
+        var da = a.deadline || '9999-99-99', db = b.deadline || '9999-99-99';
+        return da < db ? -1 : da > db ? 1 : 0;
+      })
+      .slice(0, 3);
+
+    var contentHtml;
+    if (items.length === 0) {
+      contentHtml = '<div style="padding:24px 16px;text-align:center;color:#848E9C;font-size:13px">'
+        + '暂无特别关注事件<br><span style="font-size:11px">在事件页点亮星标后将出现在这里</span></div>';
+    } else {
+      contentHtml = items.map(function(item) {
+        var ev = item.ev;
+        var nick = localStorage.getItem('nickname_' + ev.client_uid) || '';
+        var clientLabel = ev.client_uid + (nick ? ' · ' + nick : '');
+        var dm = item.deadlineMeta;
+        var deadlineBadge = dm
+          ? '<span style="font-size:10px;padding:2px 7px;border-radius:999px;border:1px solid ' + dm.color + '33;color:' + dm.color + ';background:' + dm.color + '14;white-space:nowrap;flex-shrink:0">' + dm.label + '</span>'
+          : '';
+        return '<a href="follow-up-thread.html?fuId=' + ev.id + '" style="display:flex;align-items:center;gap:10px;padding:10px 14px;border-bottom:1px solid #2E3440;text-decoration:none">'
+          + '<i class="fa-solid fa-star" style="font-size:11px;color:#F0B90B;flex-shrink:0"></i>'
+          + '<div style="flex:1;min-width:0">'
+          + '<div style="font-size:13px;color:#EAECEF;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + (ev.title || '—') + '</div>'
+          + '<div style="margin-top:2px;font-size:10px;color:#848E9C">' + clientLabel + '</div>'
+          + '</div>'
+          + deadlineBadge
+          + '<i class="fa-solid fa-chevron-right" style="font-size:10px;color:#474D57;flex-shrink:0"></i>'
+          + '</a>';
+      }).join('');
+    }
+
+    var footer = '<a href="star.html" style="display:flex;align-items:center;justify-content:center;gap:4px;padding:11px 16px;border-top:1px solid #2E3440;text-decoration:none;font-size:13px;font-weight:600;color:#F0B90B">'
+      + '<span>查看全部特别关注</span>'
+      + '<i class="fa-solid fa-chevron-right" style="font-size:10px"></i>'
+      + '</a>';
+
+    var countBadge = items.length > 0
+      ? '<span style="font-size:10px;color:#F0B90B;background:rgba(240,185,11,0.12);border:1px solid rgba(240,185,11,0.25);border-radius:999px;padding:1px 7px">' + flagged.filter(function(f){ return evMap[f.fuId] && !closedSet[f.fuId]; }).length + '</span>'
+      : '';
+
+    return '<div style="margin:0 16px 12px">'
+      + '<div style="display:flex;align-items:center;gap:6px;margin-bottom:8px">'
+      +   '<i class="fa-solid fa-star" style="color:#F0B90B;font-size:12px"></i>'
+      +   '<span style="font-size:13px;font-weight:600;color:#848E9C">特别关注</span>'
+      +   countBadge
+      + '</div>'
+      + '<div style="background:#1E2329;border-radius:12px;border:1px solid #2E3440;overflow:hidden">'
+      + contentHtml
+      + footer
       + '</div>'
       + '</div>';
   }
@@ -242,21 +362,7 @@
   // ---------- 用户排名（4 Tab） ----------
 
   function buildRankSection() {
-    var tabs = [
-      { label: '资沉', color: '#F0B90B', sort: 'deposit',
-        rows: buildRankRows(top5Deposit, function(c) { return fmtUSDT(c.fMean); }, '#EAECEF') },
-      { label: '入金', color: '#0ECB81', sort: 'inflow',
-        rows: buildRankRows(top5Inflow,  function(c) { return fmtWan(weekDelta(c)); }, '#0ECB81') },
-      { label: '出金', color: '#F6465D', sort: 'outflow',
-        rows: buildRankRows(top5Outflow, function(c) { return fmtWan(weekDelta(c)); }, '#F6465D') },
-      { label: '利润', color: '#0ECB81', sort: 'profit',
-        rows: buildRankRows(top5Profit,  function(c) {
-          var t = (c.netContribution && c.netContribution.total) || 0;
-          return fmtUSDT(t);
-        }, '#0ECB81') },
-    ];
-
-    var tabBar = tabs.map(function(t, i) {
+    var tabBar = rankTabs.map(function(t, i) {
       var active = i === 0;
       return '<button onclick="switchRankTab(' + i + ')" id="rank-tab-' + i + '" '
         + 'data-color="' + t.color + '" '
@@ -266,21 +372,12 @@
         + t.label + '</button>';
     }).join('');
 
-    var panels = tabs.map(function(t, i) {
-      return '<div id="rank-panel-' + i + '" style="display:' + (i === 0 ? 'block' : 'none') + '">'
-        + t.rows
-        + '</div>';
-    }).join('');
-
     // 底部"查看更多"随 Tab 联动
-    var firstTab = tabs[0];
+    var firstTab = rankTabs[0];
     var moreFooter = '<a id="rank-more" href="clients.html?sort=' + firstTab.sort + '" '
       + 'style="display:flex;align-items:center;justify-content:center;gap:4px;'
       + 'padding:11px 16px;border-top:1px solid #2E3440;text-decoration:none;'
-      + 'font-size:13px;font-weight:600;color:' + firstTab.color + '" '
-      + 'data-sorts=\'' + JSON.stringify(tabs.map(function(t){ return t.sort; })) + '\' '
-      + 'data-colors=\'' + JSON.stringify(tabs.map(function(t){ return t.color; })) + '\' '
-      + 'data-labels=\'' + JSON.stringify(tabs.map(function(t){ return t.label; })) + '\'>'
+      + 'font-size:13px;font-weight:600;color:' + firstTab.color + '">'
       + '<span id="rank-more-label">查看更多' + firstTab.label + '</span>'
       + '<i class="fa-solid fa-chevron-right" style="font-size:10px"></i>'
       + '</a>';
@@ -292,8 +389,7 @@
       +   '<span id="refresh-time" style="font-size:11px;color:#474D57">--:--</span>'
       + '</div>'
       + '<div style="background:#1E2329;border-radius:12px;border:1px solid #2E3440;overflow:hidden">'
-      + '<div style="display:flex;border-bottom:1px solid #2E3440">' + tabBar + '</div>'
-      + panels
+      + renderRankTable(firstTab.list)
       + moreFooter
       + '</div>'
       + '</div>';
@@ -302,19 +398,11 @@
   // ---------- 注入页面 ----------
 
   document.getElementById('main-content').innerHTML =
-    buildSmartSection()
+    buildRecommendClientsSection()
+  + buildRecommendEventsSection()
   + buildRankSection();
 
   // ---------- Tab 切换 ----------
-
-  window.switchSmartTab = function(idx) {
-    [0, 1].forEach(function(i) {
-      var active = i === idx;
-      document.getElementById('smart-tab-' + i).style.color = active ? '#F0B90B' : '#848E9C';
-      document.getElementById('smart-tab-' + i).style.borderBottomColor = active ? '#F0B90B' : 'transparent';
-      document.getElementById('smart-panel-' + i).style.display = active ? 'block' : 'none';
-    });
-  };
 
   window.switchRankTab = function(idx) {
     [0, 1, 2, 3].forEach(function(i) {
@@ -323,15 +411,12 @@
       var col = btn.getAttribute('data-color');
       btn.style.color = active ? col : '#848E9C';
       btn.style.borderBottomColor = active ? col : 'transparent';
-      document.getElementById('rank-panel-' + i).style.display = active ? 'block' : 'none';
     });
+    document.getElementById('rank-table-body').innerHTML = renderRankTableRows(rankTabs[idx].list);
     var more = document.getElementById('rank-more');
-    var sorts  = JSON.parse(more.getAttribute('data-sorts'));
-    var colors = JSON.parse(more.getAttribute('data-colors'));
-    var labels = JSON.parse(more.getAttribute('data-labels'));
-    more.href = 'clients.html?sort=' + sorts[idx];
-    more.style.color = colors[idx];
-    document.getElementById('rank-more-label').textContent = '查看更多' + labels[idx];
+    more.href = 'clients.html?sort=' + rankTabs[idx].sort;
+    more.style.color = rankTabs[idx].color;
+    document.getElementById('rank-more-label').textContent = '查看更多' + rankTabs[idx].label;
   };
 
   // ---------- Search ----------
