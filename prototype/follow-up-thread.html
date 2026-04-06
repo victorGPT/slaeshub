@@ -58,57 +58,13 @@
     <div class="w-8"></div>
   </div>
 
-  <!-- ① 客户信息卡 -->
-  <div id="client-card" class="mx-3 mt-2 mb-2 bg-[#1E2329] rounded-2xl border border-[#2E3440] overflow-hidden">
-    <!-- Row 1: Identity -->
-    <div class="flex items-center gap-3 px-4 pt-3 pb-2">
-      <div class="flex-1 min-w-0">
-        <div class="flex items-center gap-2">
-          <button id="uid-btn" onclick="copyUid()" class="flex items-center gap-1.5 active:opacity-70">
-            <span id="client-uid" class="text-[16px] font-bold text-[#EAECEF] tabular-nums tracking-wide"></span>
-            <i class="fa-regular fa-copy text-[10px] text-[#474D57]"></i>
-          </button>
-          <span id="client-nickname" class="text-[12px] text-[#848E9C]"></span>
-        </div>
-      </div>
-      <span id="from-badge" class="text-[9px] px-1.5 py-[1px] rounded hidden flex-shrink-0"></span>
-      <button id="fav-btn" onclick="toggleFav()" class="w-8 h-8 flex items-center justify-center rounded-full bg-[#2B3139] flex-shrink-0 active:scale-95 transition-transform">
-        <i id="fav-icon" class="fa-regular fa-star text-[14px] text-[#474D57]"></i>
-      </button>
-    </div>
-    <!-- Row 2: Tags -->
-    <div id="tags-row" class="px-4 pb-2 flex flex-wrap gap-1"></div>
-    <!-- Row 3: 资沉主指标 -->
-    <div class="px-4 pb-2">
-      <div class="text-[10px] text-[#474D57] mb-0.5 flex items-center gap-1">资沉<i onclick="event.stopPropagation();showDetailTip('deposit',this)" class="fa-regular fa-circle-question" style="color:#474D57;font-size:9px;cursor:pointer"></i></div>
-      <div class="flex items-baseline gap-2">
-        <span id="deposit-hero" class="text-[28px] font-bold text-[#EAECEF] tracking-tight leading-none"></span>
-        <div id="deposit-delta" class="flex items-center gap-0.5 text-[11px]"></div>
-      </div>
-    </div>
-    <!-- Row 4: 充提 / 月利润贡献 / 月交易盈亏 -->
-    <div class="flex px-4 pb-3 gap-0">
-      <div class="flex-1">
-        <div class="text-[10px] text-[#474D57] mb-0.5 flex items-center gap-1">充提<i onclick="event.stopPropagation();showDetailTip('cashflow',this)" class="fa-regular fa-circle-question" style="color:#474D57;font-size:9px;cursor:pointer"></i></div>
-        <span id="cashflow-hero" class="text-[15px] font-bold leading-none">--</span>
-      </div>
-      <div class="flex-1">
-        <div class="text-[10px] text-[#474D57] mb-0.5 flex items-center gap-1">月利润贡献<i onclick="event.stopPropagation();showDetailTip('profit',this)" class="fa-regular fa-circle-question" style="color:#474D57;font-size:9px;cursor:pointer"></i></div>
-        <span id="profit-hero" class="text-[15px] font-bold leading-none">--</span>
-      </div>
-      <div class="flex-1">
-        <div class="text-[10px] text-[#474D57] mb-0.5 flex items-center gap-1">月交易盈亏<i onclick="event.stopPropagation();showDetailTip('pnl',this)" class="fa-regular fa-circle-question" style="color:#474D57;font-size:9px;cursor:pointer"></i></div>
-        <span id="pnl-hero" class="text-[15px] font-bold text-[#848E9C] leading-none">--</span>
-      </div>
-    </div>
-    <div class="flex justify-end px-4 pb-2 -mt-1">
-      <span id="data-refresh-time" class="text-[9px] text-[#474D57]"></span>
-    </div>
-  </div>
-
-  <div class="px-4 pb-1 -mt-1 flex justify-end">
-    <a id="full-profile-link" href="#" class="text-[11px] text-[#4DA6FF]">查看完整资料 →</a>
-  </div>
+  <!-- ① 客户身份条 -->
+  <a id="view-profile-btn" href="#" class="mx-3 mt-3 px-4 h-[44px] bg-[#1E2329] rounded-2xl border border-[#2E3440] flex items-center gap-2">
+    <span id="client-uid" class="text-[14px] font-bold text-[#EAECEF] tabular-nums tracking-wide"></span>
+    <span id="client-nickname" class="text-[12px] text-[#848E9C]"></span>
+    <div id="tags-row" class="flex items-center gap-1 flex-1 min-w-0"></div>
+    <span class="text-[11px] text-[#848E9C] whitespace-nowrap flex-shrink-0">查看个人详情 <i class="fa-solid fa-chevron-right text-[9px]"></i></span>
+  </a>
 
   <!-- ② 事件详情卡 -->
   <div class="mx-3 mt-3 bg-[#1E2329] rounded-2xl border border-[#2E3440] p-4">
@@ -230,9 +186,6 @@
 </div>
 </div>
 
-<!-- Tooltip overlay -->
-<div id="tip-overlay" onclick="hideTip()" style="display:none;position:fixed;inset:0;z-index:100"></div>
-<div id="tip-box" style="display:none;position:fixed;z-index:101;background:#2B3139;border:1px solid #2E3440;border-radius:10px;padding:10px 14px;max-width:180px;font-size:12px;color:#EAECEF;line-height:1.5;box-shadow:0 8px 24px rgba(0,0,0,0.5)"></div>
 
 <!-- 底部操作栏 -->
 <div class="fixed-bar bg-[#0B0E11] border-t border-[#2E3440] z-30 px-4 pt-3" style="padding-bottom:calc(0.75rem + env(safe-area-inset-bottom))">
@@ -256,30 +209,6 @@
 <script src="mock-events.js"></script>
 <script src="event-center-shared.js"></script>
 <script>
-var DETAIL_TIPS = {
-  deposit:  '客户过去 7 天持仓资产均值（USDT）；旁边变化率为当前值与过去 8 周均值的偏差，反映中长期趋势',
-  cashflow: '本周充值减提现估算合计，基于持仓周变化推算，仅供参考',
-  profit:   '客户本月为平台贡献的可统计利润，含手续费、利差、理财利息等；由周数据 × 4.3 估算',
-  pnl:      '客户本月交易持仓方向盈亏，含合约、杠杆、迷你等品种；由 7 日数据 × 4.3 估算',
-};
-window.showDetailTip = function(key, el) {
-  var box = document.getElementById('tip-box');
-  var overlay = document.getElementById('tip-overlay');
-  box.textContent = DETAIL_TIPS[key] || '';
-  var rect = el.getBoundingClientRect();
-  var boxW = 180;
-  var left = Math.min(rect.left, window.innerWidth - boxW - 12);
-  box.style.left = Math.max(12, left) + 'px';
-  box.style.top = (rect.bottom + 6) + 'px';
-  box.style.display = 'block';
-  overlay.style.display = 'block';
-};
-window.hideTip = function() {
-  document.getElementById('tip-box').style.display = 'none';
-  document.getElementById('tip-overlay').style.display = 'none';
-};
-</script>
-<script>
 (function() {
   var params = new URLSearchParams(location.search);
   var fuId = params.get('fuId');
@@ -291,8 +220,8 @@ window.hideTip = function() {
   var ev = fuEvents.find(function(e) { return e.id === fuId; });
 
   if (!ev) {
-    document.getElementById('client-card').innerHTML =
-      '<div class="p-8 text-center text-[#848E9C] text-[13px]">未找到跟进事件</div>';
+    document.getElementById('view-profile-btn').innerHTML =
+      '<span class="text-[13px] text-[#848E9C]">未找到跟进事件</span>';
     return;
   }
 
@@ -344,91 +273,16 @@ window.hideTip = function() {
   }
 
 
-  // ── ① Client header ──
+  // ── ① 客户身份条 ──
   document.getElementById('client-uid').textContent = ev.client_uid;
-  document.getElementById('full-profile-link').href = 'client-detail.html?uid=' + ev.client_uid;
+  document.getElementById('view-profile-btn').href = 'client-detail.html?uid=' + ev.client_uid;
 
   if (c) {
     var nickname = localStorage.getItem('nickname_' + c.uid) || '';
     document.getElementById('client-nickname').textContent = nickname;
 
-    function fmtUSDT(val, showSign) {
-      var abs = Math.abs(val);
-      var sign = showSign ? (val >= 0 ? '+' : '-') : (val < 0 ? '-' : '');
-      var num = abs >= 1000000 ? (abs / 1000000).toFixed(1) + 'M'
-              : abs >= 1000   ? (abs / 1000).toFixed(1) + 'K'
-              :                  Math.round(abs).toString();
-      return sign + '$' + num;
-    }
-
-    // 资沉
-    document.getElementById('deposit-hero').textContent = fmtUSDT(c.fMean);
-
-    // deposit-delta（用均值对比）
+    // Tags（仅 Top 100 显示）
     var allClients2 = (window.PROTOTYPE_DATA || {}).clients || [];
-    var weeks = c.weeks || [];
-    var depDeltaEl = document.getElementById('deposit-delta');
-    if (weeks.length >= 2) {
-      var avg8 = 0;
-      for (var j = 0; j < weeks.length - 1; j++) avg8 += weeks[j];
-      avg8 = avg8 / (weeks.length - 1);
-      var pct = avg8 > 0 ? ((weeks[weeks.length - 1] - avg8) / avg8 * 100) : 0;
-      var isUp = pct >= 0;
-      var dColor = isUp ? '#0ECB81' : '#F6465D';
-      depDeltaEl.innerHTML = '<span style="color:' + dColor + ';font-size:11px">' + (isUp ? '+' : '') + pct.toFixed(1) + '%</span>';
-    }
-
-    // 充提
-    var cashflowEl = document.getElementById('cashflow-hero');
-    var delta = weeks.length >= 2 ? weeks[weeks.length - 1] - weeks[weeks.length - 2] : null;
-    if (delta !== null) {
-      cashflowEl.textContent = fmtUSDT(delta, true);
-      cashflowEl.style.color = delta >= 0 ? '#0ECB81' : '#F6465D';
-    } else {
-      cashflowEl.textContent = '--'; cashflowEl.style.color = '#474D57';
-    }
-
-    // 利润贡献
-    var profitEl = document.getElementById('profit-hero');
-    if (c.netContribution && c.netContribution.total !== undefined) {
-      var pv2 = c.netContribution.total;
-      profitEl.textContent = fmtUSDT(pv2, true);
-      profitEl.style.color = pv2 >= 0 ? '#0ECB81' : '#F6465D';
-    } else { profitEl.textContent = '--'; profitEl.style.color = '#848E9C'; }
-
-    // 交易盈亏
-    var pnlEl = document.getElementById('pnl-hero');
-    var pnlVal = c.clientPnl && c.clientPnl.total7d ? c.clientPnl.total7d.value : null;
-    if (pnlVal !== null) {
-      pnlEl.textContent = fmtUSDT(pnlVal, true);
-      pnlEl.style.color = pnlVal >= 0 ? '#0ECB81' : '#F6465D';
-    } else { pnlEl.textContent = '--'; pnlEl.style.color = '#848E9C'; }
-
-    // 刷新时间
-    var refreshEl = document.getElementById('data-refresh-time');
-    var D2 = window.PROTOTYPE_DATA;
-    if (refreshEl && D2 && D2.generatedAt) {
-      var rd = new Date(D2.generatedAt);
-      refreshEl.textContent = '数据截至 ' + (rd.getMonth() + 1) + '月' + rd.getDate() + '日';
-    }
-
-    // Fav
-    var favKey = 'fav_' + c.uid;
-    var isFav = localStorage.getItem(favKey) === '1';
-    function renderFav() {
-      var icon = document.getElementById('fav-icon');
-      icon.className = isFav
-        ? 'fa-solid fa-star text-[14px] text-[#F0B90B]'
-        : 'fa-regular fa-star text-[14px] text-[#474D57]';
-    }
-    renderFav();
-    window.toggleFav = function() {
-      isFav = !isFav;
-      localStorage.setItem(favKey, isFav ? '1' : '0');
-      renderFav();
-    };
-
-    // sysTags 完整版
     var sysTags = [];
     var depositRank = allClients2.filter(function(cl) { return cl.fMean > c.fMean; }).length + 1;
     if (depositRank <= 100) {
@@ -454,26 +308,11 @@ window.hideTip = function() {
       var prb2 = pnlRank <= 10 ? 'rgba(240,185,11,0.12)' : pnlRank <= 50 ? 'rgba(77,166,255,0.12)' : 'rgba(132,142,156,0.12)';
       sysTags.push({ label: '盈亏 #' + pnlRank, color: prc2, bg: prb2 });
     }
-    var manualTags = [];
-    try { manualTags = JSON.parse(localStorage.getItem('bd_tags_' + c.uid) || '[]'); } catch(e) {}
-    var tagsHtml = '';
-    sysTags.forEach(function(t) {
-      tagsHtml += '<span style="font-size:9px;padding:2px 6px;border-radius:4px;border:1px solid ' + t.color + '30;color:' + t.color + ';background:' + t.bg + '">' + t.label + '</span>';
-    });
-    manualTags.forEach(function(t) {
-      tagsHtml += '<span style="font-size:9px;padding:2px 6px;border-radius:4px;background:#2B3139;color:#EAECEF">' + t + '</span>';
-    });
+    var tagsHtml = sysTags.map(function(t) {
+      return '<span style="font-size:9px;padding:2px 6px;border-radius:4px;border:1px solid ' + t.color + '30;color:' + t.color + ';background:' + t.bg + '">' + t.label + '</span>';
+    }).join('');
     document.getElementById('tags-row').innerHTML = tagsHtml;
   }
-
-  // Copy UID
-  window.copyUid = function() {
-    navigator.clipboard.writeText(ev.client_uid).then(function() {
-      var icon = document.querySelector('#uid-btn i');
-      icon.className = 'fa-solid fa-check text-[9px] text-[#0ECB81]';
-      setTimeout(function() { icon.className = 'fa-regular fa-copy text-[10px] text-[#474D57]'; }, 1200);
-    });
-  };
 
   // ── ② 事件详情 ──
   document.getElementById('event-type-badge').textContent = ev.type || '事件';
