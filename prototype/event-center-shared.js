@@ -532,6 +532,7 @@
     loadFlagged: loadFlagged,
     mountEventCenter: mountEventCenter,
     normalizeEvent: normalizeEvent,
+    renderCard: renderCard,
     removeFlaggedEntry: removeFlaggedEntry,
     reopenEventIds: reopenEventIds,
     saveClosed: saveClosed,
