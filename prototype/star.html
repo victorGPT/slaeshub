@@ -10,8 +10,9 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <meta name="theme-color" content="#0B0E11" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-  <title>Sales Hub -- 特别关注</title>
+  <title>Sales Hub — 待办</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <script src="https://cdn.tailwindcss.com"></script>
   <style>
     body { font-family: 'PingFang SC', 'Helvetica Neue', sans-serif; background: #0B0E11; color: #EAECEF; }
     ::-webkit-scrollbar { display: none; }
@@ -55,7 +56,7 @@
     </div>
 
     <div class="top-nav">
-      <h1 style="margin:0;font-size:17px;font-weight:700;color:#EAECEF;letter-spacing:0.02em;">特别关注</h1>
+      <h1 style="margin:0;font-size:17px;font-weight:700;color:#EAECEF;letter-spacing:0.02em;">待办</h1>
     </div>
 
     <div id="event-list"></div>
@@ -79,21 +80,208 @@
         <i class="fa-solid fa-bell" style="font-size:18px;color:#848E9C;"></i>
         <span style="font-size:10px;color:#848E9C;">事件</span>
       </a>
-      <a href="profile.html" style="display:flex;flex-direction:column;align-items:center;gap:2px;text-decoration:none;">
-        <i class="fa-solid fa-user" style="font-size:18px;color:#848E9C;"></i>
-        <span style="font-size:10px;color:#848E9C;">我的</span>
-      </a>
     </div>
     <div style="height:env(safe-area-inset-bottom,0px);"></div>
   </div>
 
+  <!-- FAB: 快速添加待办 -->
+  <button id="add-todo-fab" onclick="openAddTodo()"
+    class="fixed z-40 flex items-center justify-center rounded-full shadow-lg active:scale-95"
+    style="width:52px;height:52px;bottom:calc(56px + env(safe-area-inset-bottom,34px) + 16px);right:calc(50vw - 196px + 16px);background:#F0B90B;transition:opacity 0.2s,transform 0.2s;">
+    <i class="fa-solid fa-plus" style="font-size:20px;color:#0B0E11;"></i>
+  </button>
+
+  <!-- 添加待办 Sheet（单页，客户选择器内嵌） -->
+  <div id="add-todo-overlay" onclick="if(event.target===this)closeAddTodo()"
+    style="display:none;position:fixed;inset:0;z-index:50;align-items:flex-end;justify-content:center;">
+    <div style="position:absolute;inset:0;background:rgba(0,0,0,0.6);pointer-events:none;"></div>
+    <div style="position:relative;z-index:1;width:393px;background:#1E2329;border-radius:20px 20px 0 0;padding:20px 16px 40px;">
+
+      <!-- 标题栏 -->
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+        <span style="font-size:15px;font-weight:600;color:#EAECEF;">添加事件</span>
+        <button onclick="closeAddTodo()" style="width:28px;height:28px;border-radius:50%;background:#2B3139;border:none;display:flex;align-items:center;justify-content:center;cursor:pointer;">
+          <i class="fa-solid fa-xmark" style="font-size:12px;color:#848E9C;"></i>
+        </button>
+      </div>
+
+      <!-- 客户选择器 -->
+      <div style="font-size:12px;color:#848E9C;margin-bottom:8px;">客户</div>
+      <div style="position:relative;margin-bottom:4px;">
+        <!-- 已选状态（点击可重新搜索） -->
+        <div id="add-todo-client-selected" onclick="reopenClientSearch()" style="display:none;background:#2B3139;border:1px solid #F0B90B;border-radius:10px;padding:10px 12px;cursor:pointer;display:none;align-items:center;justify-content:space-between;">
+          <div>
+            <span id="add-todo-client-uid-label" style="font-size:14px;font-weight:600;color:#EAECEF;"></span>
+            <span id="add-todo-client-nick-label" style="font-size:12px;color:#848E9C;margin-left:6px;"></span>
+          </div>
+          <i class="fa-solid fa-xmark" onclick="event.stopPropagation();clearClientSelection()" style="font-size:12px;color:#848E9C;cursor:pointer;"></i>
+        </div>
+        <!-- 搜索框 -->
+        <div id="add-todo-client-search-wrap" style="position:relative;">
+          <i class="fa-solid fa-magnifying-glass" style="position:absolute;left:12px;top:50%;transform:translateY(-50%);font-size:12px;color:#848E9C;pointer-events:none;"></i>
+          <input id="add-todo-search" type="text" placeholder="搜索 UID 或昵称..."
+            oninput="filterClientList()" onfocus="showClientDropdown()"
+            style="width:100%;background:#2B3139;color:#EAECEF;font-size:14px;border-radius:10px;padding:10px 12px 10px 34px;border:1px solid #2E3440;outline:none;box-sizing:border-box;font-family:inherit;" />
+        </div>
+        <!-- 下拉列表 -->
+        <div id="add-todo-client-list"
+          style="display:none;position:absolute;left:0;right:0;top:100%;z-index:10;background:#1E2329;border:1px solid #2E3440;border-radius:0 0 10px 10px;max-height:180px;overflow-y:auto;box-shadow:0 8px 24px rgba(0,0,0,0.5);"></div>
+      </div>
+      <div style="height:12px;"></div>
+
+      <!-- 类型 -->
+      <div style="font-size:12px;color:#848E9C;margin-bottom:8px;">类型</div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;">
+        <button class="todo-type-pill" data-type="主动联系" onclick="selectTodoType(this)" style="background:#2B3139;color:#848E9C;border:1px solid #2E3440;border-radius:999px;padding:6px 16px;font-size:13px;white-space:nowrap;cursor:pointer;">主动联系</button>
+        <button class="todo-type-pill" data-type="客户反馈" onclick="selectTodoType(this)" style="background:#2B3139;color:#848E9C;border:1px solid #2E3440;border-radius:999px;padding:6px 16px;font-size:13px;white-space:nowrap;cursor:pointer;">客户反馈</button>
+        <button class="todo-type-pill" data-type="其他" onclick="selectTodoType(this)" style="background:#2B3139;color:#848E9C;border:1px solid #2E3440;border-radius:999px;padding:6px 16px;font-size:13px;white-space:nowrap;cursor:pointer;">其他</button>
+      </div>
+
+      <!-- 事件说明 -->
+      <div style="display:flex;align-items:center;gap:6px;margin-bottom:8px;">
+        <span style="font-size:12px;color:#848E9C;">事件说明</span>
+        <span style="font-size:11px;color:#474D57;">可选</span>
+      </div>
+      <textarea id="add-todo-note" rows="3" placeholder="记录一下..."
+        style="width:100%;background:#2B3139;color:#EAECEF;font-size:14px;border-radius:10px;padding:10px 12px;border:1px solid #2E3440;outline:none;resize:none;box-sizing:border-box;font-family:inherit;margin-bottom:20px;"></textarea>
+
+      <button id="add-todo-submit" onclick="submitAddTodo()" disabled
+        style="width:100%;height:44px;background:#2B3139;color:#474D57;font-size:15px;font-weight:600;border:none;border-radius:10px;cursor:not-allowed;">添加</button>
+    </div>
+  </div>
+
+  <script src="mock-data.js"></script>
   <script src="mock-events.js"></script>
   <script src="event-center-shared.js"></script>
   <script>
-    window.EventCenterShared.mountEventCenter({
+    var _ec = window.EventCenterShared.mountEventCenter({
       pageMode: 'star',
       listId: 'event-list'
     });
+
+    var _selectedClient = null;
+    var _selectedType = null;
+
+    function openAddTodo() {
+      _selectedClient = null;
+      _selectedType = null;
+      document.getElementById('add-todo-search').value = '';
+      document.getElementById('add-todo-note').value = '';
+      document.querySelectorAll('.todo-type-pill').forEach(function(p) {
+        p.style.background = '#2B3139'; p.style.color = '#848E9C'; p.style.borderColor = '#2E3440';
+      });
+      document.getElementById('add-todo-client-selected').style.display = 'none';
+      document.getElementById('add-todo-client-search-wrap').style.display = 'block';
+      document.getElementById('add-todo-client-list').style.display = 'none';
+      checkTodoSubmit();
+      document.getElementById('add-todo-overlay').style.display = 'flex';
+    }
+
+    function closeAddTodo() {
+      document.getElementById('add-todo-overlay').style.display = 'none';
+      document.getElementById('add-todo-client-list').style.display = 'none';
+    }
+
+    function showClientDropdown() {
+      filterClientList();
+      document.getElementById('add-todo-client-list').style.display = 'block';
+    }
+
+    function filterClientList() {
+      var D = window.PROTOTYPE_DATA;
+      var q = (document.getElementById('add-todo-search').value || '').trim().toLowerCase();
+      var clients = D ? D.clients : [];
+      var filtered = q ? clients.filter(function(c) {
+        var nick = (localStorage.getItem('nickname_' + c.uid) || '').toLowerCase();
+        return c.uid.toLowerCase().indexOf(q) !== -1 || nick.indexOf(q) !== -1;
+      }) : clients.slice(0, 20);
+      var html = filtered.length ? filtered.map(function(c) {
+        var nick = localStorage.getItem('nickname_' + c.uid) || '';
+        return '<div onclick="selectClient(\'' + c.uid.replace(/'/g,"&#39;") + '\')" '
+          + 'style="display:flex;align-items:center;gap:8px;padding:10px 12px;border-bottom:1px solid #2B3139;cursor:pointer;">'
+          + '<span style="font-size:14px;font-weight:600;color:#EAECEF;">' + c.uid + '</span>'
+          + (nick ? '<span style="font-size:12px;color:#848E9C;">' + nick + '</span>' : '')
+          + '</div>';
+      }).join('') : '<div style="text-align:center;color:#848E9C;font-size:13px;padding:16px 0;">无匹配客户</div>';
+      document.getElementById('add-todo-client-list').innerHTML = html;
+      document.getElementById('add-todo-client-list').style.display = 'block';
+    }
+
+    function selectClient(uid) {
+      var nick = localStorage.getItem('nickname_' + uid) || '';
+      _selectedClient = { uid: uid, name: nick || uid };
+      document.getElementById('add-todo-client-uid-label').textContent = uid;
+      document.getElementById('add-todo-client-nick-label').textContent = nick;
+      document.getElementById('add-todo-client-selected').style.display = 'flex';
+      document.getElementById('add-todo-client-search-wrap').style.display = 'none';
+      document.getElementById('add-todo-client-list').style.display = 'none';
+      checkTodoSubmit();
+    }
+
+    function clearClientSelection() {
+      _selectedClient = null;
+      document.getElementById('add-todo-search').value = '';
+      document.getElementById('add-todo-client-selected').style.display = 'none';
+      document.getElementById('add-todo-client-search-wrap').style.display = 'block';
+      document.getElementById('add-todo-client-list').style.display = 'none';
+      checkTodoSubmit();
+    }
+
+    function reopenClientSearch() {
+      clearClientSelection();
+    }
+
+    // 点击 sheet 外其他区域收起下拉
+    document.addEventListener('click', function(e) {
+      var wrap = document.getElementById('add-todo-client-search-wrap');
+      var list = document.getElementById('add-todo-client-list');
+      if (wrap && list && !wrap.contains(e.target) && !list.contains(e.target)) {
+        list.style.display = 'none';
+      }
+    });
+
+    function selectTodoType(btn) {
+      document.querySelectorAll('.todo-type-pill').forEach(function(p) {
+        p.style.background = '#2B3139'; p.style.color = '#848E9C'; p.style.borderColor = '#2E3440';
+      });
+      btn.style.background = 'rgba(240,185,11,0.15)';
+      btn.style.color = '#F0B90B';
+      btn.style.borderColor = '#F0B90B';
+      _selectedType = btn.getAttribute('data-type');
+      checkTodoSubmit();
+    }
+
+    function checkTodoSubmit() {
+      var ok = !!_selectedClient && !!_selectedType;
+      var btn = document.getElementById('add-todo-submit');
+      btn.disabled = !ok;
+      btn.style.background = ok ? '#F0B90B' : '#2B3139';
+      btn.style.color = ok ? '#0B0E11' : '#474D57';
+      btn.style.cursor = ok ? 'pointer' : 'not-allowed';
+    }
+
+    function submitAddTodo() {
+      if (!_selectedClient || !_selectedType) return;
+      var EC = window.EventCenterShared;
+      var note = (document.getElementById('add-todo-note').value || '').trim();
+      var now = new Date().toISOString();
+      var id = 'todo_' + Date.now();
+      var events = EC.loadEvents(localStorage);
+      events.unshift({
+        id: id,
+        client_uid: _selectedClient.uid,
+        client_name: _selectedClient.name,
+        title: (_selectedType + (note ? '：' + note : '')),
+        type: _selectedType,
+        status: '跟进中',
+        created_at: now
+      });
+      localStorage.setItem(EC.EVENTS_KEY, JSON.stringify(events));
+      var flagged = EC.upsertFlaggedEntry(EC.loadFlagged(localStorage), id, 'pending', now);
+      EC.saveFlagged(localStorage, flagged);
+      closeAddTodo();
+      _ec.render();
+    }
   </script>
 </body>
 </html>

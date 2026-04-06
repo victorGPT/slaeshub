@@ -102,10 +102,6 @@
       <i class="fa-solid fa-bell text-[18px] text-[#848E9C]"></i>
       <span class="text-[10px] text-[#848E9C]">事件</span>
     </a>
-    <a href="profile.html" class="flex flex-col items-center gap-0.5">
-      <i class="fa-solid fa-user text-[18px] text-[#848E9C]"></i>
-      <span class="text-[10px] text-[#848E9C]">我的</span>
-    </a>
   </div>
   <div style="height:env(safe-area-inset-bottom,0px)"></div>
 </div>
@@ -191,8 +187,8 @@
       sorted.sort(function(a, b) { return b.fMean - a.fMean; });
     } else if (sort === 'profit') {
       sorted.sort(function(a, b) {
-        var ta = a.netContribution ? a.netContribution.total : 0;
-        var tb = b.netContribution ? b.netContribution.total : 0;
+        var ta = a.clientPnl && a.clientPnl.total7d ? a.clientPnl.total7d.value : 0;
+        var tb = b.clientPnl && b.clientPnl.total7d ? b.clientPnl.total7d.value : 0;
         return tb - ta;
       });
     }
@@ -200,8 +196,8 @@
   }
 
   var TIPS = {
-    deposit: '客户过去 7 天持仓资产均值（USDT）',
-    profit:  '客户过去 30 天为平台贡献的可统计利润',
+    deposit: '客户过去 7 天持仓资产均值（USDT），变化% 对比 8 周均值',
+    profit:  '客户本月交易盈亏估算（7日数据 × 4.3），正值代表客户亏损，变化% 对比 8 周均值',
   };
 
   // 表头
@@ -222,16 +218,16 @@
     };
     var col = function(key, label, align) {
       var a = align || 'right';
-      return '<span onclick="sortBy(\'' + key + '\')" style="font-size:13px;font-weight:600;text-align:' + a + ';color:' + hc(key) + ';cursor:pointer;display:flex;align-items:center;justify-content:flex-end;gap:1px;user-select:none">'
+      return '<span onclick="sortBy(\'' + key + '\')" style="font-size:13px;font-weight:600;text-align:left;color:' + hc(key) + ';cursor:pointer;display:flex;align-items:center;justify-content:flex-start;gap:1px;user-select:none">'
         + '<span>' + label + '</span>'
         + sortIcon(key)
         + '<i onclick="event.stopPropagation();showTip(\'' + key + '\',this)" class="fa-regular fa-circle-question" style="color:#474D57;font-size:9px;margin-left:3px;cursor:pointer"></i>'
         + '</span>';
     };
-    return '<div style="display:grid;grid-template-columns:1fr 60px 52px;padding:7px 12px 5px;border-bottom:1px solid #2E3440">'
+    return '<div style="display:grid;grid-template-columns:1fr 128px 104px;padding:7px 12px 5px;border-bottom:1px solid #2E3440">'
       + '<span style="font-size:13px;font-weight:600;color:#848E9C">客户</span>'
       + col('deposit', '资沉')
-      + col('profit',  '利润')
+      + col('profit',  '盈亏')
       + '</div>';
   }
 
@@ -240,13 +236,44 @@
     var border = isLast ? '' : 'border-bottom:1px solid #2E3440;';
 
     var depositVal = c.fMean != null ? c.fMean : null;
+    var depositChgPct = null;
+    if (depositVal != null && c.weeks && c.weeks.length > 0) {
+      var thisWeek = c.weeks[c.weeks.length - 1];
+      depositChgPct = depositVal > 0 ? ((thisWeek - depositVal) / depositVal * 100) : 0;
+    }
+    var depositChgColor = depositChgPct != null ? (depositChgPct >= 0 ? '#0ECB81' : '#F6465D') : null;
+    var depositChgBg   = depositChgPct != null ? (depositChgPct >= 0 ? 'rgba(14,203,129,0.15)' : 'rgba(246,70,93,0.15)') : null;
     var depositHTML = depositVal != null
-      ? '<span style="font-size:13px;font-weight:700;color:#F0B90B">' + fmt(depositVal, false) + '</span>'
+      ? '<div style="display:flex;align-items:center;justify-content:flex-start;gap:4px;flex-wrap:nowrap">'
+      +   '<span style="font-size:13px;font-weight:700;color:#F0B90B;white-space:nowrap">' + fmt(depositVal, false) + '</span>'
+      +   (depositChgPct != null
+          ? '<span style="font-size:9px;font-weight:600;color:' + depositChgColor + ';background:' + depositChgBg + ';padding:1px 4px;border-radius:3px;white-space:nowrap">'
+          +   (depositChgPct >= 0 ? '+' : '') + depositChgPct.toFixed(1) + '%'
+          + '</span>'
+          : '')
+      + '</div>'
       : '<span style="font-size:13px;color:#474D57">—</span>';
 
-    var profitVal = c.netContribution ? c.netContribution.total : null;
-    var profitHTML = profitVal != null
-      ? '<span style="font-size:13px;font-weight:600;color:#0ECB81">' + fmt(profitVal, false) + '</span>'
+    var pnlVal = c.clientPnl && c.clientPnl.total7d ? c.clientPnl.total7d.value * 4.3 : null;
+    var pnlChgPct = null;
+    if (c.clientPnl && c.clientPnl.total7d && c.clientPnl.weeklyAvg8w) {
+      var avg8w = c.clientPnl.weeklyAvg8w.value;
+      if (Math.abs(avg8w) > 0) {
+        pnlChgPct = (c.clientPnl.total7d.value - avg8w) / Math.abs(avg8w) * 100;
+      }
+    }
+    var pnlColor = pnlVal != null ? (pnlVal >= 0 ? '#0ECB81' : '#F6465D') : '#474D57';
+    var pnlChgColor = pnlChgPct != null ? (pnlChgPct >= 0 ? '#0ECB81' : '#F6465D') : null;
+    var pnlChgBg   = pnlChgPct != null ? (pnlChgPct >= 0 ? 'rgba(14,203,129,0.15)' : 'rgba(246,70,93,0.15)') : null;
+    var profitHTML = pnlVal != null
+      ? '<div style="display:flex;align-items:center;justify-content:flex-start;gap:4px;flex-wrap:nowrap">'
+      +   '<span style="font-size:13px;font-weight:600;color:' + pnlColor + ';white-space:nowrap">' + fmt(pnlVal, false) + '</span>'
+      +   (pnlChgPct != null
+          ? '<span style="font-size:9px;font-weight:600;color:' + pnlChgColor + ';background:' + pnlChgBg + ';padding:1px 4px;border-radius:3px;white-space:nowrap">'
+          +   (pnlChgPct >= 0 ? '+' : '') + pnlChgPct.toFixed(1) + '%'
+          + '</span>'
+          : '')
+      + '</div>'
       : '<span style="font-size:13px;color:#474D57">—</span>';
 
     var dotColor = getFollowUpDot(c.uid);
@@ -255,13 +282,13 @@
       : '';
 
     return '<a href="client-detail.html?uid=' + c.uid + '" '
-      + 'style="display:grid;grid-template-columns:1fr 60px 52px;align-items:center;padding:10px 12px;' + border + 'text-decoration:none">'
+      + 'style="display:grid;grid-template-columns:1fr 128px 104px;align-items:center;padding:10px 12px;' + border + 'text-decoration:none">'
       + '<div>'
       +   '<div style="font-size:12px;font-weight:600;color:#EAECEF;display:flex;align-items:center">' + dotHTML + c.uid + '</div>'
       +   (c.name ? '<div style="font-size:11px;color:#848E9C;margin-top:1px">' + c.name + '</div>' : '')
       + '</div>'
-      + '<div style="text-align:right">' + depositHTML + '</div>'
-      + '<div style="text-align:right">' + profitHTML  + '</div>'
+      + '<div>' + depositHTML + '</div>'
+      + '<div>' + profitHTML  + '</div>'
       + '</a>';
   }
 

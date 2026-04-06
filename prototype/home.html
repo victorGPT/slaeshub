@@ -62,7 +62,7 @@
 
   <!-- Top Nav -->
   <div class="flex-shrink-0 h-[52px] bg-[#0B0E11] border-b border-[#2E3440] flex items-center justify-between px-4">
-    <span class="text-[15px] font-black" style="color:#F0B90B;letter-spacing:-0.5px">SH</span><h1 class="text-[17px] font-bold text-[#EAECEF] tracking-wide">首页</h1><span class="w-[24px]"></span>
+    <span class="text-[15px] font-black" style="color:#F0B90B;letter-spacing:-0.5px">SH</span><h1 class="text-[17px] font-bold text-[#EAECEF] tracking-wide">首页</h1><a href="profile.html" class="w-8 h-8 flex items-center justify-center rounded-full"><i class="fa-solid fa-circle-user text-[20px] text-[#474D57]"></i></a>
   </div>
 
   <!-- Search Bar -->
@@ -101,10 +101,6 @@
       <i class="fa-solid fa-bell text-[18px] text-[#848E9C]"></i>
       <span class="text-[10px] text-[#848E9C]">事件</span>
     </a>
-    <a href="profile.html" class="flex flex-col items-center gap-0.5">
-      <i class="fa-solid fa-user text-[18px] text-[#848E9C]"></i>
-      <span class="text-[10px] text-[#848E9C]">我的</span>
-    </a>
   </div>
   <div style="height:env(safe-area-inset-bottom,0px)"></div>
 </div>
@@ -121,44 +117,30 @@
 
   // ---------- Data helpers ----------
 
-  // USDT 金额格式化
-  // showSign=true：强制显示 +/-（用于变化量）
-  function fmtUSDT(val, showSign) {
+  // 金额格式化（K/M/B）
+  function fmt(val, withSign) {
     var abs = Math.abs(val);
-    var sign = showSign ? (val >= 0 ? '+' : '-') : (val < 0 ? '-' : '');
-    var num = abs >= 1000000 ? (abs / 1000000).toFixed(1) + 'M'
-            : abs >= 1000   ? (abs / 1000).toFixed(1) + 'K'
-            :                  Math.round(abs).toString();
-    return sign + '$' + num;
+    var sign = withSign ? (val >= 0 ? '+' : '-') : (val < 0 ? '-' : '');
+    if (abs >= 1e9) return sign + (abs / 1e9).toFixed(1) + 'B';
+    if (abs >= 1e6) return sign + (abs / 1e6).toFixed(1) + 'M';
+    if (abs >= 1e3) return sign + (abs / 1e3).toFixed(1) + 'K';
+    return (withSign && val > 0 ? '+' : (val < 0 ? '-' : '')) + Math.round(abs).toLocaleString();
   }
-
-  // 兼容旧调用
-  function fmtWan(val) { return fmtUSDT(val, true); }
+  function fmtUSDT(val, showSign) { return fmt(val, showSign); }
+  function fmtWan(val) { return fmt(val, true); }
 
   // ---------- 排序 ----------
 
-  // 1. 资沉前十：fMean 降序
-  var top5Deposit = D.clients.slice().sort(function(a, b) {
+  // 按资沉降序，取前十，同时带盈亏数据
+  var rankList = D.clients.slice().sort(function(a, b) {
     return (b.fMean || 0) - (a.fMean || 0);
   }).slice(0, 10);
-
-  // 2. 利润贡献前十：netContribution.total 降序
-  var top5Profit = D.clients.slice().sort(function(a, b) {
-    var va = (a.netContribution && a.netContribution.total) ? a.netContribution.total : 0;
-    var vb = (b.netContribution && b.netContribution.total) ? b.netContribution.total : 0;
-    return vb - va;
-  }).slice(0, 10);
-
-  var rankTabs = [
-    { label: '资沉', color: '#F0B90B', sort: 'deposit', list: top5Deposit },
-    { label: '利润', color: '#0ECB81', sort: 'profit',  list: top5Profit  }
-  ];
 
   // ---------- Render helpers ----------
 
   var TIPS = {
-    deposit: '客户过去 7 天持仓资产均值（USDT）',
-    profit:  '客户过去 30 天为平台贡献的可统计利润',
+    deposit: '客户过去 7 天持仓资产均值（USDT），变化% 对比 8 周均值',
+    profit:  '客户本月交易盈亏估算（7日数据 × 4.3），变化% 对比 8 周均值',
   };
 
   window.showTip = function(col, el) {
@@ -183,43 +165,65 @@
   }
 
   function renderRankTableHeader() {
-    return '<div style="display:grid;grid-template-columns:1fr 60px 52px;column-gap:8px;padding:7px 12px 5px;border-bottom:1px solid #2E3440">'
+    return '<div style="display:grid;grid-template-columns:1fr 128px 104px;padding:7px 12px 5px;border-bottom:1px solid #2E3440">'
       + '<span style="font-size:13px;font-weight:600;color:#848E9C">客户</span>'
-      + '<span style="font-size:13px;font-weight:600;text-align:right;color:#848E9C;display:flex;align-items:center;justify-content:flex-end">资沉' + tipIcon('deposit') + '</span>'
-      + '<span style="font-size:13px;font-weight:600;text-align:right;color:#848E9C;display:flex;align-items:center;justify-content:flex-end">利润' + tipIcon('profit')  + '</span>'
+      + '<span style="font-size:13px;font-weight:600;color:#848E9C;display:flex;align-items:center;gap:2px">资沉' + tipIcon('deposit') + '</span>'
+      + '<span style="font-size:13px;font-weight:600;color:#848E9C;display:flex;align-items:center;gap:2px">盈亏' + tipIcon('profit') + '</span>'
       + '</div>';
   }
 
   function renderRankTableRows(list) {
     return list.map(function(c, idx) {
       var border = idx < list.length - 1 ? 'border-bottom:1px solid #2E3440;' : '';
+
+      // 资沉
       var depositVal = c.fMean != null ? c.fMean : null;
+      var depositChgPct = null;
+      if (depositVal != null && c.weeks && c.weeks.length > 0) {
+        var thisWeek = c.weeks[c.weeks.length - 1];
+        depositChgPct = depositVal > 0 ? ((thisWeek - depositVal) / depositVal * 100) : 0;
+      }
+      var dChgColor = depositChgPct != null ? (depositChgPct >= 0 ? '#0ECB81' : '#F6465D') : null;
+      var dChgBg    = depositChgPct != null ? (depositChgPct >= 0 ? 'rgba(14,203,129,0.15)' : 'rgba(246,70,93,0.15)') : null;
       var depositHTML = depositVal != null
-        ? '<span style="font-size:13px;font-weight:700;color:#F0B90B">' + fmtUSDT(depositVal) + '</span>'
+        ? '<div style="display:flex;align-items:center;gap:4px;flex-wrap:nowrap">'
+        +   '<span style="font-size:13px;font-weight:700;color:#F0B90B;white-space:nowrap">' + fmt(depositVal, false) + '</span>'
+        +   (depositChgPct != null ? '<span style="font-size:9px;font-weight:600;color:' + dChgColor + ';background:' + dChgBg + ';padding:1px 4px;border-radius:3px;white-space:nowrap">' + (depositChgPct >= 0 ? '+' : '') + depositChgPct.toFixed(1) + '%</span>' : '')
+        + '</div>'
         : '<span style="font-size:13px;color:#474D57">—</span>';
-      var profitVal = c.netContribution ? c.netContribution.total : null;
-      var profitHTML = profitVal != null
-        ? '<span style="font-size:13px;font-weight:600;color:#0ECB81">' + fmtUSDT(profitVal) + '</span>'
+
+      // 盈亏
+      var pnlVal = c.clientPnl && c.clientPnl.total7d ? c.clientPnl.total7d.value * 4.3 : null;
+      var pnlChgPct = null;
+      if (c.clientPnl && c.clientPnl.total7d && c.clientPnl.weeklyAvg8w) {
+        var avg8w = c.clientPnl.weeklyAvg8w.value;
+        if (Math.abs(avg8w) > 0) pnlChgPct = (c.clientPnl.total7d.value - avg8w) / Math.abs(avg8w) * 100;
+      }
+      var pnlColor  = pnlVal != null ? (pnlVal >= 0 ? '#0ECB81' : '#F6465D') : '#474D57';
+      var pChgColor = pnlChgPct != null ? (pnlChgPct >= 0 ? '#0ECB81' : '#F6465D') : null;
+      var pChgBg    = pnlChgPct != null ? (pnlChgPct >= 0 ? 'rgba(14,203,129,0.15)' : 'rgba(246,70,93,0.15)') : null;
+      var profitHTML = pnlVal != null
+        ? '<div style="display:flex;align-items:center;gap:4px;flex-wrap:nowrap">'
+        +   '<span style="font-size:13px;font-weight:600;color:' + pnlColor + ';white-space:nowrap">' + fmt(pnlVal, false) + '</span>'
+        +   (pnlChgPct != null ? '<span style="font-size:9px;font-weight:600;color:' + pChgColor + ';background:' + pChgBg + ';padding:1px 4px;border-radius:3px;white-space:nowrap">' + (pnlChgPct >= 0 ? '+' : '') + pnlChgPct.toFixed(1) + '%</span>' : '')
+        + '</div>'
         : '<span style="font-size:13px;color:#474D57">—</span>';
 
       return '<a href="' + (c.detailHref || 'client-detail.html?uid=' + c.uid) + '" '
-        + 'style="display:grid;grid-template-columns:1fr 60px 52px;column-gap:8px;align-items:center;padding:10px 12px;' + border + 'text-decoration:none">'
+        + 'style="display:grid;grid-template-columns:1fr 128px 104px;align-items:center;padding:10px 12px;' + border + 'text-decoration:none">'
         + '<div>'
-        +   '<div style="display:flex;align-items:center;gap:6px">'
-        +     '<span style="font-size:10px;color:#848E9C;line-height:1;flex-shrink:0;min-width:12px">' + (idx + 1) + '</span>'
-        +     '<span style="font-size:12px;font-weight:600;color:#EAECEF">' + c.uid + '</span>'
-        +   '</div>'
-        +   (c.name ? '<div style="font-size:11px;color:#848E9C;margin-top:1px;margin-left:18px">' + c.name + '</div>' : '')
+        +   '<div style="font-size:12px;font-weight:600;color:#EAECEF">' + c.uid + '</div>'
+        +   (c.name ? '<div style="font-size:11px;color:#848E9C;margin-top:1px">' + c.name + '</div>' : '')
         + '</div>'
-        + '<div style="text-align:right">' + depositHTML + '</div>'
-        + '<div style="text-align:right">' + profitHTML  + '</div>'
+        + '<div>' + depositHTML + '</div>'
+        + '<div>' + profitHTML  + '</div>'
         + '</a>';
     }).join('');
   }
 
-  function renderRankTable(list) {
+  function renderRankTable() {
     return renderRankTableHeader()
-      + '<div id="rank-table-body">' + renderRankTableRows(list) + '</div>';
+      + renderRankTableRows(rankList);
   }
 
   // ---------- 推荐客户 / 跟进事件 ----------
@@ -376,23 +380,11 @@
   // ---------- 用户排名（4 Tab） ----------
 
   function buildRankSection() {
-    var tabBar = rankTabs.map(function(t, i) {
-      var active = i === 0;
-      return '<button onclick="switchRankTab(' + i + ')" id="rank-tab-' + i + '" '
-        + 'data-color="' + t.color + '" '
-        + 'style="flex:1;padding:10px 0;border:none;background:none;cursor:pointer;font-size:13px;font-weight:700;'
-        + 'color:' + (active ? t.color : '#848E9C') + ';'
-        + 'border-bottom:2px solid ' + (active ? t.color : 'transparent') + '">'
-        + t.label + '</button>';
-    }).join('');
-
-    // 底部"查看更多"随 Tab 联动
-    var firstTab = rankTabs[0];
-    var moreFooter = '<a id="rank-more" href="clients.html?sort=' + firstTab.sort + '" '
+    var moreFooter = '<a href="clients.html" '
       + 'style="display:flex;align-items:center;justify-content:center;gap:4px;'
       + 'padding:11px 16px;border-top:1px solid #2E3440;text-decoration:none;'
-      + 'font-size:13px;font-weight:600;color:' + firstTab.color + '">'
-      + '<span id="rank-more-label">查看更多' + firstTab.label + '</span>'
+      + 'font-size:13px;font-weight:600;color:#F0B90B">'
+      + '<span>查看全部客户</span>'
       + '<i class="fa-solid fa-chevron-right" style="font-size:10px"></i>'
       + '</a>';
 
@@ -403,7 +395,7 @@
       +   '<span id="refresh-time" style="font-size:11px;color:#474D57">--:--</span>'
       + '</div>'
       + '<div style="background:#1E2329;border-radius:12px;border:1px solid #2E3440;overflow:hidden">'
-      + renderRankTable(firstTab.list)
+      + renderRankTable()
       + moreFooter
       + '</div>'
       + '</div>';
@@ -422,23 +414,6 @@
     eventsTicker.addEventListener('mouseenter', function() { eventsTicker.style.animationPlayState = 'paused'; });
     eventsTicker.addEventListener('mouseleave', function() { eventsTicker.style.animationPlayState = 'running'; });
   }
-
-  // ---------- Tab 切换 ----------
-
-  window.switchRankTab = function(idx) {
-    [0, 1, 2, 3].forEach(function(i) {
-      var active = i === idx;
-      var btn = document.getElementById('rank-tab-' + i);
-      var col = btn.getAttribute('data-color');
-      btn.style.color = active ? col : '#848E9C';
-      btn.style.borderBottomColor = active ? col : 'transparent';
-    });
-    document.getElementById('rank-table-body').innerHTML = renderRankTableRows(rankTabs[idx].list);
-    var more = document.getElementById('rank-more');
-    more.href = 'clients.html?sort=' + rankTabs[idx].sort;
-    more.style.color = rankTabs[idx].color;
-    document.getElementById('rank-more-label').textContent = '查看更多' + rankTabs[idx].label;
-  };
 
   // ---------- Search ----------
 

@@ -10,7 +10,7 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <meta name="theme-color" content="#0B0E11" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-  <title>Sales Hub — 任务详情</title>
+  <title>Sales Hub — 事件</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
@@ -54,19 +54,11 @@
     <button onclick="history.back()" class="w-8 h-8 flex items-center justify-center">
       <i class="fa-solid fa-chevron-left text-[16px] text-[#EAECEF]"></i>
     </button>
-    <h1 class="text-[16px] font-bold text-[#EAECEF]">任务详情</h1>
+    <h1 class="text-[16px] font-bold text-[#EAECEF]">事件</h1>
     <div class="w-8"></div>
   </div>
 
-  <!-- ① 客户身份条 -->
-  <a id="view-profile-btn" href="#" class="mx-3 mt-3 px-4 h-[44px] bg-[#1E2329] rounded-2xl border border-[#2E3440] flex items-center gap-2">
-    <span id="client-uid" class="text-[14px] font-bold text-[#EAECEF] tabular-nums tracking-wide"></span>
-    <span id="client-nickname" class="text-[12px] text-[#848E9C]"></span>
-    <div id="tags-row" class="flex items-center gap-1 flex-1 min-w-0"></div>
-    <span class="text-[11px] text-[#848E9C] whitespace-nowrap flex-shrink-0">查看个人详情 <i class="fa-solid fa-chevron-right text-[9px]"></i></span>
-  </a>
-
-  <!-- ② 事件详情卡 -->
+  <!-- ① + ② 合并卡：事件为主，客户为附属 -->
   <div class="mx-3 mt-3 bg-[#1E2329] rounded-2xl border border-[#2E3440] p-4">
     <!-- 类型 + 来源 + 时间 -->
     <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">
@@ -79,26 +71,35 @@
     <div id="event-goal" style="font-size:16px;font-weight:600;color:#EAECEF;line-height:1.4"></div>
     <!-- 说明（手动事件的备注） -->
     <div id="event-note" style="font-size:13px;color:#848E9C;margin-top:6px;line-height:1.5"></div>
+    <!-- 客户附属行 -->
+    <div style="margin-top:14px;padding-top:12px;border-top:1px solid #2B3139;display:flex;align-items:center;gap:6px;">
+      <span style="font-size:10px;color:#474D57;letter-spacing:0.3px">UID</span>
+      <span id="client-uid" style="font-size:12px;font-weight:600;color:#848E9C;tabular-nums"></span>
+      <span id="client-nickname" style="font-size:11px;color:#474D57"></span>
+      <span style="flex:1"></span>
+      <a id="view-profile-btn" href="#" style="font-size:11px;color:#474D57;text-decoration:none;white-space:nowrap;">查看详情 <i class="fa-solid fa-chevron-right" style="font-size:9px;"></i></a>
+    </div>
   </div>
 
+  <!-- ③ 行动工具包 -->
   <!-- ③ 行动工具包 -->
   <div class="mx-3 mt-3 bg-[#1E2329] rounded-2xl border border-[#2E3440] overflow-hidden">
     <div style="display:flex;align-items:center;gap:8px;padding:14px 16px 10px">
       <i class="fa-solid fa-wand-magic-sparkles" style="color:#0ECB81;font-size:12px"></i>
       <span style="font-size:13px;font-weight:600;color:#EAECEF">行动工具包</span>
     </div>
-    <!-- Tab 选择 -->
-    <div style="display:flex;gap:8px;padding:0 16px 12px">
-      <button id="tool-tab-script" onclick="switchTool('script')"
-        style="flex:1;height:34px;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;background:rgba(0,203,129,0.12);color:#0ECB81;border:1px solid rgba(0,203,129,0.3)">话术模板</button>
-      <button id="tool-tab-incentive" onclick="switchTool('incentive')"
-        style="flex:1;height:34px;border-radius:8px;font-size:12px;font-weight:500;cursor:pointer;background:#2B3139;color:#848E9C;border:1px solid #2E3440">发放礼金</button>
-      <button id="tool-tab-meeting" onclick="switchTool('meeting')"
-        style="flex:1;height:34px;border-radius:8px;font-size:12px;font-weight:500;cursor:pointer;background:#2B3139;color:#848E9C;border:1px solid #2E3440">面谈邀约</button>
+
+    <!-- 情境分析 -->
+    <div id="tool-analysis" style="margin:0 16px 12px;padding:10px 12px;background:rgba(0,203,129,0.06);border:1px solid rgba(0,203,129,0.15);border-radius:10px;font-size:12px;color:#848E9C;line-height:1.7"></div>
+
+    <!-- 推荐策略标签 -->
+    <div style="display:flex;align-items:center;gap:6px;padding:0 16px 10px">
+      <span style="font-size:10px;color:#474D57">推荐策略</span>
+      <span id="tool-rec-label" style="font-size:11px;font-weight:600;color:#0ECB81"></span>
     </div>
 
-    <!-- ── 话术模板面板 ── -->
-    <div id="tool-panel-script" style="padding:0 16px 16px">
+    <!-- ── 话术跟进面板 ── -->
+    <div id="tool-panel-script" style="display:none;padding:0 16px 4px">
       <div id="script-style-pills" style="display:flex;gap:6px;overflow-x:auto;padding-bottom:2px;margin-bottom:10px"></div>
       <div id="script-content" style="background:#2B3139;border:1px solid #2E3440;border-radius:10px;padding:12px;font-size:13px;color:#EAECEF;line-height:1.7;min-height:72px"></div>
       <button id="copy-script-btn" onclick="copyScript()"
@@ -108,80 +109,60 @@
     </div>
 
     <!-- ── 发放礼金面板 ── -->
-    <div id="tool-panel-incentive" style="display:none;padding:0 16px 16px">
-      <div style="font-size:11px;color:#474D57;margin-bottom:6px">礼金类型</div>
-      <div style="display:flex;gap:6px;margin-bottom:14px">
-        <button id="itype-USDT" onclick="selectIType('USDT')"
-          style="flex:1;height:34px;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;background:rgba(240,185,11,0.12);color:#F0B90B;border:1px solid rgba(240,185,11,0.3)">USDT</button>
-        <button id="itype-现金" onclick="selectIType('现金')"
-          style="flex:1;height:34px;border-radius:8px;font-size:12px;cursor:pointer;background:#2B3139;color:#848E9C;border:1px solid #2E3440">现金</button>
-        <button id="itype-礼品" onclick="selectIType('礼品')"
-          style="flex:1;height:34px;border-radius:8px;font-size:12px;cursor:pointer;background:#2B3139;color:#848E9C;border:1px solid #2E3440">礼品</button>
+    <div id="tool-panel-incentive" style="display:none;padding:0 16px 4px">
+      <div style="background:#2B3139;border:1px solid rgba(240,185,11,0.25);border-radius:10px;padding:12px;margin-bottom:12px">
+        <div style="font-size:10px;color:#848E9C;margin-bottom:6px;letter-spacing:0.5px">系统建议</div>
+        <div id="incentive-amount-text" style="font-size:15px;font-weight:700;color:#F0B90B;margin-bottom:4px"></div>
+        <div id="incentive-reason-text" style="font-size:12px;color:#848E9C;line-height:1.6"></div>
       </div>
-      <div id="incentive-amount-block">
-        <div style="font-size:11px;color:#474D57;margin-bottom:6px">金额档位</div>
-        <div style="display:flex;gap:6px;margin-bottom:12px;align-items:center">
-          <button id="iamt-200" onclick="selectIAmt('200')"
-            style="height:34px;padding:0 14px;border-radius:8px;font-size:12px;cursor:pointer;background:#2B3139;color:#848E9C;border:1px solid #2E3440">200U</button>
-          <button id="iamt-500" onclick="selectIAmt('500')"
-            style="height:34px;padding:0 14px;border-radius:8px;font-size:12px;cursor:pointer;background:#2B3139;color:#848E9C;border:1px solid #2E3440">500U</button>
-          <button id="iamt-1000" onclick="selectIAmt('1000')"
-            style="height:34px;padding:0 14px;border-radius:8px;font-size:12px;cursor:pointer;background:#2B3139;color:#848E9C;border:1px solid #2E3440">1000U</button>
-          <input id="iamt-custom" type="number" placeholder="自填金额" oninput="onCustomAmt(this.value)"
-            style="flex:1;height:34px;background:#2B3139;color:#EAECEF;font-size:12px;border:1px solid #2E3440;border-radius:8px;padding:0 10px;outline:none;caret-color:#F0B90B;box-sizing:border-box">
-        </div>
-      </div>
-      <div id="incentive-gift-block" style="display:none;margin-bottom:12px">
-        <div style="font-size:11px;color:#474D57;margin-bottom:6px">礼品说明</div>
-        <input id="gift-desc" placeholder="填写礼品名称或说明"
-          style="width:100%;height:34px;box-sizing:border-box;background:#2B3139;color:#EAECEF;font-size:13px;border:1px solid #2E3440;border-radius:8px;padding:0 10px;outline:none;caret-color:#F0B90B">
-      </div>
-      <textarea id="incentive-note" placeholder="备注（选填）" rows="2"
-        style="width:100%;box-sizing:border-box;background:#2B3139;color:#EAECEF;border:1px solid #2E3440;border-radius:10px;padding:10px 12px;font-size:13px;font-family:inherit;line-height:1.6;resize:none;outline:none;caret-color:#F0B90B;margin-bottom:8px"></textarea>
-      <button onclick="recordIncentive()"
-        style="width:100%;height:38px;background:rgba(240,185,11,0.12);color:#F0B90B;border:1px solid rgba(240,185,11,0.3);border-radius:10px;font-size:13px;font-weight:600;cursor:pointer">记录发放</button>
+      <div style="font-size:11px;color:#474D57;margin-bottom:6px">发放时参考话术</div>
+      <div id="incentive-style-pills" style="display:flex;gap:6px;overflow-x:auto;padding-bottom:2px;margin-bottom:10px"></div>
+      <div id="incentive-script-content" style="background:#2B3139;border:1px solid #2E3440;border-radius:10px;padding:12px;font-size:13px;color:#EAECEF;line-height:1.7;min-height:60px"></div>
+      <button id="copy-incentive-btn" onclick="copyIncentiveScript()"
+        style="margin-top:8px;width:100%;height:38px;background:rgba(240,185,11,0.12);color:#F0B90B;border:1px solid rgba(240,185,11,0.3);border-radius:10px;font-size:13px;font-weight:600;cursor:pointer">
+        <i class="fa-regular fa-copy" style="margin-right:6px"></i>复制话术
+      </button>
     </div>
 
     <!-- ── 面谈邀约面板 ── -->
-    <div id="tool-panel-meeting" style="display:none;padding:0 16px 16px">
-      <div style="font-size:11px;color:#474D57;margin-bottom:6px">补充信息</div>
-      <textarea id="meeting-notes" placeholder="填写拜访前需要记录的补充信息，例如：客户最近换工作、上次提到想了解理财产品…" rows="3"
-        style="width:100%;box-sizing:border-box;background:#2B3139;color:#EAECEF;border:1px solid #2E3440;border-radius:10px;padding:10px 12px;font-size:13px;font-family:inherit;line-height:1.6;resize:none;outline:none;caret-color:#4DA6FF;margin-bottom:8px"></textarea>
-      <!-- 邀约话术（折叠） -->
-      <button onclick="toggleMeetingScript()" id="meeting-script-toggle"
-        style="width:100%;display:flex;align-items:center;justify-content:space-between;padding:8px 12px;background:#2B3139;border:1px solid #2E3440;border-radius:10px;cursor:pointer;margin-bottom:8px">
-        <span style="font-size:12px;color:#848E9C">邀约话术参考</span>
-        <i id="meeting-script-chevron" class="fa-solid fa-chevron-down" style="font-size:10px;color:#474D57"></i>
+    <div id="tool-panel-meeting" style="display:none;padding:0 16px 4px">
+      <div id="meeting-style-pills" style="display:flex;gap:6px;overflow-x:auto;padding-bottom:2px;margin-bottom:8px"></div>
+      <div id="meeting-content" style="background:#2B3139;border:1px solid #2E3440;border-radius:10px;padding:12px;font-size:13px;color:#EAECEF;line-height:1.7;min-height:60px"></div>
+      <button id="copy-meeting-btn" onclick="copyMeeting()"
+        style="margin-top:8px;width:100%;height:36px;background:rgba(77,166,255,0.08);color:#4DA6FF;border:1px solid rgba(77,166,255,0.2);border-radius:10px;font-size:12px;font-weight:600;cursor:pointer">
+        <i class="fa-regular fa-copy" style="margin-right:6px"></i>复制邀约话术
       </button>
-      <div id="meeting-script-panel" style="display:none;margin-bottom:8px">
-        <div id="meeting-style-pills" style="display:flex;gap:6px;overflow-x:auto;padding-bottom:2px;margin-bottom:8px"></div>
-        <div id="meeting-content" style="background:#2B3139;border:1px solid #2E3440;border-radius:10px;padding:12px;font-size:13px;color:#EAECEF;line-height:1.7;min-height:60px"></div>
-        <button id="copy-meeting-btn" onclick="copyMeeting()"
-          style="margin-top:8px;width:100%;height:36px;background:rgba(77,166,255,0.08);color:#4DA6FF;border:1px solid rgba(77,166,255,0.2);border-radius:10px;font-size:12px;font-weight:600;cursor:pointer">
-          <i class="fa-regular fa-copy" style="margin-right:6px"></i>复制邀约话术
-        </button>
+    </div>
+
+    <!-- ── 现金奖励面板 ── -->
+    <div id="tool-panel-cash" style="display:none;padding:0 16px 4px">
+      <div style="background:#2B3139;border:1px solid rgba(180,92,244,0.25);border-radius:10px;padding:12px;margin-bottom:12px">
+        <div style="font-size:10px;color:#848E9C;margin-bottom:6px;letter-spacing:0.5px">系统建议</div>
+        <div id="cash-amount-text" style="font-size:15px;font-weight:700;color:#B45CF4;margin-bottom:4px"></div>
+        <div id="cash-reason-text" style="font-size:12px;color:#848E9C;line-height:1.6"></div>
       </div>
-      <button onclick="recordMeeting()"
-        style="width:100%;height:38px;background:rgba(77,166,255,0.12);color:#4DA6FF;border:1px solid rgba(77,166,255,0.3);border-radius:10px;font-size:13px;font-weight:600;cursor:pointer">记录面谈邀约</button>
+      <div style="font-size:11px;color:#474D57;margin-bottom:6px">发放时参考话术</div>
+      <div id="cash-style-pills" style="display:flex;gap:6px;overflow-x:auto;padding-bottom:2px;margin-bottom:10px"></div>
+      <div id="cash-script-content" style="background:#2B3139;border:1px solid #2E3440;border-radius:10px;padding:12px;font-size:13px;color:#EAECEF;line-height:1.7;min-height:60px"></div>
+      <button id="copy-cash-btn" onclick="copyCashScript()"
+        style="margin-top:8px;width:100%;height:38px;background:rgba(180,92,244,0.12);color:#B45CF4;border:1px solid rgba(180,92,244,0.3);border-radius:10px;font-size:13px;font-weight:600;cursor:pointer">
+        <i class="fa-regular fa-copy" style="margin-right:6px"></i>复制话术
+      </button>
+    </div>
+
+    <!-- 其他策略（折叠） -->
+    <div style="padding:12px 16px 4px">
+      <button onclick="toggleOtherStrategies()" id="other-strategies-toggle"
+        style="display:flex;align-items:center;gap:4px;background:none;border:none;cursor:pointer;padding:0">
+        <span style="font-size:12px;color:#474D57">其他策略</span>
+        <i id="other-strategies-chevron" class="fa-solid fa-chevron-down" style="font-size:10px;color:#474D57"></i>
+      </button>
+    </div>
+    <div id="other-strategies-panel" style="display:none;padding:0 16px 16px">
+      <div id="other-strategy-btns" style="display:flex;gap:8px;margin-bottom:0"></div>
     </div>
   </div>
 
-  <!-- ④ 跟进记录 -->
-  <div class="mx-3 mt-3 mb-4 bg-[#1E2329] rounded-2xl border border-[#2E3440] overflow-hidden">
-    <div style="display:flex;align-items:center;gap:8px;padding:14px 16px 10px">
-      <i class="fa-solid fa-pen-to-square" style="color:#4DA6FF;font-size:12px"></i>
-      <span style="font-size:13px;font-weight:600;color:#EAECEF">跟进记录</span>
-      <span id="fu-records-count" style="font-size:10px;color:#474D57;margin-left:auto"></span>
-    </div>
-    <!-- 已有记录列表 -->
-    <div id="fu-records-list" style="padding:0 16px"></div>
-    <!-- 输入区 -->
-    <div style="padding:10px 16px 14px">
-      <textarea id="fu-record-input" placeholder="记录跟进结果、客户反馈…" rows="3"
-        style="width:100%;box-sizing:border-box;background:#2B3139;color:#EAECEF;border:1px solid #2E3440;border-radius:10px;padding:10px 12px;font-size:13px;font-family:inherit;line-height:1.6;resize:none;outline:none;caret-color:#F0B90B"></textarea>
-      <button onclick="addFuRecord()" style="margin-top:8px;width:100%;height:38px;background:rgba(77,166,255,0.12);color:#4DA6FF;border:1px solid rgba(77,166,255,0.3);border-radius:10px;font-size:13px;font-weight:600;cursor:pointer">保存记录</button>
-    </div>
-  </div>
 
 </div>
 </div>
@@ -189,19 +170,7 @@
 
 <!-- 底部操作栏 -->
 <div class="fixed-bar bg-[#0B0E11] border-t border-[#2E3440] z-30 px-4 pt-3" style="padding-bottom:calc(0.75rem + env(safe-area-inset-bottom))">
-  <!-- 跟进计划日期选择（默认隐藏） -->
-  <div id="flag-chooser" style="display:none;flex-direction:column;gap:6px;margin-bottom:10px">
-    <span style="font-size:11px;color:#474D57">计划跟进日期</span>
-    <div style="display:flex;flex-direction:row;align-items:center;gap:8px">
-      <button id="flag-today-btn" onclick="markFlagToday()" style="height:36px;padding:0 18px;background:#2B3139;color:#EAECEF;font-size:13px;border:1px solid #2E3440;border-radius:999px;cursor:pointer;white-space:nowrap">今天</button>
-      <button onclick="markFlagPending()" style="height:36px;padding:0 18px;background:#2B3139;color:#848E9C;font-size:13px;border:1px solid #2E3440;border-radius:999px;cursor:pointer;white-space:nowrap">待定</button>
-      <input type="date" id="flag-custom-date" style="flex:1;height:36px;background:#2B3139;color:#EAECEF;font-size:13px;border:1px solid #2E3440;border-radius:999px;padding:0 12px;outline:none;cursor:pointer" oninput="markFlagCustom(this.value)">
-    </div>
-  </div>
-  <div style="display:flex;gap:8px">
-    <button id="flag-btn" onclick="toggleFlagChooser()" style="flex:1;height:44px;font-size:14px;font-weight:500;border-radius:10px;cursor:pointer;background:rgba(240,185,11,0.12);color:#F0B90B;border:1px solid rgba(240,185,11,0.3)">列入跟进计划</button>
-    <button id="close-event-btn" onclick="closeEvent()" style="flex:1;height:44px;background:#2B3139;color:#EAECEF;font-size:14px;font-weight:500;border:1px solid #2E3440;border-radius:10px;cursor:pointer">归档</button>
-  </div>
+  <button id="action-btn" onclick="handleActionBtn()" style="width:100%;height:44px;font-size:15px;font-weight:600;border-radius:10px;cursor:pointer;border:none;"></button>
 </div>
 
 <script src="mock-data.js"></script>
@@ -257,62 +226,21 @@
     return { text: d + '天后', color: '#4DA6FF' };
   }
 
-  function isEventClosed() {
-    if (!shared) return false;
-    return shared.loadClosed(localStorage).indexOf(ev.id) !== -1;
-  }
-
-  function syncCloseButton() {
-    var btn = document.getElementById('close-event-btn');
-    if (!btn) return;
-    var closed = isEventClosed();
-    btn.textContent = closed ? '已完成' : '完成';
-    btn.disabled = closed;
-    btn.style.opacity = closed ? '0.55' : '1';
-    btn.style.cursor = closed ? 'default' : 'pointer';
-  }
 
 
-  // ── ① 客户身份条 ──
+  // ── ① 客户附属行 ──
   document.getElementById('client-uid').textContent = ev.client_uid;
   document.getElementById('view-profile-btn').href = 'client-detail.html?uid=' + ev.client_uid;
+  var nickname = localStorage.getItem('nickname_' + (ev.client_uid || '')) || '';
+  if (nickname) document.getElementById('client-nickname').textContent = '· ' + nickname;
 
-  if (c) {
-    var nickname = localStorage.getItem('nickname_' + c.uid) || '';
-    document.getElementById('client-nickname').textContent = nickname;
-
-    // Tags（仅 Top 100 显示）
-    var allClients2 = (window.PROTOTYPE_DATA || {}).clients || [];
-    var sysTags = [];
-    var depositRank = allClients2.filter(function(cl) { return cl.fMean > c.fMean; }).length + 1;
-    if (depositRank <= 100) {
-      var dc = depositRank <= 10 ? '#F0B90B' : depositRank <= 50 ? '#4DA6FF' : '#848E9C';
-      var dbg = depositRank <= 10 ? 'rgba(240,185,11,0.12)' : depositRank <= 50 ? 'rgba(77,166,255,0.12)' : 'rgba(132,142,156,0.12)';
-      sysTags.push({ label: '资沉 #' + depositRank, color: dc, bg: dbg });
-    }
-    var myProfit = c.netContribution ? c.netContribution.total : 0;
-    var profitRank = allClients2.filter(function(cl) {
-      return (cl.netContribution ? cl.netContribution.total : 0) > myProfit;
-    }).length + 1;
-    if (profitRank <= 100) {
-      var pc2 = profitRank <= 10 ? '#F0B90B' : profitRank <= 50 ? '#4DA6FF' : '#848E9C';
-      var pbg2 = profitRank <= 10 ? 'rgba(240,185,11,0.12)' : profitRank <= 50 ? 'rgba(77,166,255,0.12)' : 'rgba(132,142,156,0.12)';
-      sysTags.push({ label: '利润 #' + profitRank, color: pc2, bg: pbg2 });
-    }
-    var myPnl = c.clientPnl && c.clientPnl.total7d ? c.clientPnl.total7d.value : 0;
-    var pnlRank = allClients2.filter(function(cl) {
-      return (cl.clientPnl && cl.clientPnl.total7d ? cl.clientPnl.total7d.value : 0) > myPnl;
-    }).length + 1;
-    if (pnlRank <= 100) {
-      var prc2 = pnlRank <= 10 ? '#F0B90B' : pnlRank <= 50 ? '#4DA6FF' : '#848E9C';
-      var prb2 = pnlRank <= 10 ? 'rgba(240,185,11,0.12)' : pnlRank <= 50 ? 'rgba(77,166,255,0.12)' : 'rgba(132,142,156,0.12)';
-      sysTags.push({ label: '盈亏 #' + pnlRank, color: prc2, bg: prb2 });
-    }
-    var tagsHtml = sysTags.map(function(t) {
-      return '<span style="font-size:9px;padding:2px 6px;border-radius:4px;border:1px solid ' + t.color + '30;color:' + t.color + ';background:' + t.bg + '">' + t.label + '</span>';
-    }).join('');
-    document.getElementById('tags-row').innerHTML = tagsHtml;
-  }
+  // ── 排名计算（供工具包使用）──
+  var _allClients = (window.PROTOTYPE_DATA || {}).clients || [];
+  var _depositRank = c ? _allClients.filter(function(cl){ return cl.fMean > c.fMean; }).length + 1 : 9999;
+  var _profitTotal = c && c.netContribution ? c.netContribution.total : 0;
+  var _profitRank = _allClients.filter(function(cl){
+    return (cl.netContribution ? cl.netContribution.total : 0) > _profitTotal;
+  }).length + 1;
 
   // ── ② 事件详情 ──
   document.getElementById('event-type-badge').textContent = ev.type || '事件';
@@ -325,61 +253,7 @@
   document.getElementById('event-goal').textContent = ev.title || '—';
   if (ev.note) document.getElementById('event-note').textContent = ev.note;
 
-  // ── ③ 跟进记录 ──
-  var RECORDS_KEY = 'fu_records_' + ev.id;
-
-  function loadRecords() {
-    try { return JSON.parse(localStorage.getItem(RECORDS_KEY) || '[]'); } catch(e) { return []; }
-  }
-
-  function saveRecords(list) {
-    localStorage.setItem(RECORDS_KEY, JSON.stringify(list));
-  }
-
-  function fmtRecordTime(iso) {
-    var d = new Date(iso);
-    if (isNaN(d)) return '';
-    var mo = d.getMonth() + 1, dd = d.getDate(), hh = d.getHours(), mm = String(d.getMinutes()).padStart(2, '0');
-    return mo + '月' + dd + '日 ' + hh + ':' + mm;
-  }
-
-  function renderRecords() {
-    var list = loadRecords();
-    var countEl = document.getElementById('fu-records-count');
-    var listEl = document.getElementById('fu-records-list');
-    countEl.textContent = list.length > 0 ? list.length + ' 条' : '';
-    if (list.length === 0) {
-      listEl.innerHTML = '<div style="padding:4px 0 10px;font-size:12px;color:#474D57">暂无记录，在下方填写跟进结果</div>';
-      return;
-    }
-    listEl.innerHTML = list.slice().reverse().map(function(r, i) {
-      var isFirst = i === 0;
-      return '<div style="padding:10px 0;' + (isFirst ? '' : 'border-top:1px solid #2E3440;') + '">'
-        + '<div style="font-size:10px;color:#474D57;margin-bottom:4px">' + esc(fmtRecordTime(r.at)) + '</div>'
-        + '<div style="font-size:13px;color:#EAECEF;line-height:1.6;white-space:pre-wrap">' + esc(r.text) + '</div>'
-        + '</div>';
-    }).join('');
-  }
-
-  window.addFuRecord = function() {
-    var input = document.getElementById('fu-record-input');
-    var text = (input.value || '').trim();
-    if (!text) return;
-    var list = loadRecords();
-    list.push({ text: text, at: new Date().toISOString() });
-    saveRecords(list);
-    input.value = '';
-    renderRecords();
-  };
-
-  // 支持 Cmd/Ctrl+Enter 快速保存
-  document.getElementById('fu-record-input').addEventListener('keydown', function(e) {
-    if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') { window.addFuRecord(); }
-  });
-
-  renderRecords();
-
-  // ── ③.5 处置工具包 ──
+  // ── ③ 处置工具包 ──
   var SCRIPT_TEMPLATES = {
     '大额提现': {
       '简洁直接': '看到您提了一笔大额，我先帮您查一下现在的点位和仓位情况，今天内给您一个分析，您再决定要不要继续出。',
@@ -432,26 +306,134 @@
     '积极引导': '账户有些新动态，我已经在帮您分析了。整理好后发给您，您选一个方向，我来帮您执行。'
   };
 
-  var _curStyle = '简洁直接';
-  var _curIType = 'USDT';
-  var _curIAmt = '';
   var SCRIPT_STYLES = ['简洁直接','亲切随和','专业正式','关怀体贴','积极引导'];
+  var _curStyle = '简洁直接';
+  var _curIncentiveStyle = '简洁直接';
+  var _curMeetingStyle = '简洁直接';
+  var _curCashStyle = '简洁直接';
+
+  // ── 情境分析 + 推荐策略 ──
+  var INCENTIVE_SCRIPTS = {
+    '简洁直接': '好消息，我们为您准备了一份专属礼金，感谢您一直以来的支持，稍后会直接到账。',
+    '亲切随和': '哥/姐，这是我们给您的一点心意，感谢您这段时间的支持，礼金已经在路上了。',
+    '专业正式': '您好，鉴于您近期的优异表现，我方特为您准备了专属客户回馈礼金，将于近日直接发放至您账户，感谢您的信任与支持。',
+    '关怀体贴': '这段时间您的支持我都看在眼里，这份礼金是我们一点小小的心意，希望您喜欢，也感谢您一直相信我们。',
+    '积极引导': '这次的礼金是专门为您准备的，后续我会持续帮您关注账户机会，有好的时机第一时间告诉您。'
+  };
+
+  var CASH_SCRIPTS = {
+    '简洁直接': '这次有一笔现金奖励要发给您，感谢您的支持，稍后会直接到账，请注意查收。',
+    '亲切随和': '哥/姐，这次给您发一个现金红包，算是我们的一点心意，感谢您一直以来的信任，快去看一下到账了没。',
+    '专业正式': '您好，鉴于您的优质贡献，我方本次向您发放专属现金奖励，将于近日到账，感谢您的长期信任与支持。',
+    '关怀体贴': '一直想跟您说声谢谢，这次现金奖励是我们给您的一点回馈，希望您喜欢，也希望您继续支持我们。',
+    '积极引导': '这次现金奖励是专门为您安排的，我会持续帮您关注好的机会，有进展第一时间通知您。'
+  };
+
+  var MEETING_SCRIPTS = {
+    '简洁直接': '最近有个情况想跟您当面聊一下，10分钟就够，您这周哪天方便？我来配合您。',
+    '亲切随和': '哥/姐，最近有个事儿有进展了，想找您汇报一下，顺便聊聊，不占您太多时间，我过去看您，您定时间。',
+    '专业正式': '您好，结合您近期的账户情况，我这边整理了一份简要分析，当面讲会更清楚。您看这两天哪个时间段方便？预计30分钟以内，时间您定，我来配合。',
+    '关怀体贴': '最近一直想过去看看您，电话里说不清楚的，面对面聊起来更踏实。您这周哪天在？我来配合您，不打扰太久。',
+    '积极引导': '这个窗口期比较短，我帮您准备了一份针对账户的专项方案，电话说不清楚，见面10分钟给您讲清楚。您看明天还是后天方便？'
+  };
+
+  function getAnalysis() {
+    var t = ev.type || '';
+    var rankCtx = _depositRank <= 20 ? '资沉排名前20，属核心高价值客户' :
+                  _depositRank <= 50 ? '资沉排名前50，属优质客户' : '属活跃客户';
+    var map = {
+      '大额充值': '客户发生大额充值，' + rankCtx + '，建议主动跟进，巩固资金留存意愿。',
+      '大额提现': '客户发生大额提现，存在资金流失风险，建议立即联系了解原因并尝试挽留。',
+      '大额盈利': '客户近期账户大幅盈利，情绪良好，是深化关系、发展长期信任的好时机。',
+      '大额亏损': '客户近期出现较大亏损，情绪可能较低落，建议主动关怀，切忌施压。',
+      '账户封禁': '客户账户遭到封禁，影响正常操作，需紧急跟进协助处理，避免客户流失。',
+      '主动联系': '您主动发起了对该客户的联系，建议结合客户近期动态选择合适的话题切入。',
+      '客户反馈': '客户有主动反馈，说明参与度较高，建议及时回应并转化为深度关系。'
+    };
+    return map[t] || ('建议根据客户当前情况，选择合适的跟进策略主动维系关系。');
+  }
+
+  function getRecommendedStrategy() {
+    var t = ev.type || '';
+    if ((t === '大额充值' || t === '大额盈利') && (_depositRank <= 20 || _profitRank <= 20)) return 'incentive';
+    if (t === '大额盈利' && _depositRank <= 50) return 'cash';
+    if (t === '客户反馈' && (_depositRank <= 20 || _profitRank <= 20)) return 'cash';
+    if ((t === '大额充值' || t === '大额盈利') && _depositRank <= 50) return 'meeting';
+    if (t === '账户封禁' || t === '大额提现' || t === '大额亏损') return 'script';
+    return 'script';
+  }
+
+  var STRATEGY_REASONS = {
+    script: function() {
+      var t = ev.type || '';
+      if (t === '大额提现') return '客户有提现意向，话术跟进可在不施压的前提下了解原因，尝试留存资金。';
+      if (t === '大额亏损') return '客户情绪可能较低，主动发送关怀话术可稳定关系，降低流失风险。';
+      if (t === '账户封禁') return '账户异常情况需第一时间通过话术安抚客户情绪，同步处理进度。';
+      return '话术跟进成本低、响应快，适合作为基础维系手段。';
+    },
+    incentive: function() {
+      var amt = _depositRank <= 10 ? '1000U' : _depositRank <= 20 ? '500U' : '200U';
+      var profitStr = _profitTotal > 0 ? '，近期利润贡献约 ¥' + Math.round(_profitTotal / 10000 * 10) / 10 + ' 万' : '';
+      return '该客户资沉排名 #' + _depositRank + profitStr + '，建议发放 ' + amt + ' 礼金以强化粘性，回报率高。';
+    },
+    meeting: function() {
+      return '客户资沉排名 #' + _depositRank + '，属高价值客户，面谈可建立更深信任，建议本周内安排。';
+    },
+    cash: function() {
+      var amt = _depositRank <= 10 ? '¥3000' : _depositRank <= 20 ? '¥1500' : '¥500';
+      var profitStr = _profitTotal > 0 ? '，利润贡献约 ¥' + Math.round(_profitTotal / 10000 * 10) / 10 + ' 万' : '';
+      return '该客户资沉排名 #' + _depositRank + profitStr + '，建议发放 ' + amt + ' 现金奖励，见效快、感知强，适合此类时机。';
+    }
+  };
+
+  function getCashSuggestion() {
+    var amt = _depositRank <= 10 ? '¥3000' : _depositRank <= 20 ? '¥1500' : _depositRank <= 50 ? '¥500' : '¥200';
+    var profitStr = _profitTotal > 0 ? '利润贡献约 ¥' + Math.round(_profitTotal / 10000 * 10) / 10 + ' 万，' : '';
+    var reason = profitStr + '资沉排名 #' + _depositRank + '，建议发放 ' + amt + ' 现金奖励，见效快感知强，适合当前时机。';
+    return { amount: '建议发放 ' + amt, reason: reason };
+  }
+
+  function getIncentiveSuggestion() {
+    var amt = _depositRank <= 10 ? '1000U' : _depositRank <= 20 ? '500U' : _depositRank <= 50 ? '200U' : '200U';
+    var profitStr = _profitTotal > 0 ? '近期利润贡献约 ¥' + Math.round(_profitTotal / 10000 * 10) / 10 + ' 万，' : '';
+    var reason = profitStr + '资沉排名 #' + _depositRank + '，建议发放 ' + amt + ' 作为客户回馈，预计可有效提升留存率。';
+    return { amount: '建议发放 ' + amt, reason: reason };
+  }
+
+  var TOOL_LABELS = { script: '话术跟进', incentive: '发放礼金', meeting: '面谈邀约', cash: '现金奖励' };
 
   window.switchTool = function(tab) {
-    ['script','incentive','meeting'].forEach(function(t) {
-      var panel = document.getElementById('tool-panel-' + t);
-      var btn = document.getElementById('tool-tab-' + t);
-      var active = t === tab;
-      panel.style.display = active ? 'block' : 'none';
-      if (active) {
-        btn.style.background = 'rgba(0,203,129,0.12)'; btn.style.color = '#0ECB81';
-        btn.style.borderColor = 'rgba(0,203,129,0.3)'; btn.style.fontWeight = '600';
-      } else {
-        btn.style.background = '#2B3139'; btn.style.color = '#848E9C';
-        btn.style.borderColor = '#2E3440'; btn.style.fontWeight = '500';
-      }
+    ['script','incentive','meeting','cash'].forEach(function(t) {
+      document.getElementById('tool-panel-' + t).style.display = t === tab ? 'block' : 'none';
     });
   };
+
+  function closeOtherStrategies() {
+    document.getElementById('other-strategies-panel').style.display = 'none';
+    document.getElementById('other-strategies-chevron').className = 'fa-solid fa-chevron-down';
+  }
+
+  window.toggleOtherStrategies = function() {
+    var panel = document.getElementById('other-strategies-panel');
+    var isOpen = panel.style.display !== 'none';
+    if (isOpen) {
+      closeOtherStrategies();
+    } else {
+      panel.style.display = 'block';
+      document.getElementById('other-strategies-chevron').className = 'fa-solid fa-chevron-up';
+    }
+  };
+
+  function buildOtherStrategyBtns(recommended) {
+    var others = ['script','incentive','meeting','cash'].filter(function(t){ return t !== recommended; });
+    var colors = { script: '#0ECB81', incentive: '#F0B90B', meeting: '#4DA6FF', cash: '#B45CF4' };
+    document.getElementById('other-strategy-btns').innerHTML = others.map(function(t) {
+      var c = colors[t];
+      return '<button onclick="switchTool(\'' + t + '\');closeOtherStrategies();document.getElementById(\'tool-rec-label\').textContent=TOOL_LABELS[\'' + t + '\']"'
+        + ' style="flex:1;height:34px;border-radius:8px;font-size:12px;cursor:pointer;background:#2B3139;color:' + c + ';border:1px solid ' + c + '33;font-weight:500">'
+        + TOOL_LABELS[t] + '</button>';
+    }).join('');
+  }
 
   function renderScriptPills() {
     var pills = document.getElementById('script-style-pills');
@@ -485,82 +467,36 @@
     });
   };
 
-  window.selectIType = function(type) {
-    _curIType = type;
-    ['USDT','现金','礼品'].forEach(function(t) {
-      var btn = document.getElementById('itype-' + t);
-      var active = t === type;
-      if (active) {
-        btn.style.background = 'rgba(240,185,11,0.12)'; btn.style.color = '#F0B90B';
-        btn.style.borderColor = 'rgba(240,185,11,0.3)'; btn.style.fontWeight = '600';
-      } else {
-        btn.style.background = '#2B3139'; btn.style.color = '#848E9C';
-        btn.style.borderColor = '#2E3440'; btn.style.fontWeight = '500';
-      }
-    });
-    document.getElementById('incentive-amount-block').style.display = type === '礼品' ? 'none' : 'block';
-    document.getElementById('incentive-gift-block').style.display = type === '礼品' ? 'block' : 'none';
+  function renderIncentivePills() {
+    var pills = document.getElementById('incentive-style-pills');
+    pills.innerHTML = SCRIPT_STYLES.map(function(s) {
+      var active = s === _curIncentiveStyle;
+      return '<button onclick="selectIncentiveStyle(\'' + s + '\')" style="padding:4px 10px;border-radius:999px;font-size:11px;cursor:pointer;white-space:nowrap;flex-shrink:0;'
+        + (active ? 'background:#F0B90B;color:#0B0E11;font-weight:600;border:1px solid #F0B90B'
+                  : 'background:#2B3139;color:#848E9C;border:1px solid #2E3440')
+        + '">' + s + '</button>';
+    }).join('');
+  }
+
+  function updateIncentiveText() {
+    document.getElementById('incentive-script-content').textContent = INCENTIVE_SCRIPTS[_curIncentiveStyle] || '';
+  }
+
+  window.selectIncentiveStyle = function(style) {
+    _curIncentiveStyle = style;
+    renderIncentivePills();
+    updateIncentiveText();
   };
 
-  window.selectIAmt = function(amt) {
-    _curIAmt = amt;
-    document.getElementById('iamt-custom').value = '';
-    ['200','500','1000'].forEach(function(a) {
-      var btn = document.getElementById('iamt-' + a);
-      var active = a === amt;
-      if (active) {
-        btn.style.background = 'rgba(240,185,11,0.12)'; btn.style.color = '#F0B90B';
-        btn.style.borderColor = 'rgba(240,185,11,0.3)'; btn.style.fontWeight = '600';
-      } else {
-        btn.style.background = '#2B3139'; btn.style.color = '#848E9C';
-        btn.style.borderColor = '#2E3440'; btn.style.fontWeight = '500';
-      }
+  window.copyIncentiveScript = function() {
+    var text = document.getElementById('incentive-script-content').textContent;
+    if (!text) return;
+    var btn = document.getElementById('copy-incentive-btn');
+    navigator.clipboard.writeText(text).then(function() {
+      btn.innerHTML = '<i class="fa-solid fa-check" style="margin-right:6px"></i>已复制';
+      setTimeout(function() { btn.innerHTML = '<i class="fa-regular fa-copy" style="margin-right:6px"></i>复制话术'; }, 1500);
     });
   };
-
-  window.onCustomAmt = function(val) {
-    _curIAmt = val;
-    ['200','500','1000'].forEach(function(a) {
-      var btn = document.getElementById('iamt-' + a);
-      btn.style.background = '#2B3139'; btn.style.color = '#848E9C';
-      btn.style.borderColor = '#2E3440'; btn.style.fontWeight = '500';
-    });
-  };
-
-  window.recordIncentive = function() {
-    var type = _curIType;
-    var desc = '';
-    if (type === '礼品') {
-      desc = (document.getElementById('gift-desc').value.trim()) || '礼品';
-    } else {
-      var amt = _curIAmt || document.getElementById('iamt-custom').value.trim();
-      if (!amt) { alert('请选择或填写金额'); return; }
-      desc = amt + 'U ' + type;
-    }
-    var note = document.getElementById('incentive-note').value.trim();
-    var text = '【发放礼金】' + desc + (note ? '  · ' + note : '');
-    var list = loadRecords();
-    list.push({ text: text, at: new Date().toISOString() });
-    saveRecords(list);
-    renderRecords();
-    document.getElementById('incentive-note').value = '';
-    document.getElementById('iamt-custom').value = '';
-    _curIAmt = '';
-    ['200','500','1000'].forEach(function(a) {
-      var btn = document.getElementById('iamt-' + a);
-      btn.style.background = '#2B3139'; btn.style.color = '#848E9C';
-      btn.style.borderColor = '#2E3440'; btn.style.fontWeight = '500';
-    });
-  };
-
-  var MEETING_SCRIPTS = {
-    '简洁直接': '最近有个情况想跟您当面聊一下，10分钟就够，您这周哪天方便？我来配合您。',
-    '亲切随和': '哥/姐，最近有个事儿有进展了，想找您汇报一下，顺便聊聊，不占您太多时间，我过去看您，您定时间。',
-    '专业正式': '您好，结合您近期的账户情况，我这边整理了一份简要分析，当面讲会更清楚。您看这两天哪个时间段方便？预计30分钟以内，时间您定，我来配合。',
-    '关怀体贴': '最近一直想过去看看您，电话里说不清楚的，面对面聊起来更踏实。您这周哪天在？我来配合您，不打扰太久。',
-    '积极引导': '这个窗口期比较短，我帮您准备了一份针对账户的专项方案，电话说不清楚，见面10分钟给您讲清楚。您看明天还是后天方便？'
-  };
-  var _curMeetingStyle = '简洁直接';
 
   function renderMeetingPills() {
     var pills = document.getElementById('meeting-style-pills');
@@ -593,93 +529,96 @@
     });
   };
 
-  window.toggleMeetingScript = function() {
-    var panel = document.getElementById('meeting-script-panel');
-    var chevron = document.getElementById('meeting-script-chevron');
-    var open = panel.style.display === 'none';
-    panel.style.display = open ? 'block' : 'none';
-    chevron.className = open ? 'fa-solid fa-chevron-up' : 'fa-solid fa-chevron-down';
-    chevron.style.color = open ? '#4DA6FF' : '#474D57';
+  function renderCashPills() {
+    var pills = document.getElementById('cash-style-pills');
+    pills.innerHTML = SCRIPT_STYLES.map(function(s) {
+      var active = s === _curCashStyle;
+      return '<button onclick="selectCashStyle(\'' + s + '\')" style="padding:4px 10px;border-radius:999px;font-size:11px;cursor:pointer;white-space:nowrap;flex-shrink:0;'
+        + (active ? 'background:#B45CF4;color:#0B0E11;font-weight:600;border:1px solid #B45CF4'
+                  : 'background:#2B3139;color:#848E9C;border:1px solid #2E3440')
+        + '">' + s + '</button>';
+    }).join('');
+  }
+
+  function updateCashText() {
+    document.getElementById('cash-script-content').textContent = CASH_SCRIPTS[_curCashStyle] || '';
+  }
+
+  window.selectCashStyle = function(style) {
+    _curCashStyle = style;
+    renderCashPills();
+    updateCashText();
   };
 
-  window.recordMeeting = function() {
-    var notes = document.getElementById('meeting-notes').value.trim();
-    var text = '【面谈邀约】' + (notes || '已记录');
-    var list = loadRecords();
-    list.push({ text: text, at: new Date().toISOString() });
-    saveRecords(list);
-    renderRecords();
-    document.getElementById('meeting-notes').value = '';
+  window.copyCashScript = function() {
+    var text = document.getElementById('cash-script-content').textContent;
+    if (!text) return;
+    var btn = document.getElementById('copy-cash-btn');
+    navigator.clipboard.writeText(text).then(function() {
+      btn.innerHTML = '<i class="fa-solid fa-check" style="margin-right:6px"></i>已复制';
+      setTimeout(function() { btn.innerHTML = '<i class="fa-regular fa-copy" style="margin-right:6px"></i>复制话术'; }, 1500);
+    });
   };
 
-  // 初始化话术面板
+  // ── 初始化工具包 ──
+  document.getElementById('tool-analysis').textContent = getAnalysis();
+  var sug = getIncentiveSuggestion();
+  document.getElementById('incentive-amount-text').textContent = sug.amount;
+  document.getElementById('incentive-reason-text').textContent = sug.reason;
+  var cashSug = getCashSuggestion();
+  document.getElementById('cash-amount-text').textContent = cashSug.amount;
+  document.getElementById('cash-reason-text').textContent = cashSug.reason;
   renderScriptPills();
   updateScriptText();
+  renderIncentivePills();
+  updateIncentiveText();
   renderMeetingPills();
   updateMeetingText();
+  renderCashPills();
+  updateCashText();
+  var _recommended = getRecommendedStrategy();
+  document.getElementById('tool-rec-label').textContent = TOOL_LABELS[_recommended] || '';
+  buildOtherStrategyBtns(_recommended);
+  switchTool(_recommended);
 
-  // ── 特别关注 ──
+  // ── 底部单按钮逻辑 ──
   var shared2 = window.EventCenterShared;
   function getFlagged() { return shared2 ? shared2.loadFlagged(localStorage) : []; }
   function isFlagged() {
     return getFlagged().some(function(f) { return f.fuId === ev.id; });
   }
-  function syncFlagBtn() {
-    var btn = document.getElementById('flag-btn');
+  function syncActionBtn() {
+    var btn = document.getElementById('action-btn');
+    if (!btn) return;
     if (isFlagged()) {
-      btn.textContent = '已列入跟进 · 取消';
-      btn.style.background = 'rgba(240,185,11,0.2)';
-      btn.style.color = '#F0B90B';
+      btn.textContent = '已完成';
+      btn.style.background = '#2B3139';
+      btn.style.color = '#EAECEF';
+      btn.style.border = '1px solid #2E3440';
     } else {
-      btn.textContent = '列入跟进计划';
-      btn.style.background = 'rgba(240,185,11,0.12)';
+      btn.textContent = '加入待办';
+      btn.style.background = 'rgba(240,185,11,0.15)';
       btn.style.color = '#F0B90B';
+      btn.style.border = '1px solid rgba(240,185,11,0.35)';
     }
   }
-  window.toggleFlagChooser = function() {
+  window.handleActionBtn = function() {
     if (isFlagged()) {
-      // 已标记 → 直接取消
-      if (shared2) shared2.saveFlagged(localStorage, shared2.removeFlaggedEntry(getFlagged(), ev.id));
-      document.getElementById('flag-chooser').style.display = 'none';
-      syncFlagBtn();
-    } else {
-      var chooser = document.getElementById('flag-chooser');
-      chooser.style.display = chooser.style.display === 'none' ? 'flex' : 'none';
-    }
-  };
-  function doMarkFlag(dateStr) {
-    if (!shared2 || !dateStr) return;
-    var next = shared2.upsertFlaggedEntry(getFlagged(), ev.id, dateStr, new Date().toISOString());
-    shared2.saveFlagged(localStorage, next);
-    document.getElementById('flag-chooser').style.display = 'none';
-    syncFlagBtn();
-  }
-  window.markFlagToday = function() {
-    doMarkFlag(new Date().toISOString().split('T')[0]);
-  };
-  window.markFlagPending = function() {
-    doMarkFlag('pending');
-  };
-  window.markFlagCustom = function(dateStr) {
-    if (dateStr) doMarkFlag(dateStr);
-  };
-  // 初始化 date input 最小值为今天
-  document.getElementById('flag-custom-date').min = new Date().toISOString().split('T')[0];
-  syncFlagBtn();
-
-  function saveStatus(status) {
-    var all = [];
-    try { all = JSON.parse(localStorage.getItem('follow_up_events') || '[]'); } catch(e) {}
-    all.forEach(function(e) {
-      if (e.id === ev.id) {
-        e.status = status;
-        if (doneNote !== undefined) { e.done_note = doneNote; e.done_at = new Date().toISOString(); }
-        ev.status = e.status;
-        ev.done_note = e.done_note;
+      // 已完成：从待办移除 + 标记已结束
+      if (shared2) {
+        shared2.saveFlagged(localStorage, shared2.removeFlaggedEntry(getFlagged(), ev.id));
+        shared2.saveClosed(localStorage, shared2.closeEventIds(shared2.loadClosed(localStorage), ev.id));
       }
-    });
-    localStorage.setItem('follow_up_events', JSON.stringify(all));
-  }
+    } else {
+      // 加入待办
+      if (shared2) {
+        var next = shared2.upsertFlaggedEntry(getFlagged(), ev.id, 'pending', new Date().toISOString());
+        shared2.saveFlagged(localStorage, next);
+      }
+    }
+    if (history.length > 1) { history.back(); } else { location.reload(); }
+  };
+  syncActionBtn();
 
   // ── 编辑标题 ──
   window.enterEditMode = function() {
@@ -707,18 +646,6 @@
     window.cancelEdit();
   };
 
-  // ── 归档（= 已结束，一键） ──
-  window.closeEvent = function() {
-    if (!shared || isEventClosed()) return;
-    shared.saveClosed(localStorage, shared.closeEventIds(shared.loadClosed(localStorage), ev.id));
-    syncCloseButton();
-    if (history.length > 1) {
-      history.back();
-      return;
-    }
-    location.reload();
-  };
-
   window.openDeleteSheet = function() {
     var sheet = document.getElementById('delete-sheet');
     sheet.style.display = 'flex';
@@ -739,7 +666,6 @@
     history.back();
   };
 
-  syncCloseButton();
 })();
 </script>
 

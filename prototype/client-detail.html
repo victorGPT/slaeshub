@@ -85,41 +85,38 @@
           </div>
         </div>
         <span id="from-badge" class="text-[9px] px-1.5 py-[1px] rounded hidden flex-shrink-0"></span>
-        <button id="fav-btn" onclick="toggleFav()" class="w-8 h-8 flex items-center justify-center rounded-full bg-[#2B3139] flex-shrink-0 active:scale-95 transition-transform">
-          <i id="fav-icon" class="fa-regular fa-star text-[14px] text-[#474D57]"></i>
-        </button>
       </div>
 
       <!-- Row 2: Tags -->
       <div id="tags-row" class="px-4 pb-2 flex flex-wrap gap-1"></div>
 
-      <!-- Row 3: 资沉主指标 -->
-      <div class="px-4 pb-2">
-        <div class="text-[10px] text-[#474D57] mb-0.5 flex items-center gap-1">资沉<i onclick="event.stopPropagation();showDetailTip('deposit',this)" class="fa-regular fa-circle-question" style="color:#474D57;font-size:9px;cursor:pointer"></i></div>
-        <div class="flex items-baseline gap-2">
-          <span id="deposit-hero" class="text-[28px] font-bold text-[#EAECEF] tracking-tight leading-none"></span>
-          <div id="deposit-delta" class="flex items-center gap-0.5 text-[11px]"></div>
+      <!-- Row 3: 资沉 + 盈亏（左右平分） -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;padding:10px 16px 0;gap:0">
+        <div style="padding-right:12px">
+          <div class="text-[10px] text-[#474D57] mb-1 flex items-center gap-1">资沉<i onclick="event.stopPropagation();showDetailTip('deposit',this)" class="fa-regular fa-circle-question" style="color:#474D57;font-size:9px;cursor:pointer"></i></div>
+          <span id="deposit-hero" class="text-[22px] font-bold text-[#F0B90B] tracking-tight leading-none block"></span>
+          <div id="deposit-delta" class="flex items-center gap-1 mt-1.5"></div>
+        </div>
+        <div style="padding-left:12px">
+          <div class="text-[10px] text-[#474D57] mb-1 flex items-center gap-1">盈亏<i onclick="event.stopPropagation();showDetailTip('pnl',this)" class="fa-regular fa-circle-question" style="color:#474D57;font-size:9px;cursor:pointer"></i></div>
+          <span id="pnl-hero" class="text-[22px] font-bold leading-none block">--</span>
+          <div id="pnl-delta" class="flex items-center gap-1 mt-1.5"></div>
         </div>
       </div>
 
-      <!-- Row 4: 充提 / 利润贡献 / 交易盈亏 -->
-      <div class="flex px-4 pb-3 gap-0">
-        <div class="flex-1">
-          <div class="text-[10px] text-[#474D57] mb-0.5 flex items-center gap-1">充提<i onclick="event.stopPropagation();showDetailTip('cashflow',this)" class="fa-regular fa-circle-question" style="color:#474D57;font-size:9px;cursor:pointer"></i></div>
-          <span id="cashflow-hero" class="text-[15px] font-bold leading-none">--</span>
+      <!-- Row 4: 充提 / 月利润贡献，更新时间绝对右下角 -->
+      <div style="position:relative;padding:10px 16px 14px">
+        <div class="flex gap-0">
+          <div class="flex-1">
+            <div class="text-[10px] text-[#474D57] mb-0.5 flex items-center gap-1">充提<i onclick="event.stopPropagation();showDetailTip('cashflow',this)" class="fa-regular fa-circle-question" style="color:#474D57;font-size:9px;cursor:pointer"></i></div>
+            <span id="cashflow-hero" class="text-[15px] font-bold leading-none">--</span>
+          </div>
+          <div class="flex-1">
+            <div class="text-[10px] text-[#474D57] mb-0.5 flex items-center gap-1">月利润贡献<i onclick="event.stopPropagation();showDetailTip('profit',this)" class="fa-regular fa-circle-question" style="color:#474D57;font-size:9px;cursor:pointer"></i></div>
+            <span id="profit-hero" class="text-[15px] font-bold leading-none">--</span>
+          </div>
         </div>
-        <div class="flex-1">
-          <div class="text-[10px] text-[#474D57] mb-0.5 flex items-center gap-1">月利润贡献<i onclick="event.stopPropagation();showDetailTip('profit',this)" class="fa-regular fa-circle-question" style="color:#474D57;font-size:9px;cursor:pointer"></i></div>
-          <span id="profit-hero" class="text-[15px] font-bold leading-none">--</span>
-        </div>
-        <div class="flex-1">
-          <div class="text-[10px] text-[#474D57] mb-0.5 flex items-center gap-1">月交易盈亏<i onclick="event.stopPropagation();showDetailTip('pnl',this)" class="fa-regular fa-circle-question" style="color:#474D57;font-size:9px;cursor:pointer"></i></div>
-          <span id="pnl-hero" class="text-[15px] font-bold text-[#848E9C] leading-none">--</span>
-        </div>
-      </div>
-
-      <div class="flex justify-end px-4 pb-2 -mt-1">
-        <span id="data-refresh-time" class="text-[9px] text-[#474D57]"></span>
+        <span id="data-refresh-time" style="position:absolute;right:16px;bottom:6px;font-size:9px;color:#474D57"></span>
       </div>
 
       <!-- Row 5: Last Contact -->
@@ -170,10 +167,6 @@
     <a href="events.html" class="flex flex-col items-center gap-0.5">
       <i class="fa-solid fa-bell text-[18px] text-[#848E9C]"></i>
       <span class="text-[10px] text-[#848E9C]">事件</span>
-    </a>
-    <a href="profile.html" class="flex flex-col items-center gap-0.5">
-      <i class="fa-solid fa-user text-[18px] text-[#848E9C]"></i>
-      <span class="text-[10px] text-[#848E9C]">我的</span>
     </a>
   </div>
   <div style="height:env(safe-area-inset-bottom,34px)"></div>
@@ -343,22 +336,12 @@ function timeAgo(isoStr) {
   var FAV_KEY = 'slaeshub_favs';
   function getFavs() { try { return JSON.parse(localStorage.getItem(FAV_KEY) || '[]'); } catch(e) { return []; } }
   var isFav = getFavs().indexOf(c.uid) !== -1;
-  function renderFav() {
-    var icon = document.getElementById('fav-icon');
-    if (isFav) {
-      icon.className = 'fa-solid fa-star text-[14px] text-[#F0B90B]';
-    } else {
-      icon.className = 'fa-regular fa-star text-[14px] text-[#474D57]';
-    }
-  }
-  renderFav();
   window.toggleFav = function() {
     isFav = !isFav;
     var arr = getFavs();
     if (isFav) { if (arr.indexOf(c.uid) === -1) arr.push(c.uid); }
     else { arr = arr.filter(function(id) { return id !== c.uid; }); }
     localStorage.setItem(FAV_KEY, JSON.stringify(arr));
-    renderFav();
   };
 
   // From badge
@@ -400,13 +383,22 @@ function timeAgo(isoStr) {
     profitEl.style.color = '#848E9C';
   }
 
-  // 月交易盈亏（7日数据 × 4.3）
+  // 盈亏（7日数据 × 4.3）+ 变化% badge
   var pnlEl = document.getElementById('pnl-hero');
-  var pnlVal = c.clientPnl && c.clientPnl.total7d && c.clientPnl.total7d.value;
-  if (pnlVal !== undefined && pnlVal !== null) {
-    var pnlMonth = pnlVal * 4.3;
-    pnlEl.textContent = fmtUSDT(pnlMonth, true);
-    pnlEl.style.color = pnlMonth >= 0 ? '#0ECB81' : '#F6465D';
+  var pnlDeltaEl = document.getElementById('pnl-delta');
+  var pnlRaw = c.clientPnl && c.clientPnl.total7d ? c.clientPnl.total7d.value : null;
+  if (pnlRaw !== null && pnlRaw !== undefined) {
+    var pnlMonth = pnlRaw * 4.3;
+    var pnlColor = pnlMonth >= 0 ? '#0ECB81' : '#F6465D';
+    pnlEl.textContent = fmtUSDT(pnlMonth, false);
+    pnlEl.style.color = pnlColor;
+    if (c.clientPnl.weeklyAvg8w && Math.abs(c.clientPnl.weeklyAvg8w.value) > 0) {
+      var pnlChgPct = (pnlRaw - c.clientPnl.weeklyAvg8w.value) / Math.abs(c.clientPnl.weeklyAvg8w.value) * 100;
+      var pChgColor = pnlChgPct >= 0 ? '#0ECB81' : '#F6465D';
+      var pChgBg    = pnlChgPct >= 0 ? 'rgba(14,203,129,0.15)' : 'rgba(246,70,93,0.15)';
+      pnlDeltaEl.innerHTML = '<span style="font-size:9px;font-weight:600;color:'+pChgColor+';background:'+pChgBg+';padding:1px 5px;border-radius:3px">'+(pnlChgPct>=0?'+':'')+pnlChgPct.toFixed(1)+'%</span>'
+        + '<span style="font-size:9px;color:#474D57">vs 8周均</span>';
+    }
   } else {
     pnlEl.textContent = '--';
     pnlEl.style.color = '#848E9C';
@@ -418,7 +410,7 @@ function timeAgo(isoStr) {
     var d = new Date(D.generatedAt);
     var mo = d.getMonth() + 1, dd2 = d.getDate();
     var hh2 = String(d.getHours()).padStart(2,'0'), mm2 = String(d.getMinutes()).padStart(2,'0');
-    refreshEl.textContent = '数据截至 ' + mo + '月' + dd2 + '日 ' + hh2 + ':' + mm2;
+    refreshEl.textContent = '更新于 ' + mo + '月' + dd2 + '日 ' + hh2 + ':' + mm2;
   }
 
   // commRecords: 需在 tags 之前定义（活跃度标签会用到）
@@ -516,9 +508,10 @@ function timeAgo(isoStr) {
 
   var deltaEl = document.getElementById('deposit-delta');
   var deltaColor = isUp ? '#0ECB81' : '#F6465D';
+  var deltaBg    = isUp ? 'rgba(14,203,129,0.15)' : 'rgba(246,70,93,0.15)';
 
-  deltaEl.innerHTML = '<span class="text-[15px] font-bold tabular-nums" style="color:' + deltaColor + '">' + fmtUSDT(deltaAbs, true) + '</span>'
-    + '<span class="text-[11px] tabular-nums ml-1.5" style="color:' + deltaColor + ';opacity:0.7">' + (isUp ? '+' : '') + deltaPct.toFixed(1) + '%</span>';
+  deltaEl.innerHTML = '<span style="font-size:9px;font-weight:600;color:'+deltaColor+';background:'+deltaBg+';padding:1px 5px;border-radius:3px">'+(isUp?'+':'')+deltaPct.toFixed(1)+'%</span>'
+    + '<span style="font-size:9px;color:#474D57">vs 8周均</span>';
 
   // Memo（DOM 元素已移除，跳过）
 
@@ -1005,133 +998,9 @@ function timeAgo(isoStr) {
   };
 
   eventsHtml += '<div id="task-container"></div>';
-  eventsHtml += '<div id="followup-timeline-container"></div>';
 
   document.getElementById('tab-events').innerHTML = eventsHtml;
   renderTasks();
-
-  // === 跟进时间线 ===
-  function renderFollowupTimeline() {
-    var container = document.getElementById('followup-timeline-container');
-    if (!container) return;
-
-    // 读取当前客户所有跟进事件
-    var allFuEvents = [];
-    try { allFuEvents = JSON.parse(localStorage.getItem('follow_up_events') || '[]'); } catch(e) {}
-    var clientEvents = allFuEvents.filter(function(e) { return e.client_uid === uid; });
-
-    // 合并所有事件下的记录
-    var allRecords = [];
-    clientEvents.forEach(function(ev) {
-      var key = 'fu_records_' + ev.id;
-      var recs = [];
-      try { recs = JSON.parse(localStorage.getItem(key) || '[]'); } catch(e) {}
-      recs.forEach(function(r) {
-        allRecords.push({
-          text: r.text || '',
-          at: r.at || '',
-          evId: ev.id,
-          evTitle: ev.title || ev.type || '跟进事件',
-          evStatus: ev.status || ''
-        });
-      });
-    });
-
-    // demo 数据（localStorage 无记录时展示）
-    if (allRecords.length === 0 && clientEvents.length === 0) {
-      allRecords = [
-        { text: 'Telegram：客户表示近期会追加投入，等待市场回调时机，情绪积极，有意向升级 VIP。', at: '2026-04-06T14:30:00Z', evId: 'demo_001', evTitle: '充值 $126万，跟进入金意向', evStatus: '跟进中' },
-        { text: '【发放礼金】500U 现金  · 入金激励', at: '2026-04-06T10:00:00Z', evId: 'demo_001', evTitle: '充值 $126万，跟进入金意向', evStatus: '跟进中' },
-        { text: '电话：客户资金需周转，非流失意向，预计两周后回款。已安抚，承诺回款后优先追加仓位。', at: '2026-04-03T16:00:00Z', evId: 'demo_002', evTitle: '提现 $109万，大额出金挽留', evStatus: '已结束' },
-        { text: '微信：首次入金后致谢，发送 VIP 权益说明，客户反馈满意，明确表示还会追加。', at: '2026-03-28T11:20:00Z', evId: 'demo_003', evTitle: '首次大额入金 $50万，礼遇跟进', evStatus: '已结束' },
-        { text: '【发放礼金】200U 现金  · 首入礼遇', at: '2026-03-28T09:00:00Z', evId: 'demo_003', evTitle: '首次大额入金 $50万，礼遇跟进', evStatus: '已结束' },
-      ];
-    }
-
-    // 按时间降序排列
-    allRecords.sort(function(a, b) {
-      return new Date(b.at) - new Date(a.at);
-    });
-
-    if (allRecords.length === 0) {
-      container.innerHTML = '<div style="margin:0 16px 16px;padding:20px 0;text-align:center;color:#474D57;font-size:12px">暂无跟进记录</div>';
-      return;
-    }
-
-    // 按日期分组
-    function dateKey(iso) {
-      var d = new Date(iso);
-      if (isNaN(d)) return '';
-      return d.getFullYear() + '-' + (d.getMonth()+1) + '-' + d.getDate();
-    }
-    function dateLabel(iso) {
-      var d = new Date(iso);
-      if (isNaN(d)) return '';
-      var now = new Date(); now.setHours(0,0,0,0);
-      var day = new Date(d.getFullYear(), d.getMonth(), d.getDate());
-      var diff = Math.round((now - day) / 86400000);
-      if (diff === 0) return '今天';
-      if (diff === 1) return '昨天';
-      return (d.getMonth()+1) + '月' + d.getDate() + '日';
-    }
-    function timeLabel(iso) {
-      var d = new Date(iso);
-      if (isNaN(d)) return '';
-      return d.getHours() + ':' + String(d.getMinutes()).padStart(2,'0');
-    }
-
-    var groups = [];
-    var keyMap = {};
-    allRecords.forEach(function(r) {
-      var k = dateKey(r.at);
-      if (!keyMap[k]) { keyMap[k] = { label: dateLabel(r.at), items: [] }; groups.push(keyMap[k]); }
-      keyMap[k].items.push(r);
-    });
-
-    var isGift = function(text) { return text.indexOf('【发放礼金】') === 0; };
-
-    var html = '<div style="margin:0 16px 16px">'
-      + '<div style="display:flex;align-items:center;gap:6px;margin-bottom:10px;margin-top:4px">'
-      +   '<i class="fa-solid fa-clock-rotate-left" style="color:#4DA6FF;font-size:11px"></i>'
-      +   '<span style="font-size:13px;font-weight:600;color:#848E9C">跟进时间线</span>'
-      +   '<span style="font-size:10px;color:#4DA6FF;background:rgba(77,166,255,0.12);border:1px solid rgba(77,166,255,0.2);border-radius:999px;padding:1px 7px">' + allRecords.length + ' 条</span>'
-      + '</div>'
-      + '<div style="position:relative;padding-left:20px">'
-      + '<div style="position:absolute;left:4px;top:6px;bottom:6px;width:1px;background:#2E3440"></div>';
-
-    groups.forEach(function(group) {
-      html += '<div style="font-size:10px;color:#474D57;margin-bottom:8px;margin-left:-20px;padding-left:4px">' + group.label + '</div>';
-      group.items.forEach(function(r) {
-        var gift = isGift(r.text);
-        var dotColor = gift ? '#F0B90B' : '#4DA6FF';
-        var textContent = gift ? r.text.replace('【发放礼金】', '') : r.text;
-        // 只在已结束时显示状态，其他状态不展示
-        var closed = ['已结束', '已归档', '结束'].indexOf(r.evStatus) !== -1;
-
-        html += '<div style="display:flex;gap:10px;margin-bottom:14px">'
-          + '<div style="width:9px;height:9px;border-radius:50%;background:' + dotColor + ';flex-shrink:0;margin-top:4px;position:relative;z-index:1"></div>'
-          + '<div style="flex:1;min-width:0">'
-          + '<div style="display:flex;align-items:center;gap:6px;margin-bottom:3px">'
-          + (gift
-              ? '<span style="font-size:10px;padding:1px 7px;border-radius:999px;background:rgba(240,185,11,0.12);color:#F0B90B;border:1px solid rgba(240,185,11,0.2)">发放礼金</span>'
-              : '')
-          + '<span style="font-size:10px;color:#474D57">' + timeLabel(r.at) + '</span>'
-          + '</div>'
-          + '<div style="font-size:13px;color:#EAECEF;line-height:1.5;margin-bottom:5px">' + esc(textContent) + '</div>'
-          + '<a href="follow-up-thread.html?fuId=' + r.evId + '" style="display:inline-flex;align-items:center;gap:3px;font-size:10px;padding:1px 7px;border-radius:999px;background:rgba(77,166,255,0.1);color:#4DA6FF;border:1px solid rgba(77,166,255,0.2);text-decoration:none">'
-          +   esc(r.evTitle)
-          +   (closed ? '<span style="color:#474D57;margin-left:2px">· 已完成</span>' : '')
-          + '</a>'
-          + '</div>'
-          + '</div>';
-      });
-    });
-
-    html += '</div></div>';
-    container.innerHTML = html;
-  }
-
-  renderFollowupTimeline();
 
   // === TAB 2: ASSETS ===
   var assetsHtml = '';
@@ -1139,9 +1008,9 @@ function timeAgo(isoStr) {
   if (D.generatedAt) {
     var _rd = new Date(D.generatedAt);
     var _hh = String(_rd.getHours()).padStart(2,'0'), _mm = String(_rd.getMinutes()).padStart(2,'0');
-    refreshStr = '数据截至 ' + (_rd.getMonth() + 1) + '月' + _rd.getDate() + '日 ' + _hh + ':' + _mm;
+    refreshStr = '更新于 ' + (_rd.getMonth() + 1) + '月' + _rd.getDate() + '日 ' + _hh + ':' + _mm;
   }
-  var refreshFooter = '<div style="border-top:1px solid #2E3440;margin-top:10px;padding-top:8px;text-align:right;font-size:9px;color:#474D57">' + (refreshStr || '数据实时更新') + '</div>';
+  var refreshFooter = '<div style="border-top:1px solid #2E3440;margin-top:10px;padding-top:8px;text-align:right;font-size:9px;color:#474D57">' + (refreshStr || '更新于实时') + '</div>';
 
   // Module: 资沉分布
   var ddAssets = c.depositDist;
@@ -1184,6 +1053,45 @@ function timeAgo(isoStr) {
   });
   assetsHtml += refreshFooter + '</div>';
 
+  // Module: 月交易盈亏（周值 × 4.3）
+  var monthMult = 4.3;
+  var pnl = c.clientPnl;
+  var pnlMonthTotal = Math.round(pnl.total7d.value * monthMult);
+  var pnlItems = [
+    { name: '双仓合约', value: Math.round(pnl.futures7d.value * monthMult), color: pnl.futures7d.color },
+    { name: '超级杠杆', value: Math.round(pnl.leverage7d.value * monthMult), color: pnl.leverage7d.color },
+    { name: 'Mini合约', value: Math.round(pnl.mini7d.value * monthMult), color: pnl.mini7d.color },
+    { name: '现货', value: Math.round(pnl.spot7d.value * monthMult), color: pnl.spot7d.color }
+  ];
+  var pnlMax = Math.max.apply(null, pnlItems.map(function(i) { return Math.abs(i.value); }).concat([1]));
+  var pnlAvgVal = pnl.weeklyAvg8w.value * monthMult;
+  var pnlChgPct = Math.abs(pnlAvgVal) > 0 ? ((pnlMonthTotal - pnlAvgVal) / Math.abs(pnlAvgVal) * 100) : 0;
+  var pnlChgColor = pnlChgPct >= 0 ? '#0ECB81' : '#F6465D';
+  var pnlChgChar = pnlChgPct >= 0 ? '+' : '-';
+  var pnlChgSign = pnlChgPct >= 0 ? '+' : '';
+  var pnlMonthColor = pnlMonthTotal >= 0 ? '#0ECB81' : '#F6465D';
+
+  assetsHtml += '<div class="mx-4 mt-3 bg-[#1E2329] rounded-xl border border-[#2E3440] p-3">'
+    + '<div class="flex items-start justify-between mb-3">'
+    + '<div class="text-[13px] font-semibold text-[#EAECEF] flex items-center gap-1">月交易盈亏<i onclick="event.stopPropagation();showDetailTip(\'pnlCard\',this)" class="fa-regular fa-circle-question" style="color:#474D57;font-size:10px;cursor:pointer"></i></div>'
+    + '<div class="text-right">'
+    + '<div class="text-[16px] font-bold tabular-nums" style="color:' + pnlMonthColor + '">' + fmtUSDT(pnlMonthTotal, true) + '</div>'
+    + '<div class="text-[10px] mt-0.5"><span style="color:' + pnlChgColor + '">' + pnlChgChar + ' ' + pnlChgSign + pnlChgPct.toFixed(1) + '%</span> <span class="text-[#474D57]">| </span>均' + fmtAvg(platAvg.pnlChg) + '</div>'
+    + '</div>'
+    + '</div>'
+    + '<div class="h-[1px] bg-[#2E3440] mb-3"></div>';
+  pnlItems.forEach(function(item) {
+    var barW = pnlMax > 0 ? Math.round(Math.abs(item.value) / pnlMax * 100) : 0;
+    assetsHtml += '<div style="display:flex;align-items:center;gap:6px;margin-bottom:6px">'
+      + '<span style="width:52px;font-size:10px;color:#848E9C;flex-shrink:0">' + item.name + '</span>'
+      + '<div style="flex:1;height:4px;border-radius:999px;background:#2B3139">'
+      + '<div style="height:100%;border-radius:999px;width:' + barW + '%;background:' + item.color + '"></div>'
+      + '</div>'
+      + '<span style="width:52px;font-size:10px;font-weight:500;text-align:right;flex-shrink:0;color:' + item.color + '">' + fmtUSDT(item.value, true) + '</span>'
+      + '</div>';
+  });
+  assetsHtml += refreshFooter + '</div>';
+
   // Module: 周冲提 横向双条形图
   var avgNetPerWeek = Math.round(baselineWeeks.reduce(function(s, w) { return s + w.inflow - w.outflow; }, 0) / baselineWeeks.length);
   var netFlowColor = avgNetPerWeek >= 0 ? '#0ECB81' : '#F6465D';
@@ -1205,18 +1113,15 @@ function timeAgo(isoStr) {
     + '</div>'
     + '<div class="h-[1px] bg-[#2E3440] mb-3"></div>';
 
-  var allChartWeeks = flowWeeks; // W1-W8 全部显示
+  var allChartWeeks = flowWeeks;
   var maxChartFlow = Math.max.apply(null, allChartWeeks.map(function(w) { return Math.max(w.inflow, w.outflow); }).concat([1]));
-  var chartH = 80; // px
+  var chartH = 80;
 
-  // Y 轴标签 + 图表区域
   assetsHtml += '<div style="display:flex;gap:6px;margin-bottom:4px">'
-    // Y 轴
     + '<div style="display:flex;flex-direction:column;justify-content:space-between;width:34px;height:' + chartH + 'px;flex-shrink:0">'
     + '<span style="font-size:9px;color:#474D57;text-align:right">' + fmtUSDT(maxChartFlow) + '</span>'
     + '<span style="font-size:9px;color:#474D57;text-align:right">$0</span>'
     + '</div>'
-    // 柱状图区
     + '<div style="flex:1;display:flex;align-items:flex-end;gap:3px;height:' + chartH + 'px;border-left:1px solid #2E3440;border-bottom:1px solid #2E3440;padding:0 2px">';
 
   allChartWeeks.forEach(function(w, wi) {
@@ -1232,15 +1137,12 @@ function timeAgo(isoStr) {
   });
 
   assetsHtml += '</div></div>';
-
-  // X 轴标签
   assetsHtml += '<div style="display:flex;padding-left:40px;gap:3px;margin-bottom:8px">';
   allChartWeeks.forEach(function(w, wi) {
     var isCurrent = wi === allChartWeeks.length - 1;
     assetsHtml += '<div style="flex:1;text-align:center;font-size:9px;color:' + (isCurrent ? '#EAECEF' : '#474D57') + '">W' + (wi + 1) + '</div>';
   });
   assetsHtml += '</div>';
-
   assetsHtml += '<div class="flex items-center gap-4 pt-2 border-t border-[#2E3440]">'
     + '<div class="flex items-center gap-1"><span class="w-2 h-2 rounded-sm bg-[#0ECB81]"></span><span class="text-[10px] text-[#848E9C]">流入</span></div>'
     + '<div class="flex items-center gap-1"><span class="w-2 h-2 rounded-sm bg-[#F6465D]"></span><span class="text-[10px] text-[#848E9C]">流出</span></div>'
@@ -1252,7 +1154,6 @@ function timeAgo(isoStr) {
   // Module: 月利润贡献（周值 × 4.3）
   var nc = c.netContribution;
   var ncWowColor = nc.wow >= 0 ? '#0ECB81' : '#F6465D';
-  var monthMult = 4.3;
   var ncItems = [
     { name: '合约', value: Math.round(nc.futures * monthMult), isRevenue: true },
     { name: '杠杆', value: Math.round(nc.leverage * monthMult), isRevenue: true },
@@ -1267,7 +1168,7 @@ function timeAgo(isoStr) {
   var ncMonthTotal = Math.round(nc.total * monthMult);
   var ncWowChar = nc.wow >= 0 ? '+' : '-';
 
-  assetsHtml += '<div class="mx-4 mt-3 bg-[#1E2329] rounded-xl border border-[#2E3440] p-3">'
+  assetsHtml += '<div class="mx-4 mt-3 mb-4 bg-[#1E2329] rounded-xl border border-[#2E3440] p-3">'
     + '<div class="flex items-start justify-between mb-3">'
     + '<div class="text-[13px] font-semibold text-[#EAECEF] flex items-center gap-1">月利润贡献<i onclick="event.stopPropagation();showDetailTip(\'profitCard\',this)" class="fa-regular fa-circle-question" style="color:#474D57;font-size:10px;cursor:pointer"></i></div>'
     + '<div class="text-right">'
@@ -1285,44 +1186,6 @@ function timeAgo(isoStr) {
       + '<div style="height:100%;border-radius:999px;width:' + barW + '%;background:' + color + '"></div>'
       + '</div>'
       + '<span style="width:52px;font-size:10px;font-weight:500;text-align:right;flex-shrink:0;color:' + color + '">' + fmtUSDT(item.value, true) + '</span>'
-      + '</div>';
-  });
-  assetsHtml += refreshFooter + '</div>';
-
-  // Module: 月交易盈亏（周值 × 4.3）
-  var pnl = c.clientPnl;
-  var pnlMonthTotal = Math.round(pnl.total7d.value * monthMult);
-  var pnlItems = [
-    { name: '双仓合约', value: Math.round(pnl.futures7d.value * monthMult), color: pnl.futures7d.color },
-    { name: '超级杠杆', value: Math.round(pnl.leverage7d.value * monthMult), color: pnl.leverage7d.color },
-    { name: 'Mini合约', value: Math.round(pnl.mini7d.value * monthMult), color: pnl.mini7d.color },
-    { name: '现货', value: Math.round(pnl.spot7d.value * monthMult), color: pnl.spot7d.color }
-  ];
-  var pnlMax = Math.max.apply(null, pnlItems.map(function(i) { return Math.abs(i.value); }).concat([1]));
-  var pnlAvgVal = pnl.weeklyAvg8w.value * monthMult;
-  var pnlChgPct = Math.abs(pnlAvgVal) > 0 ? ((pnlMonthTotal - pnlAvgVal) / Math.abs(pnlAvgVal) * 100) : 0;
-  var pnlChgColor = pnlChgPct >= 0 ? '#0ECB81' : '#F6465D';
-  var pnlChgChar = pnlChgPct >= 0 ? '+' : '-';
-  var pnlChgSign = pnlChgPct >= 0 ? '+' : '';
-  var pnlMonthColor = pnlMonthTotal >= 0 ? '#0ECB81' : '#F6465D';
-
-  assetsHtml += '<div class="mx-4 mt-3 mb-4 bg-[#1E2329] rounded-xl border border-[#2E3440] p-3">'
-    + '<div class="flex items-start justify-between mb-3">'
-    + '<div class="text-[13px] font-semibold text-[#EAECEF] flex items-center gap-1">月交易盈亏<i onclick="event.stopPropagation();showDetailTip(\'pnlCard\',this)" class="fa-regular fa-circle-question" style="color:#474D57;font-size:10px;cursor:pointer"></i></div>'
-    + '<div class="text-right">'
-    + '<div class="text-[16px] font-bold tabular-nums" style="color:' + pnlMonthColor + '">' + fmtUSDT(pnlMonthTotal, true) + '</div>'
-    + '<div class="text-[10px] mt-0.5"><span style="color:' + pnlChgColor + '">' + pnlChgChar + ' ' + pnlChgSign + pnlChgPct.toFixed(1) + '%</span> <span class="text-[#474D57]">| </span>均' + fmtAvg(platAvg.pnlChg) + '</div>'
-    + '</div>'
-    + '</div>'
-    + '<div class="h-[1px] bg-[#2E3440] mb-3"></div>';
-  pnlItems.forEach(function(item) {
-    var barW = pnlMax > 0 ? Math.round(Math.abs(item.value) / pnlMax * 100) : 0;
-    assetsHtml += '<div style="display:flex;align-items:center;gap:6px;margin-bottom:6px">'
-      + '<span style="width:52px;font-size:10px;color:#848E9C;flex-shrink:0">' + item.name + '</span>'
-      + '<div style="flex:1;height:4px;border-radius:999px;background:#2B3139">'
-      + '<div style="height:100%;border-radius:999px;width:' + barW + '%;background:' + item.color + '"></div>'
-      + '</div>'
-      + '<span style="width:52px;font-size:10px;font-weight:500;text-align:right;flex-shrink:0;color:' + item.color + '">' + fmtUSDT(item.value, true) + '</span>'
       + '</div>';
   });
   assetsHtml += refreshFooter + '</div>';

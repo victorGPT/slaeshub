@@ -109,21 +109,17 @@
   var sysTags = [];
   var depositRank = allClients.filter(function(cl) { return cl.fMean > c.fMean; }).length + 1;
   if (depositRank <= 100) {
-    var dc = depositRank <= 10 ? '#F0B90B' : depositRank <= 50 ? '#4DA6FF' : '#848E9C';
-    var dbg = depositRank <= 10 ? 'rgba(240,185,11,0.12)' : depositRank <= 50 ? 'rgba(77,166,255,0.12)' : 'rgba(132,142,156,0.12)';
-    sysTags.push({ label: '资沉 #' + depositRank, color: dc, bg: dbg });
+    sysTags.push({ label: '资沉 #' + depositRank, color: '#F0B90B', bg: 'rgba(240,185,11,0.12)' });
   }
   var myProfit = c.netContribution ? c.netContribution.total : 0;
   var profitRank = allClients.filter(function(cl) {
     return (cl.netContribution ? cl.netContribution.total : 0) > myProfit;
   }).length + 1;
   if (profitRank <= 100) {
-    var pc = profitRank <= 10 ? '#F0B90B' : profitRank <= 50 ? '#4DA6FF' : '#848E9C';
-    var pbg = profitRank <= 10 ? 'rgba(240,185,11,0.12)' : profitRank <= 50 ? 'rgba(77,166,255,0.12)' : 'rgba(132,142,156,0.12)';
-    sysTags.push({ label: '利润 #' + profitRank, color: pc, bg: pbg });
+    sysTags.push({ label: '利润 #' + profitRank, color: '#F0B90B', bg: 'rgba(240,185,11,0.12)' });
   }
   var tagsHtml = sysTags.map(function(t) {
-    return '<span style="font-size:9px;padding:2px 6px;border-radius:4px;border:1px solid ' + t.color + '30;color:' + t.color + ';background:' + t.bg + ';font-weight:500">' + t.label + '</span>';
+    return '<span class="text-[9px] px-1.5 py-[2px] rounded border font-medium" style="color:' + t.color + ';border-color:' + t.color + '30;background:' + t.bg + '">' + t.label + '</span>';
   }).join('');
   document.getElementById('tags-row').innerHTML = tagsHtml;
 

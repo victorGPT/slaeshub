@@ -323,32 +323,23 @@
     var _name = item.clientName || '';
     var clientLabel = escapeHtml(_uid + (_name ? ' · ' + _name : '') || '未命名客户');
     var timeLabel = escapeHtml(formatCreatedAt(item.createdAt));
-    var starIcon = item.isFlagged
-      ? '<i class="fa-solid fa-star" style="color:#F0B90B;font-size:14px"></i>'
-      : '<i class="fa-regular fa-star" style="color:#474D57;font-size:14px"></i>';
     var titleColor = item.isClosed ? '#474D57' : '#EAECEF';
     var titleDecor = item.isClosed ? 'line-through' : 'none';
 
+    // 行1：事件内容（主体）
     var line1 = '<div style="display:flex;align-items:center;gap:6px">'
+      + '<a href="follow-up-thread.html?fuId=' + encodeURIComponent(item.id) + '" style="flex:1;font-size:14px;font-weight:500;color:' + titleColor + ';text-decoration:' + titleDecor + ';overflow:hidden;white-space:nowrap;text-overflow:ellipsis">' + escapeHtml(item.title) + '</a>'
+      + '</div>';
+
+    // 行2：类型 badge + 客户信息（弱化）+ 创建时间
+    var line2 = '<div style="display:flex;align-items:center;gap:6px;margin-top:6px">'
       + (item.type ? '<span class="event-type-badge">' + escapeHtml(item.type) + '</span>' : '')
-      + '<span style="flex:1;font-size:11px;color:#848E9C;overflow:hidden;white-space:nowrap;text-overflow:ellipsis">' + clientLabel + '</span>'
+      + '<span style="flex:1;font-size:11px;color:#474D57;overflow:hidden;white-space:nowrap;text-overflow:ellipsis">' + clientLabel + '</span>'
       + '<span style="font-size:10px;color:#474D57;flex-shrink:0">' + timeLabel + '</span>'
-      + '<button type="button" class="event-star-btn" data-action="toggle-star" data-fu-id="' + escapeHtml(item.id) + '">' + starIcon + '</button>'
       + '</div>';
-
-    var deadlinePart = (item.isFlagged && item.deadlineLabel)
-      ? '<span class="event-deadline-badge" style="color:' + item.deadlineColor + ';border-color:' + item.deadlineColor + '33;background:' + item.deadlineColor + '14;flex-shrink:0">' + escapeHtml(item.deadlineLabel) + '</span>'
-      : '';
-
-    var line2 = '<div style="display:flex;align-items:center;margin-top:4px;gap:6px">'
-      + '<a href="follow-up-thread.html?fuId=' + encodeURIComponent(item.id) + '" style="flex:1;font-size:13px;color:' + titleColor + ';text-decoration:' + titleDecor + ';overflow:hidden;white-space:nowrap;text-overflow:ellipsis">' + escapeHtml(item.title) + '</a>'
-      + deadlinePart
-      + '</div>';
-
-    var chooser = (openChooserId === item.id && !item.isFlagged) ? renderChooser(item.id) : '';
 
     return '<div class="event-card' + (item.isClosed ? ' closed' : '') + '">'
-      + line1 + line2 + chooser
+      + line1 + line2
       + '</div>';
   }
 
