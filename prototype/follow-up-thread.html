@@ -202,12 +202,25 @@
 
     <!-- ── 面谈邀约面板 ── -->
     <div id="tool-panel-meeting" style="display:none;padding:0 16px 16px">
-      <div id="meeting-style-pills" style="display:flex;gap:6px;overflow-x:auto;padding-bottom:2px;margin-bottom:10px"></div>
-      <div id="meeting-content" style="background:#2B3139;border:1px solid #2E3440;border-radius:10px;padding:12px;font-size:13px;color:#EAECEF;line-height:1.7;min-height:72px"></div>
-      <button id="copy-meeting-btn" onclick="copyMeeting()"
-        style="margin-top:8px;width:100%;height:38px;background:rgba(77,166,255,0.12);color:#4DA6FF;border:1px solid rgba(77,166,255,0.3);border-radius:10px;font-size:13px;font-weight:600;cursor:pointer">
-        <i class="fa-regular fa-copy" style="margin-right:6px"></i>复制邀约话术
+      <div style="font-size:11px;color:#474D57;margin-bottom:6px">补充信息</div>
+      <textarea id="meeting-notes" placeholder="填写拜访前需要记录的补充信息，例如：客户最近换工作、上次提到想了解理财产品…" rows="3"
+        style="width:100%;box-sizing:border-box;background:#2B3139;color:#EAECEF;border:1px solid #2E3440;border-radius:10px;padding:10px 12px;font-size:13px;font-family:inherit;line-height:1.6;resize:none;outline:none;caret-color:#4DA6FF;margin-bottom:8px"></textarea>
+      <!-- 邀约话术（折叠） -->
+      <button onclick="toggleMeetingScript()" id="meeting-script-toggle"
+        style="width:100%;display:flex;align-items:center;justify-content:space-between;padding:8px 12px;background:#2B3139;border:1px solid #2E3440;border-radius:10px;cursor:pointer;margin-bottom:8px">
+        <span style="font-size:12px;color:#848E9C">邀约话术参考</span>
+        <i id="meeting-script-chevron" class="fa-solid fa-chevron-down" style="font-size:10px;color:#474D57"></i>
       </button>
+      <div id="meeting-script-panel" style="display:none;margin-bottom:8px">
+        <div id="meeting-style-pills" style="display:flex;gap:6px;overflow-x:auto;padding-bottom:2px;margin-bottom:8px"></div>
+        <div id="meeting-content" style="background:#2B3139;border:1px solid #2E3440;border-radius:10px;padding:12px;font-size:13px;color:#EAECEF;line-height:1.7;min-height:60px"></div>
+        <button id="copy-meeting-btn" onclick="copyMeeting()"
+          style="margin-top:8px;width:100%;height:36px;background:rgba(77,166,255,0.08);color:#4DA6FF;border:1px solid rgba(77,166,255,0.2);border-radius:10px;font-size:12px;font-weight:600;cursor:pointer">
+          <i class="fa-regular fa-copy" style="margin-right:6px"></i>复制邀约话术
+        </button>
+      </div>
+      <button onclick="recordMeeting()"
+        style="width:100%;height:38px;background:rgba(77,166,255,0.12);color:#4DA6FF;border:1px solid rgba(77,166,255,0.3);border-radius:10px;font-size:13px;font-weight:600;cursor:pointer">记录面谈邀约</button>
     </div>
   </div>
 
@@ -828,6 +841,25 @@ window.hideTip = function() {
       btn.innerHTML = '<i class="fa-solid fa-check" style="margin-right:6px"></i>已复制';
       setTimeout(function() { btn.innerHTML = '<i class="fa-regular fa-copy" style="margin-right:6px"></i>复制邀约话术'; }, 1500);
     });
+  };
+
+  window.toggleMeetingScript = function() {
+    var panel = document.getElementById('meeting-script-panel');
+    var chevron = document.getElementById('meeting-script-chevron');
+    var open = panel.style.display === 'none';
+    panel.style.display = open ? 'block' : 'none';
+    chevron.className = open ? 'fa-solid fa-chevron-up' : 'fa-solid fa-chevron-down';
+    chevron.style.color = open ? '#4DA6FF' : '#474D57';
+  };
+
+  window.recordMeeting = function() {
+    var notes = document.getElementById('meeting-notes').value.trim();
+    var text = '【面谈邀约】' + (notes || '已记录');
+    var list = loadRecords();
+    list.push({ text: text, at: new Date().toISOString() });
+    saveRecords(list);
+    renderRecords();
+    document.getElementById('meeting-notes').value = '';
   };
 
   // 初始化话术面板
