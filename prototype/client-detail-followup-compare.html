@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>跟进记录方案对比</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body { font-family: 'PingFang SC', 'Helvetica Neue', sans-serif; background: #0B0E11; }
+    ::-webkit-scrollbar { display: none; }
+    html, body { width: 393px !important; margin: 0 auto !important; overflow-x: hidden; }
+    .tl-line { position: absolute; left: 11px; top: 24px; bottom: 0; width: 1px; background: #2E3440; }
+    .tl-dot-task   { width:10px;height:10px;border-radius:50%;background:#F0B90B;flex-shrink:0;margin-top:4px;position:relative;z-index:1; }
+    .tl-dot-record { width:10px;height:10px;border-radius:50%;background:#4DA6FF;flex-shrink:0;margin-top:4px;position:relative;z-index:1; }
+    .tl-dot-gray   { width:10px;height:10px;border-radius:50%;background:#2E3440;border:1px solid #474D57;flex-shrink:0;margin-top:4px;position:relative;z-index:1; }
+    .plan-label { font-size:11px;color:#474D57;background:#1E2329;border:1px solid #2E3440;border-radius:4px;padding:2px 8px;display:inline-block;margin-bottom:10px }
+    .tag-task   { font-size:10px;padding:1px 7px;border-radius:999px;background:rgba(240,185,11,0.12);color:#F0B90B;border:1px solid rgba(240,185,11,0.2) }
+    .tag-record { font-size:10px;padding:1px 7px;border-radius:999px;background:rgba(77,166,255,0.12);color:#4DA6FF;border:1px solid rgba(77,166,255,0.2) }
+  </style>
+</head>
+<body class="bg-[#0B0E11] text-[#EAECEF]">
+
+<!-- iOS Status -->
+<div class="h-[44px] bg-[#0B0E11] flex items-center justify-between px-6">
+  <span class="text-[12px] font-semibold">9:41</span>
+  <div class="flex gap-1.5"><i class="fa-solid fa-signal text-[12px]"></i><i class="fa-solid fa-wifi text-[12px]"></i><i class="fa-solid fa-battery-full text-[13px]"></i></div>
+</div>
+<!-- Nav -->
+<div class="h-[52px] bg-[#0B0E11] border-b border-[#2E3440] flex items-center px-4 gap-3">
+  <i class="fa-solid fa-chevron-left text-[#848E9C] text-[14px]"></i>
+  <span class="text-[15px] font-bold flex-1">52339391 · 胡军</span>
+  <span class="text-[11px] text-[#848E9C]">跟进记录方案对比</span>
+</div>
+
+<div class="pb-8">
+
+<!-- ───────────────────────────────────── -->
+<!--  方案 A：统一时间线                   -->
+<!-- ───────────────────────────────────── -->
+<div class="px-4 pt-5">
+  <div class="plan-label">方案 A · 统一时间线</div>
+  <p class="text-[11px] text-[#848E9C] mb-3">任务与跟进记录合并成一条时间轴，按时间倒序，黄点=任务，蓝点=跟进记录</p>
+
+  <!-- Tab bar mock -->
+  <div class="flex border-b border-[#2E3440] mb-3">
+    <div class="flex-1 py-2 text-center text-[13px] font-semibold text-[#848E9C]">资产</div>
+    <div class="flex-1 py-2 text-center text-[13px] font-semibold text-[#F0B90B] border-b-2 border-[#F0B90B]">近期事件</div>
+    <div class="flex-1 py-2 text-center text-[13px] font-semibold text-[#848E9C]">档案</div>
+  </div>
+
+  <!-- Add task button -->
+  <button class="w-full h-[38px] border border-dashed border-[#F0B90B] text-[#F0B90B] text-[13px] font-semibold rounded-xl mb-4 bg-transparent">+ 添加任务</button>
+
+  <!-- Unified timeline -->
+  <div class="relative pl-6">
+    <div class="tl-line"></div>
+
+    <!-- Date group -->
+    <div class="text-[10px] text-[#474D57] mb-2 -ml-6 pl-2">4月6日</div>
+
+    <!-- Task item -->
+    <div class="flex gap-3 mb-4">
+      <div class="tl-dot-task mt-0.5"></div>
+      <div class="flex-1 min-w-0 bg-[#1E2329] rounded-xl border border-[#2E3440] p-3">
+        <div class="flex items-center gap-2 mb-1.5">
+          <span class="tag-task">大额充值</span>
+          <span class="text-[10px] text-[#474D57]">09:15 · 创建任务</span>
+        </div>
+        <div class="text-[13px] text-[#EAECEF]">充值 $126万，跟进入金意向，了解后续投入计划</div>
+        <div class="flex items-center gap-3 mt-2">
+          <span class="text-[10px] text-[#848E9C]">⭐ 关注至 4月8日</span>
+          <span class="text-[10px] text-[#4DA6FF]">处理中</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Record item -->
+    <div class="flex gap-3 mb-4">
+      <div class="tl-dot-record mt-0.5"></div>
+      <div class="flex-1 min-w-0">
+        <div class="flex items-center gap-2 mb-1">
+          <i class="fa-brands fa-telegram text-[11px] text-[#4DA6FF]"></i>
+          <span class="text-[12px] text-[#EAECEF]">Telegram 沟通</span>
+          <span class="text-[10px] text-[#474D57] ml-auto">14:30</span>
+        </div>
+        <div class="text-[12px] text-[#848E9C] mb-1.5">客户表示近期会追加投入，等待市场回调时机。情绪积极，有意向升级 VIP。</div>
+        <a href="#" class="tag-record">充值 $126万，跟进入金意向</a>
+      </div>
+    </div>
+
+    <!-- Date group -->
+    <div class="text-[10px] text-[#474D57] mb-2 -ml-6 pl-2">4月3日</div>
+
+    <!-- Task item -->
+    <div class="flex gap-3 mb-4">
+      <div class="tl-dot-task mt-0.5"></div>
+      <div class="flex-1 min-w-0 bg-[#1E2329] rounded-xl border border-[#2E3440] p-3">
+        <div class="flex items-center gap-2 mb-1.5">
+          <span class="tag-task">大额提现</span>
+          <span class="text-[10px] text-[#474D57]">10:45 · 创建任务</span>
+        </div>
+        <div class="text-[13px] text-[#EAECEF]">提现 $109万，跟进原因，评估流失风险</div>
+        <div class="flex items-center gap-3 mt-2">
+          <span class="text-[10px] text-[#848E9C]">⭐ 关注至 4月10日</span>
+          <span class="text-[10px] text-[#0ECB81]">已结束</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Record item -->
+    <div class="flex gap-3 mb-4">
+      <div class="tl-dot-record mt-0.5"></div>
+      <div class="flex-1 min-w-0">
+        <div class="flex items-center gap-2 mb-1">
+          <i class="fa-solid fa-phone text-[11px] text-[#4DA6FF]"></i>
+          <span class="text-[12px] text-[#EAECEF]">电话沟通</span>
+          <span class="text-[10px] text-[#474D57] ml-auto">16:00</span>
+        </div>
+        <div class="text-[12px] text-[#848E9C] mb-1.5">客户资金需周转，非流失意向，预计两周后回款。已安抚，承诺回款后优先追加。</div>
+        <a href="#" class="tag-record">提现 $109万，跟进原因</a>
+      </div>
+    </div>
+
+    <!-- Gray dot - archived task -->
+    <div class="flex gap-3 mb-2 opacity-40">
+      <div class="tl-dot-gray mt-0.5"></div>
+      <div class="flex-1 min-w-0">
+        <div class="flex items-center gap-2">
+          <span style="font-size:10px;padding:1px 7px;border-radius:999px;background:#2B3139;color:#848E9C">首次入金</span>
+          <span class="text-[11px] text-[#474D57]">3月28日 · 已归档</span>
+        </div>
+        <div class="text-[12px] text-[#474D57] mt-0.5 line-through">首次入金 $50万，礼遇跟进</div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- divider -->
+<div class="mx-4 my-6 h-[1px] bg-[#2E3440]"></div>
+
+<!-- ───────────────────────────────────── -->
+<!--  方案 B：事件 + 跟进分区              -->
+<!-- ───────────────────────────────────── -->
+<div class="px-4">
+  <div class="plan-label">方案 B · 事件栏分区</div>
+  <p class="text-[11px] text-[#848E9C] mb-3">任务卡片保持不变，下方新增「跟进记录」折叠区，每条记录挂钩任务标签</p>
+
+  <!-- Tab bar mock -->
+  <div class="flex border-b border-[#2E3440] mb-3">
+    <div class="flex-1 py-2 text-center text-[13px] font-semibold text-[#848E9C]">资产</div>
+    <div class="flex-1 py-2 text-center text-[13px] font-semibold text-[#F0B90B] border-b-2 border-[#F0B90B]">近期事件</div>
+    <div class="flex-1 py-2 text-center text-[13px] font-semibold text-[#848E9C]">档案</div>
+  </div>
+
+  <!-- Existing task cards (compact) -->
+  <div class="bg-[#1E2329] rounded-xl border border-[#2E3440] p-3 mb-2 flex items-start gap-2">
+    <div class="flex-1 min-w-0">
+      <div class="flex items-center gap-2 mb-1"><span class="tag-task">大额充值</span></div>
+      <div class="text-[13px] text-[#EAECEF]">充值 $126万，跟进入金意向</div>
+      <div class="flex items-center justify-between mt-1.5">
+        <span class="text-[10px] text-[#474D57]">4月6日 09:15</span>
+        <span class="text-[10px] text-[#848E9C]">⭐ 关注至 4月8日</span>
+      </div>
+    </div>
+    <button class="w-5 h-5 flex items-center justify-center rounded-full bg-[#2B3139] flex-shrink-0 mt-0.5"><i class="fa-solid fa-xmark text-[9px] text-[#474D57]"></i></button>
+  </div>
+
+  <div class="bg-[#1E2329] rounded-xl border border-[#2E3440] p-3 mb-3 flex items-start gap-2 opacity-50">
+    <div class="flex-1 min-w-0">
+      <div class="flex items-center gap-2 mb-1"><span class="tag-task">大额提现</span></div>
+      <div class="text-[13px] text-[#474D57] line-through">提现 $109万，跟进原因，评估流失风险</div>
+      <div class="flex items-center justify-between mt-1.5">
+        <span class="text-[10px] text-[#474D57]">4月3日 10:45</span>
+        <span class="text-[10px] text-[#474D57]">已归档</span>
+      </div>
+    </div>
+    <button class="w-5 h-5 flex items-center justify-center rounded-full bg-[#2B3139] flex-shrink-0 mt-0.5"><i class="fa-solid fa-xmark text-[9px] text-[#474D57]"></i></button>
+  </div>
+
+  <button class="w-full h-[38px] border border-dashed border-[#F0B90B] text-[#F0B90B] text-[13px] font-semibold rounded-xl mb-4 bg-transparent">+ 添加任务</button>
+
+  <!-- Follow-up records section -->
+  <div class="flex items-center gap-2 mb-3">
+    <div class="h-[1px] flex-1 bg-[#2E3440]"></div>
+    <span class="text-[11px] text-[#848E9C] flex items-center gap-1.5">
+      <i class="fa-solid fa-clock-rotate-left text-[10px]"></i>跟进记录
+      <span style="font-size:10px;padding:1px 6px;border-radius:999px;background:rgba(77,166,255,0.12);color:#4DA6FF;border:1px solid rgba(77,166,255,0.2)">2</span>
+    </span>
+    <div class="h-[1px] flex-1 bg-[#2E3440]"></div>
+  </div>
+
+  <!-- Record list -->
+  <div class="relative pl-5">
+    <div class="tl-line" style="left:8px"></div>
+
+    <div class="flex gap-3 mb-4">
+      <div class="tl-dot-record" style="margin-top:3px"></div>
+      <div class="flex-1 min-w-0">
+        <div class="flex items-center gap-2 mb-1">
+          <i class="fa-brands fa-telegram text-[11px] text-[#4DA6FF]"></i>
+          <span class="text-[12px] text-[#EAECEF]">Telegram · 4月6日 14:30</span>
+        </div>
+        <div class="text-[12px] text-[#848E9C] mb-1.5">客户表示近期会追加投入，等待市场回调时机。情绪积极，有意向升级 VIP。</div>
+        <a href="#" class="tag-record">充值 $126万，跟进入金意向</a>
+      </div>
+    </div>
+
+    <div class="flex gap-3 mb-2">
+      <div class="tl-dot-record" style="margin-top:3px"></div>
+      <div class="flex-1 min-w-0">
+        <div class="flex items-center gap-2 mb-1">
+          <i class="fa-solid fa-phone text-[11px] text-[#4DA6FF]"></i>
+          <span class="text-[12px] text-[#EAECEF]">电话 · 4月3日 16:00</span>
+        </div>
+        <div class="text-[12px] text-[#848E9C] mb-1.5">客户资金需周转，非流失意向，预计两周后回款。已安抚，承诺回款后优先追加。</div>
+        <a href="#" class="tag-record">提现 $109万，跟进原因</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- divider -->
+<div class="mx-4 my-6 h-[1px] bg-[#2E3440]"></div>
+
+<!-- ───────────────────────────────────── -->
+<!--  方案 C：独立跟进 Tab                 -->
+<!-- ───────────────────────────────────── -->
+<div class="px-4">
+  <div class="plan-label">方案 C · 独立跟进 Tab</div>
+  <p class="text-[11px] text-[#848E9C] mb-3">新增第四个 Tab「跟进」，完整时间线 + 任务筛选，事件栏保持纯任务</p>
+
+  <!-- Tab bar mock - 4 tabs -->
+  <div class="flex border-b border-[#2E3440] mb-3 overflow-x-auto" style="scrollbar-width:none">
+    <div class="flex-1 py-2 text-center text-[12px] font-semibold text-[#848E9C] whitespace-nowrap px-1">资产</div>
+    <div class="flex-1 py-2 text-center text-[12px] font-semibold text-[#848E9C] whitespace-nowrap px-1">近期事件</div>
+    <div class="flex-1 py-2 text-center text-[12px] font-semibold text-[#F0B90B] border-b-2 border-[#F0B90B] whitespace-nowrap px-1">跟进记录</div>
+    <div class="flex-1 py-2 text-center text-[12px] font-semibold text-[#848E9C] whitespace-nowrap px-1">档案</div>
+  </div>
+
+  <!-- Filter chips by task -->
+  <div class="flex gap-2 mb-4 overflow-x-auto pb-1" style="scrollbar-width:none">
+    <button class="flex-shrink-0 text-[11px] px-3 py-1.5 rounded-full bg-[#F0B90B] text-[#0B0E11] font-semibold">全部</button>
+    <button class="flex-shrink-0 text-[11px] px-3 py-1.5 rounded-full bg-[#1E2329] border border-[#2E3440] text-[#848E9C]">充值 $126万</button>
+    <button class="flex-shrink-0 text-[11px] px-3 py-1.5 rounded-full bg-[#1E2329] border border-[#2E3440] text-[#848E9C]">提现 $109万</button>
+  </div>
+
+  <!-- Full timeline -->
+  <div class="relative pl-6">
+    <div class="tl-line"></div>
+
+    <div class="text-[10px] text-[#474D57] mb-2 -ml-6 pl-2">4月6日</div>
+
+    <div class="flex gap-3 mb-4">
+      <div class="tl-dot-record mt-0.5"></div>
+      <div class="flex-1 min-w-0">
+        <div class="flex items-center gap-2 mb-1">
+          <i class="fa-brands fa-telegram text-[11px] text-[#4DA6FF]"></i>
+          <span class="text-[12px] text-[#EAECEF]">Telegram 沟通</span>
+          <span class="text-[10px] text-[#474D57] ml-auto">14:30</span>
+        </div>
+        <div class="text-[12px] text-[#848E9C] mb-1.5">客户表示近期会追加投入，等待市场回调时机。情绪积极，有意向升级 VIP。</div>
+        <div class="flex items-center justify-between">
+          <a href="#" class="tag-record">充值 $126万，跟进入金意向</a>
+          <span class="text-[10px] text-[#474D57]">BD: 陈磊</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="text-[10px] text-[#474D57] mb-2 -ml-6 pl-2">4月3日</div>
+
+    <div class="flex gap-3 mb-4">
+      <div class="tl-dot-record mt-0.5"></div>
+      <div class="flex-1 min-w-0">
+        <div class="flex items-center gap-2 mb-1">
+          <i class="fa-solid fa-phone text-[11px] text-[#4DA6FF]"></i>
+          <span class="text-[12px] text-[#EAECEF]">电话沟通</span>
+          <span class="text-[10px] text-[#474D57] ml-auto">16:00</span>
+        </div>
+        <div class="text-[12px] text-[#848E9C] mb-1.5">客户资金需周转，非流失意向，预计两周后回款。已安抚，承诺回款后优先追加。</div>
+        <div class="flex items-center justify-between">
+          <a href="#" class="tag-record">提现 $109万，跟进原因</a>
+          <span class="text-[10px] text-[#474D57]">BD: 陈磊</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="text-[10px] text-[#474D57] mb-2 -ml-6 pl-2">3月28日</div>
+
+    <div class="flex gap-3 mb-2">
+      <div class="tl-dot-record mt-0.5"></div>
+      <div class="flex-1 min-w-0">
+        <div class="flex items-center gap-2 mb-1">
+          <i class="fa-brands fa-weixin text-[11px] text-[#4DA6FF]"></i>
+          <span class="text-[12px] text-[#EAECEF]">微信沟通</span>
+          <span class="text-[10px] text-[#474D57] ml-auto">11:20</span>
+        </div>
+        <div class="text-[12px] text-[#848E9C] mb-1.5">首次入金后致谢，发送 VIP 权益说明，客户反馈满意。</div>
+        <div class="flex items-center justify-between">
+          <span style="font-size:10px;padding:1px 7px;border-radius:999px;background:rgba(132,142,156,0.15);color:#848E9C">首次入金 $50万 · 已归档</span>
+          <span class="text-[10px] text-[#474D57]">BD: 陈磊</span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Add record button -->
+  <button class="w-full h-[38px] border border-dashed border-[#4DA6FF] text-[#4DA6FF] text-[13px] font-semibold rounded-xl mt-4 bg-transparent">+ 记录跟进</button>
+</div>
+
+<div class="h-8"></div>
+
+</div>
+</body>
+</html>

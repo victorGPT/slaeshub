@@ -41,6 +41,10 @@
     html { background: #000; }
     html, body { width: 393px !important; margin: 0 auto !important; overflow-x: hidden; }
     .fixed-bar { position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); width: 393px; }
+    @keyframes starTickerScroll {
+      0%   { transform: translateY(0); }
+      100% { transform: translateY(-50%); }
+    }
   </style>
 </head>
 <body class="bg-[#0B0E11] text-[#EAECEF]">
@@ -85,21 +89,21 @@
       <i class="fa-solid fa-house text-[18px] text-[#F0B90B]"></i>
       <span class="text-[10px] text-[#F0B90B] font-semibold">首页</span>
     </a>
+    <a href="star.html" class="flex flex-col items-center gap-0.5">
+      <i class="fa-solid fa-list-check text-[18px] text-[#848E9C]"></i>
+      <span class="text-[10px] text-[#848E9C]">待办</span>
+    </a>
     <a href="clients.html" class="flex flex-col items-center gap-0.5">
       <i class="fa-solid fa-users text-[18px] text-[#848E9C]"></i>
-      <span class="text-[10px] text-[#848E9C] ">客户</span>
+      <span class="text-[10px] text-[#848E9C]">客户</span>
     </a>
     <a href="events.html" class="flex flex-col items-center gap-0.5">
       <i class="fa-solid fa-bell text-[18px] text-[#848E9C]"></i>
-      <span class="text-[10px] text-[#848E9C] ">事件</span>
-    </a>
-    <a href="star.html" class="flex flex-col items-center gap-0.5">
-      <i class="fa-regular fa-star text-[18px] text-[#848E9C]"></i>
-      <span class="text-[10px] text-[#848E9C]">关注</span>
+      <span class="text-[10px] text-[#848E9C]">事件</span>
     </a>
     <a href="profile.html" class="flex flex-col items-center gap-0.5">
       <i class="fa-solid fa-user text-[18px] text-[#848E9C]"></i>
-      <span class="text-[10px] text-[#848E9C] ">我的</span>
+      <span class="text-[10px] text-[#848E9C]">我的</span>
     </a>
   </div>
   <div style="height:env(safe-area-inset-bottom,0px)"></div>
@@ -110,18 +114,12 @@
 <div id="tip-box" style="display:none;position:fixed;z-index:101;background:#2B3139;border:1px solid #2E3440;border-radius:10px;padding:10px 14px;max-width:180px;font-size:12px;color:#EAECEF;line-height:1.5;box-shadow:0 8px 24px rgba(0,0,0,0.5)"></div>
 
 <script src="mock-data.js"></script>
+<script src="mock-seed.js"></script>
 <script>
 (function() {
   var D = window.PROTOTYPE_DATA;
 
   // ---------- Data helpers ----------
-
-  // 取本周净变化：weeks 最后两项之差
-  function weekDelta(client) {
-    var w = client.weeks;
-    if (!w || w.length < 2) return 0;
-    return w[w.length - 1] - w[w.length - 2];
-  }
 
   // USDT 金额格式化
   // showSign=true：强制显示 +/-（用于变化量）
@@ -144,21 +142,7 @@
     return (b.fMean || 0) - (a.fMean || 0);
   }).slice(0, 10);
 
-  // 2. 本周入金前十：本周净变化 > 0，降序
-  var top5Inflow = D.clients.slice().filter(function(c) {
-    return weekDelta(c) > 0;
-  }).sort(function(a, b) {
-    return weekDelta(b) - weekDelta(a);
-  }).slice(0, 10);
-
-  // 3. 本周出金前十：本周净变化 < 0，绝对值降序
-  var top5Outflow = D.clients.slice().filter(function(c) {
-    return weekDelta(c) < 0;
-  }).sort(function(a, b) {
-    return Math.abs(weekDelta(b)) - Math.abs(weekDelta(a));
-  }).slice(0, 10);
-
-  // 4. 利润贡献前十：netContribution.total 降序
+  // 2. 利润贡献前十：netContribution.total 降序
   var top5Profit = D.clients.slice().sort(function(a, b) {
     var va = (a.netContribution && a.netContribution.total) ? a.netContribution.total : 0;
     var vb = (b.netContribution && b.netContribution.total) ? b.netContribution.total : 0;
@@ -167,8 +151,6 @@
 
   var rankTabs = [
     { label: '资沉', color: '#F0B90B', sort: 'deposit', list: top5Deposit },
-    { label: '入金', color: '#0ECB81', sort: 'inflow',  list: top5Inflow  },
-    { label: '出金', color: '#F6465D', sort: 'outflow', list: top5Outflow },
     { label: '利润', color: '#0ECB81', sort: 'profit',  list: top5Profit  }
   ];
 
@@ -176,8 +158,6 @@
 
   var TIPS = {
     deposit: '客户过去 7 天持仓资产均值（USDT）',
-    inflow:  '客户过去 7 天充值入账的累计金额',
-    outflow: '客户过去 7 天提现出账的累计金额',
     profit:  '客户过去 30 天为平台贡献的可统计利润',
   };
 
@@ -203,11 +183,9 @@
   }
 
   function renderRankTableHeader() {
-    return '<div style="display:grid;grid-template-columns:1fr 60px 56px 56px 52px;column-gap:8px;padding:7px 12px 5px;border-bottom:1px solid #2E3440">'
+    return '<div style="display:grid;grid-template-columns:1fr 60px 52px;column-gap:8px;padding:7px 12px 5px;border-bottom:1px solid #2E3440">'
       + '<span style="font-size:13px;font-weight:600;color:#848E9C">客户</span>'
       + '<span style="font-size:13px;font-weight:600;text-align:right;color:#848E9C;display:flex;align-items:center;justify-content:flex-end">资沉' + tipIcon('deposit') + '</span>'
-      + '<span style="font-size:13px;font-weight:600;text-align:right;color:#848E9C;display:flex;align-items:center;justify-content:flex-end">入金' + tipIcon('inflow')  + '</span>'
-      + '<span style="font-size:13px;font-weight:600;text-align:right;color:#848E9C;display:flex;align-items:center;justify-content:flex-end">出金' + tipIcon('outflow') + '</span>'
       + '<span style="font-size:13px;font-weight:600;text-align:right;color:#848E9C;display:flex;align-items:center;justify-content:flex-end">利润' + tipIcon('profit')  + '</span>'
       + '</div>';
   }
@@ -215,16 +193,9 @@
   function renderRankTableRows(list) {
     return list.map(function(c, idx) {
       var border = idx < list.length - 1 ? 'border-bottom:1px solid #2E3440;' : '';
-      var delta = weekDelta(c);
       var depositVal = c.fMean != null ? c.fMean : null;
       var depositHTML = depositVal != null
         ? '<span style="font-size:13px;font-weight:700;color:#F0B90B">' + fmtUSDT(depositVal) + '</span>'
-        : '<span style="font-size:13px;color:#474D57">—</span>';
-      var inflowHTML = delta > 0
-        ? '<span style="font-size:13px;font-weight:600;color:#0ECB81">' + fmtWan(delta) + '</span>'
-        : '<span style="font-size:13px;color:#474D57">—</span>';
-      var outflowHTML = delta < 0
-        ? '<span style="font-size:13px;font-weight:600;color:#F6465D">' + fmtWan(delta) + '</span>'
         : '<span style="font-size:13px;color:#474D57">—</span>';
       var profitVal = c.netContribution ? c.netContribution.total : null;
       var profitHTML = profitVal != null
@@ -232,7 +203,7 @@
         : '<span style="font-size:13px;color:#474D57">—</span>';
 
       return '<a href="' + (c.detailHref || 'client-detail.html?uid=' + c.uid) + '" '
-        + 'style="display:grid;grid-template-columns:1fr 60px 56px 56px 52px;column-gap:8px;align-items:center;padding:10px 12px;' + border + 'text-decoration:none">'
+        + 'style="display:grid;grid-template-columns:1fr 60px 52px;column-gap:8px;align-items:center;padding:10px 12px;' + border + 'text-decoration:none">'
         + '<div>'
         +   '<div style="display:flex;align-items:center;gap:6px">'
         +     '<span style="font-size:10px;color:#848E9C;line-height:1;flex-shrink:0;min-width:12px">' + (idx + 1) + '</span>'
@@ -241,8 +212,6 @@
         +   (c.name ? '<div style="font-size:11px;color:#848E9C;margin-top:1px;margin-left:18px">' + c.name + '</div>' : '')
         + '</div>'
         + '<div style="text-align:right">' + depositHTML + '</div>'
-        + '<div style="text-align:right">' + inflowHTML  + '</div>'
-        + '<div style="text-align:right">' + outflowHTML + '</div>'
         + '<div style="text-align:right">' + profitHTML  + '</div>'
         + '</a>';
     }).join('');
@@ -255,29 +224,10 @@
 
   // ---------- 推荐客户 / 跟进事件 ----------
 
-  function buildRecommendClientsSection() {
-    var emptyState = '<div style="padding:24px 16px;text-align:center;color:#848E9C;font-size:13px">暂无推荐<br><span style="font-size:11px">将根据客户价值与沟通频率智能推荐</span></div>';
-    var footer = '<a href="clients.html" style="display:flex;align-items:center;justify-content:center;gap:4px;padding:11px 16px;border-top:1px solid #2E3440;text-decoration:none;font-size:13px;font-weight:600;color:#F0B90B">'
-      + '<span>查看所有客户</span>'
-      + '<i class="fa-solid fa-chevron-right" style="font-size:10px"></i>'
-      + '</a>';
+  // ---------- 待办（静态列表，星标事件） ----------
 
-    return '<div style="margin:0 16px 12px">'
-      + '<div style="display:flex;align-items:center;gap:6px;margin-bottom:8px">'
-      +   '<i class="fa-solid fa-sparkles" style="color:#F0B90B;font-size:12px"></i>'
-      +   '<span style="font-size:13px;font-weight:600;color:#848E9C">推荐客户</span>'
-      + '</div>'
-      + '<div style="background:#1E2329;border-radius:12px;border:1px solid #2E3440;overflow:hidden">'
-      + emptyState
-      + footer
-      + '</div>'
-      + '</div>';
-  }
-
-  function buildRecommendEventsSection() {
-    var fuEvents = [];
-    var flagged = [];
-    var closed = [];
+  function buildTodoSection() {
+    var fuEvents = [], flagged = [], closed = [];
     try { fuEvents = JSON.parse(localStorage.getItem('follow_up_events') || '[]'); } catch(e) {}
     try { flagged = JSON.parse(localStorage.getItem('slaesh_flagged') || '[]'); } catch(e) {}
     try { closed = JSON.parse(localStorage.getItem('slaesh_closed') || '[]'); } catch(e) {}
@@ -287,24 +237,22 @@
     var closedSet = {};
     closed.forEach(function(id) { closedSet[String(id)] = true; });
 
-    var todayStr = new Date().toISOString().split('T')[0];
     function deadlineMeta(dl) {
       if (!dl) return null;
-      if (dl === 'pending') return { label: '待定', color: '#474D57', diff: 9999 };
+      if (dl === 'pending') return { label: '待定', color: '#474D57' };
       var now = new Date(); now.setHours(0,0,0,0);
       var due = new Date(dl); due.setHours(0,0,0,0);
       var diff = Math.round((due - now) / 86400000);
       var color = diff <= 0 ? '#F6465D' : diff <= 3 ? '#F0B90B' : '#848E9C';
       var d = new Date(dl);
-      return { label: (d.getMonth()+1) + '月' + d.getDate() + '日', color: color, diff: diff };
+      return { label: (d.getMonth()+1) + '月' + d.getDate() + '日', color: color };
     }
 
-    // 联表：flagged × events，过滤已归档，按截止日从近到远，取前3
     var items = flagged
       .map(function(f) {
         var ev = evMap[f.fuId];
         if (!ev || closedSet[f.fuId]) return null;
-        return { ev: ev, deadline: f.deadline, deadlineMeta: deadlineMeta(f.deadline) };
+        return { ev: ev, deadline: f.deadline, dm: deadlineMeta(f.deadline) };
       })
       .filter(Boolean)
       .sort(function(a, b) {
@@ -313,52 +261,114 @@
         if (da === 'pending') return 1;
         if (db === 'pending') return -1;
         return da < db ? -1 : da > db ? 1 : 0;
-      })
-      .slice(0, 3);
+      });
+
+    var countBadge = items.length > 0
+      ? '<span style="font-size:10px;color:#F0B90B;background:rgba(240,185,11,0.12);border:1px solid rgba(240,185,11,0.25);border-radius:999px;padding:1px 7px">' + items.length + '</span>'
+      : '';
 
     var contentHtml;
     if (items.length === 0) {
-      contentHtml = '<div style="padding:24px 16px;text-align:center;color:#848E9C;font-size:13px">'
-        + '暂无特别关注事件<br><span style="font-size:11px">在事件页点亮星标后将出现在这里</span></div>';
+      contentHtml = '<div style="padding:20px 16px;text-align:center;color:#848E9C;font-size:13px">暂无待办<br><span style="font-size:11px">在事件页星标后将出现在这里</span></div>';
     } else {
-      contentHtml = items.map(function(item) {
+      contentHtml = items.map(function(item, i) {
         var ev = item.ev;
         var nick = localStorage.getItem('nickname_' + ev.client_uid) || '';
         var clientLabel = ev.client_uid + (nick ? ' · ' + nick : '');
-        var dm = item.deadlineMeta;
-        var deadlineBadge = dm
-          ? '<span style="font-size:10px;padding:2px 7px;border-radius:999px;border:1px solid ' + dm.color + '33;color:' + dm.color + ';background:' + dm.color + '14;white-space:nowrap;flex-shrink:0">' + dm.label + '</span>'
-          : '';
-        return '<a href="follow-up-thread.html?fuId=' + ev.id + '" style="display:flex;align-items:center;gap:10px;padding:10px 14px;border-bottom:1px solid #2E3440;text-decoration:none">'
+        var dm = item.dm;
+        var badge = dm ? '<span style="font-size:10px;padding:1px 7px;border-radius:999px;border:1px solid ' + dm.color + '33;color:' + dm.color + ';background:' + dm.color + '14;white-space:nowrap;flex-shrink:0">' + dm.label + '</span>' : '';
+        var border = i < items.length - 1 ? 'border-bottom:1px solid #2E3440;' : '';
+        return '<a href="follow-up-thread.html?fuId=' + ev.id + '" style="display:flex;align-items:center;gap:10px;padding:10px 14px;' + border + 'text-decoration:none">'
           + '<i class="fa-solid fa-star" style="font-size:11px;color:#F0B90B;flex-shrink:0"></i>'
           + '<div style="flex:1;min-width:0">'
           + '<div style="font-size:13px;color:#EAECEF;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + (ev.title || '—') + '</div>'
           + '<div style="margin-top:2px;font-size:10px;color:#848E9C">' + clientLabel + '</div>'
           + '</div>'
-          + deadlineBadge
-          + '<i class="fa-solid fa-chevron-right" style="font-size:10px;color:#474D57;flex-shrink:0"></i>'
+          + badge
           + '</a>';
       }).join('');
     }
 
-    var footer = '<a href="star.html" style="display:flex;align-items:center;justify-content:center;gap:4px;padding:11px 16px;border-top:1px solid #2E3440;text-decoration:none;font-size:13px;font-weight:600;color:#F0B90B">'
-      + '<span>查看全部特别关注</span>'
-      + '<i class="fa-solid fa-chevron-right" style="font-size:10px"></i>'
-      + '</a>';
-
-    var countBadge = items.length > 0
-      ? '<span style="font-size:10px;color:#F0B90B;background:rgba(240,185,11,0.12);border:1px solid rgba(240,185,11,0.25);border-radius:999px;padding:1px 7px">' + flagged.filter(function(f){ return evMap[f.fuId] && !closedSet[f.fuId]; }).length + '</span>'
-      : '';
-
     return '<div style="margin:0 16px 12px">'
       + '<div style="display:flex;align-items:center;gap:6px;margin-bottom:8px">'
-      +   '<i class="fa-solid fa-star" style="color:#F0B90B;font-size:12px"></i>'
-      +   '<span style="font-size:13px;font-weight:600;color:#848E9C">特别关注</span>'
+      +   '<i class="fa-solid fa-circle-check" style="color:#F0B90B;font-size:12px"></i>'
+      +   '<span style="font-size:13px;font-weight:600;color:#848E9C">待办</span>'
       +   countBadge
       + '</div>'
       + '<div style="background:#1E2329;border-radius:12px;border:1px solid #2E3440;overflow:hidden">'
       + contentHtml
-      + footer
+      + '<a href="star.html" style="display:flex;align-items:center;justify-content:center;gap:4px;padding:11px 16px;border-top:1px solid #2E3440;text-decoration:none;font-size:13px;font-weight:600;color:#F0B90B">'
+      +   '<span>查看全部待办</span><i class="fa-solid fa-chevron-right" style="font-size:10px"></i>'
+      + '</a>'
+      + '</div>'
+      + '</div>';
+  }
+
+  // ---------- 事件（垂直滚动跑马灯） ----------
+
+  function buildEventsTickerSection() {
+    var fuEvents = [];
+    try { fuEvents = JSON.parse(localStorage.getItem('follow_up_events') || '[]'); } catch(e) {}
+
+    // 按创建时间降序，取全部
+    var items = fuEvents.slice().sort(function(a, b) {
+      return new Date(b.created_at) - new Date(a.created_at);
+    });
+
+    if (items.length === 0) {
+      return '<div style="margin:0 16px 12px">'
+        + '<div style="display:flex;align-items:center;gap:6px;margin-bottom:8px">'
+        +   '<i class="fa-solid fa-bell" style="color:#F0B90B;font-size:12px"></i>'
+        +   '<span style="font-size:13px;font-weight:600;color:#848E9C">事件</span>'
+        + '</div>'
+        + '<div style="background:#1E2329;border-radius:12px;border:1px solid #2E3440;padding:20px 16px;text-align:center;color:#848E9C;font-size:13px">暂无事件</div>'
+        + '</div>';
+    }
+
+    var TYPE_COLORS = {
+      '大额充值': '#0ECB81', '大额提现': '#F6465D',
+      '大额亏损': '#F6465D', '大额盈利': '#0ECB81',
+    };
+
+    var rowH = 52;
+    var visibleRows = Math.min(items.length, 3);
+    var containerH = rowH * visibleRows + 1;
+
+    function rowHtml(ev) {
+      var nick = localStorage.getItem('nickname_' + ev.client_uid) || '';
+      var clientLabel = (ev.client_name || ev.client_uid) + (nick ? ' · ' + nick : '');
+      var typeColor = TYPE_COLORS[ev.type] || '#848E9C';
+      return '<a href="follow-up-thread.html?fuId=' + ev.id + '" '
+        + 'style="display:flex;align-items:center;gap:10px;padding:0 14px;height:' + rowH + 'px;border-bottom:1px solid #2E3440;text-decoration:none;flex-shrink:0;box-sizing:border-box">'
+        + '<span style="font-size:10px;padding:1px 7px;border-radius:999px;background:' + typeColor + '1a;color:' + typeColor + ';border:1px solid ' + typeColor + '33;white-space:nowrap;flex-shrink:0">' + (ev.type || '事件') + '</span>'
+        + '<div style="flex:1;min-width:0">'
+        +   '<div style="font-size:13px;color:#EAECEF;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + (ev.title || '—') + '</div>'
+        +   '<div style="margin-top:2px;font-size:10px;color:#848E9C">' + clientLabel + '</div>'
+        + '</div>'
+        + '</a>';
+    }
+
+    // 数量足够才滚动，少于等于3条静态展示
+    var needScroll = items.length > 3;
+    var allRows = needScroll ? items.concat(items).map(rowHtml).join('') : items.map(rowHtml).join('');
+    var duration = (items.length * 2.5).toFixed(1);
+    var innerStyle = needScroll
+      ? 'display:flex;flex-direction:column;animation:starTickerScroll ' + duration + 's linear infinite'
+      : 'display:flex;flex-direction:column';
+
+    return '<div style="margin:0 16px 12px">'
+      + '<div style="display:flex;align-items:center;gap:6px;margin-bottom:8px">'
+      +   '<i class="fa-solid fa-bell" style="color:#F0B90B;font-size:12px"></i>'
+      +   '<span style="font-size:13px;font-weight:600;color:#848E9C">事件</span>'
+      +   '<span style="font-size:10px;color:#848E9C;background:rgba(132,142,156,0.12);border:1px solid rgba(132,142,156,0.2);border-radius:999px;padding:1px 7px">' + items.length + '</span>'
+      + '</div>'
+      + '<div style="background:#1E2329;border-radius:12px;border:1px solid #2E3440;overflow:hidden">'
+      +   '<div style="height:' + containerH + 'px;overflow:hidden;position:relative">'
+      +     '<div id="events-ticker-inner" style="' + innerStyle + '">' + allRows + '</div>'
+      +   '</div>'
+      +   '<a href="events.html" style="display:flex;align-items:center;justify-content:center;gap:4px;padding:11px 16px;border-top:1px solid #2E3440;text-decoration:none;font-size:13px;font-weight:600;color:#F0B90B">'
+      +     '<span>查看全部事件</span><i class="fa-solid fa-chevron-right" style="font-size:10px"></i>'
+      +   '</a>'
       + '</div>'
       + '</div>';
   }
@@ -402,9 +412,16 @@
   // ---------- 注入页面 ----------
 
   document.getElementById('main-content').innerHTML =
-    buildRecommendClientsSection()
-  + buildRecommendEventsSection()
+    buildTodoSection()
+  + buildEventsTickerSection()
   + buildRankSection();
+
+  // 事件跑马灯 hover 暂停
+  var eventsTicker = document.getElementById('events-ticker-inner');
+  if (eventsTicker) {
+    eventsTicker.addEventListener('mouseenter', function() { eventsTicker.style.animationPlayState = 'paused'; });
+    eventsTicker.addEventListener('mouseleave', function() { eventsTicker.style.animationPlayState = 'running'; });
+  }
 
   // ---------- Tab 切换 ----------
 
@@ -502,7 +519,7 @@
   var now = new Date();
   var hh = String(now.getHours()).padStart(2, '0');
   var mm = String(now.getMinutes()).padStart(2, '0');
-  document.getElementById('refresh-time').textContent = '更新于 ' + hh + ':' + mm;
+  document.getElementById('refresh-time').textContent = '更新于 ' + (now.getMonth()+1) + '月' + now.getDate() + '日 ' + hh + ':' + mm;
 
 })();
 </script>

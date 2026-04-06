@@ -1,11 +1,188 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-  <meta charset="UTF-8"/>
-  <meta http-equiv="refresh" content="0;url=home.html">
-  <title>Sales Hub</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sales Hub · 原型导航</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body { font-family: 'PingFang SC', 'Helvetica Neue', sans-serif; background: #0B0E11; }
+    html, body { width: 393px !important; margin: 0 auto !important; overflow-x: hidden; }
+    .card { display:block; background:#1E2329; border:1px solid #2E3440; border-radius:12px; padding:14px 16px; text-decoration:none; margin-bottom:8px; transition: background 0.15s; }
+    .card:active { background:#2B3139; }
+    .section-label { font-size:11px; color:#474D57; font-weight:600; letter-spacing:0.5px; text-transform:uppercase; margin:20px 0 8px; }
+    .badge-new { font-size:9px; padding:1px 6px; border-radius:999px; background:rgba(14,203,129,0.15); color:#0ECB81; border:1px solid rgba(14,203,129,0.3); margin-left:6px; vertical-align:middle; }
+  </style>
+  <script src="mock-data.js"></script>
+  <script src="mock-seed.js"></script>
 </head>
-<body>
-  <p>Redirecting to <a href="home.html">Sales Hub</a>...</p>
+<body class="bg-[#0B0E11] text-[#EAECEF]">
+
+<!-- iOS Status -->
+<div class="h-[44px] bg-[#0B0E11] flex items-center justify-between px-6">
+  <span class="text-[12px] font-semibold">9:41</span>
+  <div class="flex gap-1.5"><i class="fa-solid fa-signal text-[12px]"></i><i class="fa-solid fa-wifi text-[12px]"></i><i class="fa-solid fa-battery-full text-[13px]"></i></div>
+</div>
+
+<div class="px-4 pb-8">
+  <div class="flex items-center justify-between mt-2 mb-1">
+    <span class="text-[22px] font-black" style="color:#F0B90B;letter-spacing:-1px">SH</span>
+    <span class="text-[13px] text-[#848E9C]">原型导航</span>
+  </div>
+
+  <!-- 主流程 -->
+  <div class="section-label">主流程</div>
+
+  <a href="home.html" class="card">
+    <div class="flex items-center gap-3">
+      <i class="fa-solid fa-house text-[16px] text-[#F0B90B] w-5 text-center"></i>
+      <div>
+        <div class="text-[14px] font-semibold">首页</div>
+        <div class="text-[11px] text-[#848E9C] mt-0.5">特别关注轮播 · 排行榜</div>
+      </div>
+    </div>
+  </a>
+
+  <a href="clients.html" class="card">
+    <div class="flex items-center gap-3">
+      <i class="fa-solid fa-users text-[16px] text-[#F0B90B] w-5 text-center"></i>
+      <div>
+        <div class="text-[14px] font-semibold">客户列表</div>
+        <div class="text-[11px] text-[#848E9C] mt-0.5">搜索 · 排序 · 资产概览</div>
+      </div>
+    </div>
+  </a>
+
+  <a href="client-detail.html?uid=52339391" class="card">
+    <div class="flex items-center gap-3">
+      <i class="fa-solid fa-user text-[16px] text-[#F0B90B] w-5 text-center"></i>
+      <div>
+        <div class="text-[14px] font-semibold">客户详情 <span class="text-[11px] text-[#474D57] font-normal">52339391 · 胡军</span></div>
+        <div class="text-[11px] text-[#848E9C] mt-0.5">资产 · 近期事件 · 跟进时间线 · 档案<span class="badge-new">NEW</span></div>
+      </div>
+    </div>
+  </a>
+
+  <a href="events.html" class="card">
+    <div class="flex items-center gap-3">
+      <i class="fa-solid fa-bell text-[16px] text-[#F0B90B] w-5 text-center"></i>
+      <div>
+        <div class="text-[14px] font-semibold">事件中心</div>
+        <div class="text-[11px] text-[#848E9C] mt-0.5">系统触发事件 · 筛选 · 星标</div>
+      </div>
+    </div>
+  </a>
+
+  <a href="follow-up-thread.html?fuId=sys_001" class="card">
+    <div class="flex items-center gap-3">
+      <i class="fa-solid fa-comments text-[16px] text-[#F0B90B] w-5 text-center"></i>
+      <div>
+        <div class="text-[14px] font-semibold">跟进线程 <span class="text-[11px] text-[#474D57] font-normal">sys_001 · 胡军</span></div>
+        <div class="text-[11px] text-[#848E9C] mt-0.5">跟进记录 · 处置工具包 · 礼金发放</div>
+      </div>
+    </div>
+  </a>
+
+  <a href="star.html" class="card">
+    <div class="flex items-center gap-3">
+      <i class="fa-regular fa-star text-[16px] text-[#F0B90B] w-5 text-center"></i>
+      <div>
+        <div class="text-[14px] font-semibold">特别关注</div>
+        <div class="text-[11px] text-[#848E9C] mt-0.5">星标事件 · 截止日管理</div>
+      </div>
+    </div>
+  </a>
+
+  <!-- 更多客户 -->
+  <div class="section-label">更多客户详情</div>
+
+  <a href="client-detail.html?uid=19528530" class="card">
+    <div class="flex items-center gap-3">
+      <i class="fa-solid fa-user text-[16px] text-[#848E9C] w-5 text-center"></i>
+      <div>
+        <div class="text-[14px] font-semibold text-[#848E9C]">19528530 · 李勇</div>
+        <div class="text-[11px] text-[#474D57] mt-0.5">大额提现事件 · 跟进记录 2条</div>
+      </div>
+    </div>
+  </a>
+
+  <a href="client-detail.html?uid=82160068" class="card">
+    <div class="flex items-center gap-3">
+      <i class="fa-solid fa-user text-[16px] text-[#848E9C] w-5 text-center"></i>
+      <div>
+        <div class="text-[14px] font-semibold text-[#848E9C]">82160068 · 赵静</div>
+        <div class="text-[11px] text-[#474D57] mt-0.5">大额充值 $357万 · 礼金记录 1条</div>
+      </div>
+    </div>
+  </a>
+
+  <!-- 设计对比 -->
+  <div class="section-label">设计对比</div>
+
+  <a href="client-detail-followup-compare.html" class="card">
+    <div class="flex items-center gap-3">
+      <i class="fa-solid fa-table-columns text-[16px] text-[#4DA6FF] w-5 text-center"></i>
+      <div>
+        <div class="text-[14px] font-semibold" style="color:#4DA6FF">跟进记录方案 A/B/C 对比</div>
+        <div class="text-[11px] text-[#848E9C] mt-0.5">统一时间线 · 分区 · 独立Tab</div>
+      </div>
+    </div>
+  </a>
+
+  <a href="home.html" class="card" style="border-color:rgba(240,185,11,0.2)">
+    <div class="flex items-center gap-3">
+      <i class="fa-solid fa-table-columns text-[16px] text-[#F0B90B] w-5 text-center"></i>
+      <div>
+        <div class="text-[14px] font-semibold" style="color:#F0B90B">首页特别关注方案 A/B 对比</div>
+        <div class="text-[11px] text-[#848E9C] mt-0.5">轮播 vs 跑马灯 · 在首页直接查看</div>
+      </div>
+    </div>
+  </a>
+
+  <!-- 工具 -->
+  <div class="section-label">其他页面</div>
+
+  <a href="profile.html" class="card">
+    <div class="flex items-center gap-3">
+      <i class="fa-solid fa-circle-user text-[16px] text-[#848E9C] w-5 text-center"></i>
+      <div>
+        <div class="text-[14px] font-semibold text-[#848E9C]">我的 / 个人中心</div>
+      </div>
+    </div>
+  </a>
+
+  <!-- 数据重置 -->
+  <div class="section-label">开发工具</div>
+  <button onclick="resetAll()" class="w-full text-left card" style="border-color:rgba(246,70,93,0.2)">
+    <div class="flex items-center gap-3">
+      <i class="fa-solid fa-rotate-left text-[16px] text-[#F6465D] w-5 text-center"></i>
+      <div>
+        <div class="text-[14px] font-semibold text-[#F6465D]">重置所有 Mock 数据</div>
+        <div class="text-[11px] text-[#848E9C] mt-0.5">清空 localStorage，重新注入种子数据</div>
+      </div>
+    </div>
+  </button>
+
+</div>
+
+<script>
+function resetAll() {
+  if (!confirm('清空所有 localStorage mock 数据并重新种入？')) return;
+  // 清除 mock 相关 key
+  var keys = [];
+  for (var i = 0; i < localStorage.length; i++) { keys.push(localStorage.key(i)); }
+  keys.forEach(function(k) {
+    if (['follow_up_events','slaesh_flagged','slaesh_closed'].indexOf(k) !== -1 ||
+        k.indexOf('fu_records_') === 0 ||
+        k.indexOf('tasks_') === 0 ||
+        k.indexOf('comm_records_') === 0 ||
+        k.indexOf('nickname_') === 0) {
+      localStorage.removeItem(k);
+    }
+  });
+  location.reload();
+}
+</script>
 </body>
 </html>

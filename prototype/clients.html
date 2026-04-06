@@ -57,8 +57,12 @@
   </div>
 
   <!-- Top Nav -->
-  <div class="h-[52px] sticky top-0 z-20 bg-[#0B0E11] border-b border-[#2E3440] flex items-center justify-center px-4">
+  <div class="h-[52px] sticky top-0 z-20 bg-[#0B0E11] border-b border-[#2E3440] flex items-center justify-center px-4 relative">
     <h1 class="text-[17px] font-bold text-[#EAECEF] tracking-wide">客户</h1>
+    <div id="sync-badge" class="absolute right-4 flex items-center gap-1">
+      <i class="fa-solid fa-rotate text-[10px] text-[#474D57]"></i>
+      <span id="sync-time" class="text-[11px] text-[#474D57]"></span>
+    </div>
   </div>
 
   <!-- Search Bar -->
@@ -84,7 +88,11 @@
   <div class="flex items-center justify-around h-[56px]">
     <a href="home.html" class="flex flex-col items-center gap-0.5">
       <i class="fa-solid fa-house text-[18px] text-[#848E9C]"></i>
-      <span class="text-[10px] text-[#848E9C] ">首页</span>
+      <span class="text-[10px] text-[#848E9C]">首页</span>
+    </a>
+    <a href="star.html" class="flex flex-col items-center gap-0.5">
+      <i class="fa-solid fa-list-check text-[18px] text-[#848E9C]"></i>
+      <span class="text-[10px] text-[#848E9C]">待办</span>
     </a>
     <a href="clients.html" class="flex flex-col items-center gap-0.5">
       <i class="fa-solid fa-users text-[18px] text-[#F0B90B]"></i>
@@ -92,15 +100,11 @@
     </a>
     <a href="events.html" class="flex flex-col items-center gap-0.5">
       <i class="fa-solid fa-bell text-[18px] text-[#848E9C]"></i>
-      <span class="text-[10px] text-[#848E9C] ">事件</span>
-    </a>
-    <a href="star.html" class="flex flex-col items-center gap-0.5">
-      <i class="fa-regular fa-star text-[18px] text-[#848E9C]"></i>
-      <span class="text-[10px] text-[#848E9C]">关注</span>
+      <span class="text-[10px] text-[#848E9C]">事件</span>
     </a>
     <a href="profile.html" class="flex flex-col items-center gap-0.5">
       <i class="fa-solid fa-user text-[18px] text-[#848E9C]"></i>
-      <span class="text-[10px] text-[#848E9C] ">我的</span>
+      <span class="text-[10px] text-[#848E9C]">我的</span>
     </a>
   </div>
   <div style="height:env(safe-area-inset-bottom,0px)"></div>
@@ -111,6 +115,7 @@
 <div id="tip-box" style="display:none;position:fixed;z-index:101;background:#2B3139;border:1px solid #2E3440;border-radius:10px;padding:10px 14px;max-width:180px;font-size:12px;color:#EAECEF;line-height:1.5;box-shadow:0 8px 24px rgba(0,0,0,0.5)"></div>
 
 <script src="mock-data.js"></script>
+<script src="mock-seed.js"></script>
 <script>
 (function() {
   var D = window.PROTOTYPE_DATA;
@@ -133,8 +138,6 @@
   // 维度配置
   var SORT_CONFIG = {
     deposit:  { color: '#F0B90B' },
-    inflow:   { color: '#0ECB81' },
-    outflow:  { color: '#F6465D' },
     profit:   { color: '#0ECB81' },
     favs:     { color: '#F0B90B' },
   };
@@ -158,13 +161,6 @@
   var PAGE_SIZE = 20;
   var currentPage = 1;
 
-  // 计算 weekDelta（末周 - 倒二周）
-  function getWeekDelta(c) {
-    var w = c.weeks;
-    if (!w || w.length < 2) return 0;
-    return w[w.length - 1] - w[w.length - 2];
-  }
-
   // 金额格式化（K/M/B）
   function fmt(val, withSign) {
     var abs = Math.abs(val);
@@ -182,14 +178,6 @@
     if (sort === 'deposit') {
       return c.depositDisplay;
     }
-    if (sort === 'inflow') {
-      var delta = getWeekDelta(c);
-      return delta > 0 ? fmtWan(delta) : null;
-    }
-    if (sort === 'outflow') {
-      var delta = getWeekDelta(c);
-      return delta < 0 ? fmtWan(delta) : null;
-    }
     if (sort === 'profit') {
       return c.netContribution ? c.netContribution.totalDisplay : null;
     }
@@ -201,24 +189,6 @@
     var sorted = list.slice();
     if (sort === 'deposit') {
       sorted.sort(function(a, b) { return b.fMean - a.fMean; });
-    } else if (sort === 'inflow') {
-      sorted.sort(function(a, b) {
-        var da = getWeekDelta(a), db = getWeekDelta(b);
-        var hasA = da > 0, hasB = db > 0;
-        if (hasA && !hasB) return -1;
-        if (!hasA && hasB) return 1;
-        if (!hasA && !hasB) return 0;
-        return db - da;
-      });
-    } else if (sort === 'outflow') {
-      sorted.sort(function(a, b) {
-        var da = getWeekDelta(a), db = getWeekDelta(b);
-        var hasA = da < 0, hasB = db < 0;
-        if (hasA && !hasB) return -1;
-        if (!hasA && hasB) return 1;
-        if (!hasA && !hasB) return 0;
-        return Math.abs(db) - Math.abs(da);
-      });
     } else if (sort === 'profit') {
       sorted.sort(function(a, b) {
         var ta = a.netContribution ? a.netContribution.total : 0;
@@ -231,8 +201,6 @@
 
   var TIPS = {
     deposit: '客户过去 7 天持仓资产均值（USDT）',
-    inflow:  '客户过去 7 天充值入账的累计金额',
-    outflow: '客户过去 7 天提现出账的累计金额',
     profit:  '客户过去 30 天为平台贡献的可统计利润',
   };
 
@@ -241,8 +209,6 @@
     var s = activeSort;
     var hc = function(col) {
       if (col === 'deposit') return s === 'deposit' ? '#F0B90B' : '#474D57';
-      if (col === 'inflow')  return s === 'inflow'  ? '#0ECB81' : '#474D57';
-      if (col === 'outflow') return s === 'outflow' ? '#F6465D' : '#474D57';
       if (col === 'profit')  return s === 'profit'  ? '#0ECB81' : '#474D57';
     };
     var sortIcon = function(col) {
@@ -262,11 +228,9 @@
         + '<i onclick="event.stopPropagation();showTip(\'' + key + '\',this)" class="fa-regular fa-circle-question" style="color:#474D57;font-size:9px;margin-left:3px;cursor:pointer"></i>'
         + '</span>';
     };
-    return '<div style="display:grid;grid-template-columns:1fr 60px 56px 56px 52px;padding:7px 12px 5px;border-bottom:1px solid #2E3440">'
+    return '<div style="display:grid;grid-template-columns:1fr 60px 52px;padding:7px 12px 5px;border-bottom:1px solid #2E3440">'
       + '<span style="font-size:13px;font-weight:600;color:#848E9C">客户</span>'
       + col('deposit', '资沉')
-      + col('inflow',  '入金')
-      + col('outflow', '出金')
       + col('profit',  '利润')
       + '</div>';
   }
@@ -274,19 +238,10 @@
   // 渲染单行
   function rowHTML(c, sort, isLast) {
     var border = isLast ? '' : 'border-bottom:1px solid #2E3440;';
-    var delta = getWeekDelta(c);
 
     var depositVal = c.fMean != null ? c.fMean : null;
     var depositHTML = depositVal != null
       ? '<span style="font-size:13px;font-weight:700;color:#F0B90B">' + fmt(depositVal, false) + '</span>'
-      : '<span style="font-size:13px;color:#474D57">—</span>';
-
-    var inflowHTML = delta > 0
-      ? '<span style="font-size:13px;font-weight:600;color:#0ECB81">' + fmtWan(delta) + '</span>'
-      : '<span style="font-size:13px;color:#474D57">—</span>';
-
-    var outflowHTML = delta < 0
-      ? '<span style="font-size:13px;font-weight:600;color:#F6465D">' + fmtWan(delta) + '</span>'
       : '<span style="font-size:13px;color:#474D57">—</span>';
 
     var profitVal = c.netContribution ? c.netContribution.total : null;
@@ -300,14 +255,12 @@
       : '';
 
     return '<a href="client-detail.html?uid=' + c.uid + '" '
-      + 'style="display:grid;grid-template-columns:1fr 60px 56px 56px 52px;align-items:center;padding:10px 12px;' + border + 'text-decoration:none">'
+      + 'style="display:grid;grid-template-columns:1fr 60px 52px;align-items:center;padding:10px 12px;' + border + 'text-decoration:none">'
       + '<div>'
       +   '<div style="font-size:12px;font-weight:600;color:#EAECEF;display:flex;align-items:center">' + dotHTML + c.uid + '</div>'
       +   (c.name ? '<div style="font-size:11px;color:#848E9C;margin-top:1px">' + c.name + '</div>' : '')
       + '</div>'
       + '<div style="text-align:right">' + depositHTML + '</div>'
-      + '<div style="text-align:right">' + inflowHTML  + '</div>'
-      + '<div style="text-align:right">' + outflowHTML + '</div>'
       + '<div style="text-align:right">' + profitHTML  + '</div>'
       + '</a>';
   }
@@ -465,6 +418,13 @@
   document.addEventListener('keydown', function(e) {
     if (e.key === 'Escape') { searchInput.value = ''; renderSearchDropdown(''); }
   });
+
+  // 同步时间角标（模拟：距今约2小时前）
+  (function() {
+    var d = new Date(Date.now() - 2 * 3600 * 1000 - 17 * 60 * 1000);
+    var pad = function(n) { return n < 10 ? '0' + n : '' + n; };
+    document.getElementById('sync-time').textContent = pad(d.getHours()) + ':' + pad(d.getMinutes()) + ' 同步';
+  })();
 
   // 初始化
   renderList();

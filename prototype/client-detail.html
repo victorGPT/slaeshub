@@ -417,7 +417,8 @@ function timeAgo(isoStr) {
   if (refreshEl && D.generatedAt) {
     var d = new Date(D.generatedAt);
     var mo = d.getMonth() + 1, dd2 = d.getDate();
-    refreshEl.textContent = '数据截至 ' + mo + '月' + dd2 + '日';
+    var hh2 = String(d.getHours()).padStart(2,'0'), mm2 = String(d.getMinutes()).padStart(2,'0');
+    refreshEl.textContent = '数据截至 ' + mo + '月' + dd2 + '日 ' + hh2 + ':' + mm2;
   }
 
   // commRecords: 需在 tags 之前定义（活跃度标签会用到）
@@ -1137,7 +1138,8 @@ function timeAgo(isoStr) {
   var refreshStr = '';
   if (D.generatedAt) {
     var _rd = new Date(D.generatedAt);
-    refreshStr = '数据截至 ' + (_rd.getMonth() + 1) + '月' + _rd.getDate() + '日';
+    var _hh = String(_rd.getHours()).padStart(2,'0'), _mm = String(_rd.getMinutes()).padStart(2,'0');
+    refreshStr = '数据截至 ' + (_rd.getMonth() + 1) + '月' + _rd.getDate() + '日 ' + _hh + ':' + _mm;
   }
   var refreshFooter = '<div style="border-top:1px solid #2E3440;margin-top:10px;padding-top:8px;text-align:right;font-size:9px;color:#474D57">' + (refreshStr || '数据实时更新') + '</div>';
 
