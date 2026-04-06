@@ -56,36 +56,16 @@
       <i class="fa-solid fa-chevron-left text-[16px] text-[#EAECEF]"></i>
     </button>
     <h1 class="text-[16px] font-bold text-[#EAECEF]">任务详情</h1>
-    <a id="goto-client" href="#" class="text-[12px] text-[#848E9C]">客户详情</a>
+    <div class="w-8"></div>
   </div>
 
-  <!-- Client Header Card -->
-  <div class="mx-3 mt-3 bg-[#1E2329] rounded-2xl border border-[#2E3440] overflow-hidden">
-    <!-- Row 1: Identity -->
-    <div class="flex items-center gap-3 px-4 pt-3 pb-2">
-      <div class="flex-1 min-w-0">
-        <div class="flex items-center gap-2">
-          <span id="client-uid" class="text-[16px] font-bold text-[#EAECEF] tabular-nums tracking-wide"></span>
-          <span id="top-nickname" class="text-[12px] text-[#848E9C]"></span>
-        </div>
-      </div>
-    </div>
-    <!-- Row 2: Tags -->
-    <div id="tags-row" class="px-4 pb-2 flex flex-wrap gap-1"></div>
-    <!-- Row 3: Deposit Hero + Delta -->
-    <div class="px-4 pb-3">
-      <div class="flex items-end gap-3">
-        <div>
-          <div class="text-[10px] text-[#474D57] mb-0.5">7日资沉</div>
-          <span id="deposit-hero" class="text-[28px] font-bold text-[#EAECEF] tracking-tight leading-none"></span>
-        </div>
-        <div id="deposit-delta" class="mb-1 flex items-center gap-1"></div>
-      </div>
-      <div class="flex justify-end mt-0.5">
-        <span id="data-refresh-time" class="text-[9px] text-[#474D57]"></span>
-      </div>
-    </div>
-  </div>
+  <!-- Client Identity Bar -->
+  <a id="view-profile-btn" href="#" class="mx-3 mt-3 px-4 h-[44px] bg-[#1E2329] rounded-2xl border border-[#2E3440] flex items-center gap-2">
+    <span id="client-uid" class="text-[14px] font-bold text-[#EAECEF] tabular-nums tracking-wide"></span>
+    <span id="top-nickname" class="text-[12px] text-[#848E9C]"></span>
+    <div id="tags-row" class="flex items-center gap-1 flex-1 min-w-0"></div>
+    <span class="text-[11px] text-[#848E9C] whitespace-nowrap flex-shrink-0">查看个人详情 <i class="fa-solid fa-chevron-right text-[9px]"></i></span>
+  </a>
 
   <!-- Task Card -->
   <div class="mx-3 mt-3 bg-[#1E2329] rounded-2xl border border-[#2E3440] p-4">
@@ -116,46 +96,15 @@
     return;
   }
 
-  // 链接到客户详情
-  document.getElementById('goto-client').href = 'client-detail.html?uid=' + uid;
+  // 链接到个人详情
+  document.getElementById('view-profile-btn').href = 'client-detail.html?uid=' + uid;
 
-  function esc(s) { return String(s).replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
-  function fmtFlow(v) {
-    var abs = Math.abs(v);
-    if (abs >= 10000) return '$' + Math.round(abs / 10000) + '万';
-    if (abs >= 1000)  return '$' + (abs / 1000).toFixed(1) + '千';
-    return '$' + Math.round(abs);
-  }
-
-  // === Header Card ===
+  // === Identity Bar ===
   document.getElementById('client-uid').textContent = c.uid;
   var nick = localStorage.getItem('nickname_' + uid) || '';
   document.getElementById('top-nickname').textContent = nick;
 
-  // 刷新时间
-  if (D.generatedAt) {
-    var rd = new Date(D.generatedAt);
-    document.getElementById('data-refresh-time').textContent = '数据截至 ' + (rd.getMonth()+1) + '月' + rd.getDate() + '日';
-  }
-
-  // Deposit hero
-  document.getElementById('deposit-hero').textContent = c.thisWeekDisplay || '-';
-
-  // Delta
-  var thisWeekVal = c.weeks[c.weeks.length - 1];
-  var avgVal = c.fMean;
-  var deltaAbs = thisWeekVal - avgVal;
-  var deltaPct = avgVal > 0 ? ((thisWeekVal - avgVal) / avgVal * 100) : 0;
-  var isUp = deltaAbs >= 0;
-  var deltaColor = isUp ? '#0ECB81' : '#F6465D';
-  var arrowChar = isUp ? '▲' : '▼';
-  var signStr = isUp ? '+' : '';
-  document.getElementById('deposit-delta').innerHTML =
-    '<span style="font-size:13px;color:' + deltaColor + '">' + arrowChar + '</span>'
-    + '<span style="font-size:16px;font-weight:700;color:' + deltaColor + ';margin-left:2px">' + signStr + fmtFlow(Math.round(deltaAbs)) + '</span>'
-    + '<span style="font-size:11px;color:' + deltaColor + ';opacity:0.55;margin-left:8px">' + signStr + deltaPct.toFixed(1) + '%</span>';
-
-  // Tags
+  // Tags（仅 Top 100 显示）
   var allClients = D.clients;
   var sysTags = [];
   var depositRank = allClients.filter(function(cl) { return cl.fMean > c.fMean; }).length + 1;
@@ -173,13 +122,8 @@
     var pbg = profitRank <= 10 ? 'rgba(240,185,11,0.12)' : profitRank <= 50 ? 'rgba(77,166,255,0.12)' : 'rgba(132,142,156,0.12)';
     sysTags.push({ label: '利润 #' + profitRank, color: pc, bg: pbg });
   }
-  var manualTags = [];
-  try { manualTags = JSON.parse(localStorage.getItem('bd_tags_' + uid) || '[]'); } catch(e) {}
   var tagsHtml = sysTags.map(function(t) {
     return '<span style="font-size:9px;padding:2px 6px;border-radius:4px;border:1px solid ' + t.color + '30;color:' + t.color + ';background:' + t.bg + ';font-weight:500">' + t.label + '</span>';
-  }).join('');
-  tagsHtml += manualTags.map(function(t) {
-    return '<span style="font-size:9px;padding:2px 6px;border-radius:4px;background:#2B3139;color:#EAECEF">' + esc(t) + '</span>';
   }).join('');
   document.getElementById('tags-row').innerHTML = tagsHtml;
 
