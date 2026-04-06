@@ -319,7 +319,9 @@
   }
 
   function renderCard(item, openChooserId) {
-    var clientLabel = escapeHtml(item.clientName || item.clientUid || '未命名客户');
+    var _uid = item.clientUid || '';
+    var _name = item.clientName || '';
+    var clientLabel = escapeHtml(_uid + (_name ? ' · ' + _name : '') || '未命名客户');
     var timeLabel = escapeHtml(formatCreatedAt(item.createdAt));
     var starIcon = item.isFlagged
       ? '<i class="fa-solid fa-star" style="color:#F0B90B;font-size:14px"></i>'
