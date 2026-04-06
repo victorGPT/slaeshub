@@ -125,25 +125,11 @@
     <div id="event-note" style="font-size:13px;color:#848E9C;margin-top:6px;line-height:1.5"></div>
   </div>
 
-  <!-- ③ AI 行动建议 -->
-  <div class="mx-3 mt-3 bg-[#1E2329] rounded-2xl border border-[#2E3440] p-4">
-    <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
-      <i class="fa-solid fa-robot" style="color:#F0B90B;font-size:13px"></i>
-      <span style="font-size:13px;font-weight:600;color:#EAECEF">AI 行动建议</span>
-      <span style="font-size:10px;color:#474D57;margin-left:auto">仅供参考</span>
-    </div>
-    <div id="ai-strategy-tags" style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px"></div>
-    <div id="ai-suggestions" style="display:flex;flex-direction:column;gap:10px"></div>
-    <div style="margin-top:12px;padding-top:10px;border-top:1px solid #2E3440;font-size:10px;color:#474D57;line-height:1.6">
-      基于事件类型与客户数据生成 · 建议仅供参考，请结合实际情况判断
-    </div>
-  </div>
-
-  <!-- ③.5 处置工具包 -->
+  <!-- ③ 行动工具包 -->
   <div class="mx-3 mt-3 bg-[#1E2329] rounded-2xl border border-[#2E3440] overflow-hidden">
     <div style="display:flex;align-items:center;gap:8px;padding:14px 16px 10px">
       <i class="fa-solid fa-wand-magic-sparkles" style="color:#0ECB81;font-size:12px"></i>
-      <span style="font-size:13px;font-weight:600;color:#EAECEF">处置工具包</span>
+      <span style="font-size:13px;font-weight:600;color:#EAECEF">行动工具包</span>
     </div>
     <!-- Tab 选择 -->
     <div style="display:flex;gap:8px;padding:0 16px 12px">
@@ -266,6 +252,7 @@
 </div>
 
 <script src="mock-data.js"></script>
+<script src="mock-seed.js"></script>
 <script src="mock-events.js"></script>
 <script src="event-center-shared.js"></script>
 <script>
@@ -498,82 +485,6 @@ window.hideTip = function() {
   }
   document.getElementById('event-goal').textContent = ev.title || '—';
   if (ev.note) document.getElementById('event-note').textContent = ev.note;
-
-  // ── ③ AI 行动建议 ──
-  var AI_PLAYBOOKS = {
-    '大额提现': {
-      strategies: ['挽留策略', '主动沟通'],
-      items: [
-        '24小时内主动联系，切入点用「近期资金运作是否顺利」，避免直接追问提现原因，降低客户防御心理。',
-        '若客户透露对平台不满，立即表达重视，提供专属客服跟进通道，必要时可酌情告知权益补偿方案。',
-        '若属于临时资金需求，顺势介绍平台活期理财产品，引导部分资金留存，为下次回流埋好铺垫。'
-      ]
-    },
-    '大额充值': {
-      strategies: ['关系深化', '产品推荐'],
-      items: [
-        '主动感谢客户的信任，肯定其对平台的认可，趁热度建立更强的情感连接。',
-        '根据充值规模匹配专属权益或理财产品，趁资金热度推荐合适的配置方案，提升资金使用效率。',
-        '了解客户的资金配置计划，确认是否有进一步需求，为后续深度服务打好基础。'
-      ]
-    },
-    '大额盈利': {
-      strategies: ['趁势转化', '产品推荐'],
-      items: [
-        '祝贺客户取得良好收益，肯定其投资判断力，借此机会加深关系。',
-        '建议在盈利状态下适度锁定收益，介绍稳健型理财产品，帮助客户规避后续可能的回撤风险。',
-        '趁势推荐相关产品或平台活动，引导客户提升产品使用深度，扩大交叉销售机会。'
-      ]
-    },
-    '大额亏损': {
-      strategies: ['情绪安抚', '风险管理'],
-      items: [
-        '主动联系客户表达关心，措辞注意避免直接提及具体亏损金额，以「近期行情波动较大」作为话题切入。',
-        '提供风险管理建议，推荐止损设置或波动较小的产品，帮助客户恢复信心、稳定情绪。',
-        '持续观察后续操作动态，若出现连续亏损迹象，及时升级关注级别，提前介入防止客户流失。'
-      ]
-    },
-    '账户封禁': {
-      strategies: ['危机处理', '合规沟通'],
-      items: [
-        '第一时间联系客户，使用平台合规话术解释封禁原因，避免客户产生对立情绪。',
-        '明确告知申诉流程与预计解封时间，给客户清晰的处理预期，减少焦虑。',
-        '全程记录沟通情况并同步合规团队，确保流程规范，同时维护好客户关系。'
-      ]
-    },
-    '主动联系': {
-      strategies: ['关系维护'],
-      items: [
-        '了解客户近期的资产配置动向和使用体验，保持关系热度，避免客情冷淡。',
-        '结合客户历史偏好，适时推荐与其匹配的新产品或活动，不强推，以信息分享为主。'
-      ]
-    },
-    '客户反馈': {
-      strategies: ['问题跟进', '关系维护'],
-      items: [
-        '确认反馈已被认真记录，告知客户处理进展，让客户感受到被重视。',
-        '跟进反馈处理结果，闭环后主动回访，将负面反馈转化为加深关系的机会。'
-      ]
-    }
-  };
-
-  var playbook = AI_PLAYBOOKS[ev.type] || {
-    strategies: ['常规跟进'],
-    items: ['根据客户近期动态，保持适当联系频率，了解需求变化，维护良好的客情关系。']
-  };
-
-  var tagsHtml = playbook.strategies.map(function(s) {
-    return '<span style="font-size:10px;padding:2px 8px;border-radius:999px;background:rgba(240,185,11,0.1);color:#F0B90B;border:1px solid rgba(240,185,11,0.25)">' + esc(s) + '</span>';
-  }).join('');
-  document.getElementById('ai-strategy-tags').innerHTML = tagsHtml;
-
-  var suggestionsHtml = playbook.items.map(function(text, idx) {
-    return '<div style="display:flex;align-items:flex-start;gap:8px">'
-      + '<span style="width:16px;height:16px;border-radius:50%;background:rgba(240,185,11,0.12);border:1px solid rgba(240,185,11,0.3);color:#F0B90B;font-size:9px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px">' + (idx + 1) + '</span>'
-      + '<span style="font-size:12px;color:#EAECEF;line-height:1.7">' + esc(text) + '</span>'
-      + '</div>';
-  }).join('');
-  document.getElementById('ai-suggestions').innerHTML = suggestionsHtml;
 
   // ── ③ 跟进记录 ──
   var RECORDS_KEY = 'fu_records_' + ev.id;
