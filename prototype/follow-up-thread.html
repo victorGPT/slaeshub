@@ -139,6 +139,94 @@
     </div>
   </div>
 
+  <!-- ③.5 处置工具包 -->
+  <div class="mx-3 mt-3 bg-[#1E2329] rounded-2xl border border-[#2E3440] overflow-hidden">
+    <div style="display:flex;align-items:center;gap:8px;padding:14px 16px 10px">
+      <i class="fa-solid fa-wand-magic-sparkles" style="color:#0ECB81;font-size:12px"></i>
+      <span style="font-size:13px;font-weight:600;color:#EAECEF">处置工具包</span>
+    </div>
+    <!-- Tab 选择 -->
+    <div style="display:flex;gap:8px;padding:0 16px 12px">
+      <button id="tool-tab-script" onclick="switchTool('script')"
+        style="flex:1;height:34px;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;background:rgba(0,203,129,0.12);color:#0ECB81;border:1px solid rgba(0,203,129,0.3)">话术模板</button>
+      <button id="tool-tab-incentive" onclick="switchTool('incentive')"
+        style="flex:1;height:34px;border-radius:8px;font-size:12px;font-weight:500;cursor:pointer;background:#2B3139;color:#848E9C;border:1px solid #2E3440">发放礼金</button>
+      <button id="tool-tab-meeting" onclick="switchTool('meeting')"
+        style="flex:1;height:34px;border-radius:8px;font-size:12px;font-weight:500;cursor:pointer;background:#2B3139;color:#848E9C;border:1px solid #2E3440">面谈邀约</button>
+    </div>
+
+    <!-- ── 话术模板面板 ── -->
+    <div id="tool-panel-script" style="padding:0 16px 16px">
+      <div id="script-style-pills" style="display:flex;gap:6px;overflow-x:auto;padding-bottom:2px;margin-bottom:10px"></div>
+      <div id="script-content" style="background:#2B3139;border:1px solid #2E3440;border-radius:10px;padding:12px;font-size:13px;color:#EAECEF;line-height:1.7;min-height:72px"></div>
+      <button id="copy-script-btn" onclick="copyScript()"
+        style="margin-top:8px;width:100%;height:38px;background:rgba(0,203,129,0.12);color:#0ECB81;border:1px solid rgba(0,203,129,0.3);border-radius:10px;font-size:13px;font-weight:600;cursor:pointer">
+        <i class="fa-regular fa-copy" style="margin-right:6px"></i>复制话术
+      </button>
+    </div>
+
+    <!-- ── 发放礼金面板 ── -->
+    <div id="tool-panel-incentive" style="display:none;padding:0 16px 16px">
+      <div style="font-size:11px;color:#474D57;margin-bottom:6px">礼金类型</div>
+      <div style="display:flex;gap:6px;margin-bottom:14px">
+        <button id="itype-USDT" onclick="selectIType('USDT')"
+          style="flex:1;height:34px;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;background:rgba(240,185,11,0.12);color:#F0B90B;border:1px solid rgba(240,185,11,0.3)">USDT</button>
+        <button id="itype-现金" onclick="selectIType('现金')"
+          style="flex:1;height:34px;border-radius:8px;font-size:12px;cursor:pointer;background:#2B3139;color:#848E9C;border:1px solid #2E3440">现金</button>
+        <button id="itype-礼品" onclick="selectIType('礼品')"
+          style="flex:1;height:34px;border-radius:8px;font-size:12px;cursor:pointer;background:#2B3139;color:#848E9C;border:1px solid #2E3440">礼品</button>
+      </div>
+      <div id="incentive-amount-block">
+        <div style="font-size:11px;color:#474D57;margin-bottom:6px">金额档位</div>
+        <div style="display:flex;gap:6px;margin-bottom:12px;align-items:center">
+          <button id="iamt-200" onclick="selectIAmt('200')"
+            style="height:34px;padding:0 14px;border-radius:8px;font-size:12px;cursor:pointer;background:#2B3139;color:#848E9C;border:1px solid #2E3440">200U</button>
+          <button id="iamt-500" onclick="selectIAmt('500')"
+            style="height:34px;padding:0 14px;border-radius:8px;font-size:12px;cursor:pointer;background:#2B3139;color:#848E9C;border:1px solid #2E3440">500U</button>
+          <button id="iamt-1000" onclick="selectIAmt('1000')"
+            style="height:34px;padding:0 14px;border-radius:8px;font-size:12px;cursor:pointer;background:#2B3139;color:#848E9C;border:1px solid #2E3440">1000U</button>
+          <input id="iamt-custom" type="number" placeholder="自填金额" oninput="onCustomAmt(this.value)"
+            style="flex:1;height:34px;background:#2B3139;color:#EAECEF;font-size:12px;border:1px solid #2E3440;border-radius:8px;padding:0 10px;outline:none;caret-color:#F0B90B;box-sizing:border-box">
+        </div>
+      </div>
+      <div id="incentive-gift-block" style="display:none;margin-bottom:12px">
+        <div style="font-size:11px;color:#474D57;margin-bottom:6px">礼品说明</div>
+        <input id="gift-desc" placeholder="填写礼品名称或说明"
+          style="width:100%;height:34px;box-sizing:border-box;background:#2B3139;color:#EAECEF;font-size:13px;border:1px solid #2E3440;border-radius:8px;padding:0 10px;outline:none;caret-color:#F0B90B">
+      </div>
+      <textarea id="incentive-note" placeholder="备注（选填）" rows="2"
+        style="width:100%;box-sizing:border-box;background:#2B3139;color:#EAECEF;border:1px solid #2E3440;border-radius:10px;padding:10px 12px;font-size:13px;font-family:inherit;line-height:1.6;resize:none;outline:none;caret-color:#F0B90B;margin-bottom:8px"></textarea>
+      <button onclick="recordIncentive()"
+        style="width:100%;height:38px;background:rgba(240,185,11,0.12);color:#F0B90B;border:1px solid rgba(240,185,11,0.3);border-radius:10px;font-size:13px;font-weight:600;cursor:pointer">记录发放</button>
+    </div>
+
+    <!-- ── 面谈邀约面板 ── -->
+    <div id="tool-panel-meeting" style="display:none;padding:0 16px 16px">
+      <div style="font-size:11px;color:#474D57;margin-bottom:8px">严重等级</div>
+      <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:12px">
+        <button id="mlvl-轻微" onclick="selectMLevel('轻微')"
+          style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border-radius:10px;cursor:pointer;background:#2B3139;border:1px solid #2E3440">
+          <span style="font-size:13px;color:#EAECEF;font-weight:500">轻微</span>
+          <span style="font-size:11px;color:#848E9C">常规维护，了解近况</span>
+        </button>
+        <button id="mlvl-中等" onclick="selectMLevel('中等')"
+          style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border-radius:10px;cursor:pointer;background:#2B3139;border:1px solid #2E3440">
+          <span style="font-size:13px;color:#EAECEF;font-weight:500">中等</span>
+          <span style="font-size:11px;color:#848E9C">有流失风险，需重点跟进</span>
+        </button>
+        <button id="mlvl-严重" onclick="selectMLevel('严重')"
+          style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border-radius:10px;cursor:pointer;background:#2B3139;border:1px solid #2E3440">
+          <span style="font-size:13px;color:#EAECEF;font-weight:500">严重</span>
+          <span style="font-size:11px;color:#848E9C">高流失风险，立即面谈</span>
+        </button>
+      </div>
+      <textarea id="meeting-purpose" placeholder="面谈目的或议题（选填）" rows="2"
+        style="width:100%;box-sizing:border-box;background:#2B3139;color:#EAECEF;border:1px solid #2E3440;border-radius:10px;padding:10px 12px;font-size:13px;font-family:inherit;line-height:1.6;resize:none;outline:none;caret-color:#F0B90B;margin-bottom:8px"></textarea>
+      <button onclick="recordMeeting()"
+        style="width:100%;height:38px;background:rgba(77,166,255,0.12);color:#4DA6FF;border:1px solid rgba(77,166,255,0.3);border-radius:10px;font-size:13px;font-weight:600;cursor:pointer">记录面谈邀约</button>
+    </div>
+  </div>
+
   <!-- ④ 跟进记录 -->
   <div class="mx-3 mt-3 mb-4 bg-[#1E2329] rounded-2xl border border-[#2E3440] overflow-hidden">
     <div style="display:flex;align-items:center;gap:8px;padding:14px 16px 10px">
@@ -543,6 +631,220 @@ window.hideTip = function() {
   });
 
   renderRecords();
+
+  // ── ③.5 处置工具包 ──
+  var SCRIPT_TEMPLATES = {
+    '大额提现': {
+      '简洁直接': '看到您提了一笔大额，我先帮您查一下现在的点位和仓位情况，今天内给您一个分析，您再决定要不要继续出。',
+      '亲切随和': '哥/姐，出金我看到了。我先帮您查一下这笔资金出去的成本，整理好发给您，您看完再做决定，别急。',
+      '专业正式': '您好，注意到您有一笔较大的出金。我这边先整理一份当前仓位的简要分析，包括出金时机和剩余仓位的风险敞口，今天内发给您，供您参考后再做最终决定。',
+      '关怀体贴': '看到您提了这笔资金，不管是什么原因，我先帮您把出金后账户的情况整理一下，让您清楚接下来仓位是什么状态，有问题我来帮您处理。',
+      '积极引导': '这笔出金我已经看到了。我帮您算了一下，现在全出点位损耗比较大。我先给您准备一个「部分出金」的方案，您看完觉得合适再操作，我来帮您执行。'
+    },
+    '大额充值': {
+      '简洁直接': '钱到了，我帮您确认了。我来给您整理几个配置方向，今天发给您，您不用每天盯，有动静我主动告诉您。',
+      '亲切随和': '哥/姐，到账了，我看到了。我先帮您把现在几个比较稳的方向整理一下，发给您参考，您不用操心，我来帮您把关。',
+      '专业正式': '您好，资金已到账，我已确认。考虑到此次入金规模，我这边先为您准备一份配置方案，包含风险等级和预期收益区间，今日内发给您，我们再沟通细节。',
+      '关怀体贴': '到账了，我帮您盯着。您不用每天看，我会定期跟您同步账户情况。我先把最近几个适合这个量级的方向整理好，发给您，您有空了再慢慢看。',
+      '积极引导': '这笔资金到了，我已经开始帮您看配置方向了。我给您准备三个方案，稳健、平衡、进取各一个，今天发给您，您选一个方向我来帮您落地。'
+    },
+    '大额盈利': {
+      '简洁直接': '最近表现很好，我帮您看了一下，现在有机会把部分收益锁定一下，我来给您整理几个方案，您选一个。',
+      '亲切随和': '哥/姐，这波赚得漂亮！我帮您算了一下，现在锁定一部分收益挺划算的，我来给您整理几个放法，您看看哪个顺眼。',
+      '专业正式': '您好，您近期账户盈利表现良好。我已为您整理了几个收益再配置方案，可以在保留部分弹性仓位的同时锁定已有收益，今日内发给您，我们再对接细节。',
+      '关怀体贴': '最近账户收益很好，我替您高兴。赚钱了更要好好守住，我帮您看了一下现在的仓位，有个地方我建议调一下，我整理好发给您，您看看是不是这个意思。',
+      '积极引导': '这波盈利不错，我已经帮您看了几个锁定收益的方向。我来给您准备两个方案：一个是部分落袋，一个是转稳健仓继续跑，今天发给您，您定了我来帮您操作。'
+    },
+    '大额亏损': {
+      '简洁直接': '看到最近账户回撤比较大，我帮您拉了一下数据，从您入场成本算还是正的，我整理好发给您，您看看现在仓位要不要调。',
+      '亲切随和': '哥/姐，最近亏了不少，心情能理解。我帮您把账户情况整理了一下，从您进来那时候算，整体还是在盈利的，这次是回撤，我发给您看看，再决定要不要动。',
+      '专业正式': '您好，我已对您近期的账户表现做了一次数据梳理。从您的建仓成本来看，当前仍处于整体盈利区间，本次为阶段性浮亏。我来为您准备一份仓位调整的评估报告，今日内发给您。',
+      '关怀体贴': '最近这段时间压力比较大，我想主动来问候一下。我已经帮您把账户数据梳理了一遍，有几个地方值得注意，我整理好发给您，我们慢慢聊，不着急，我来帮您一起看。',
+      '积极引导': '账户回撤较多，我帮您分析了一下，问题主要集中在两个仓位上。我来给您准备几个调整方案，您选一个方向，我帮您执行，把后续的损耗控制住。'
+    },
+    '账户封禁': {
+      '简洁直接': '账户的问题我已经提交给技术那边了，我来盯着进度，今天内给您一个结果，不用您再跑一遍流程。',
+      '亲切随和': '哥/姐，这个问题我已经帮您反映上去了，我来盯着，有消息第一时间告诉您，您不用自己去问。',
+      '专业正式': '您好，账户风控问题我方已提交内部排查，我会全程跟进处理进度，预计今日内给您明确反馈。如需加急，我来协调走优先通道，无需您再单独申请。',
+      '关怀体贴': '我知道账户被限制很影响操作，这个我来帮您处理。我已经把您的情况单独报上去了，让他们优先看，今天我会持续跟进，有任何进展我马上告诉您，您不用操心这边的流程。',
+      '积极引导': '账户问题我已经在处理了，今天内能解决。这段时间我帮您先把想操作的方向记下来，等账户恢复了我第一时间帮您执行，不耽误您的节奏。'
+    },
+    '爆仓': {
+      '简洁直接': '仓位平了，我已经帮您拉了这次的数据，等您准备好了我给您复盘一下，看下次怎么设能更稳。',
+      '亲切随和': '哥/姐，这波确实很惨，我理解。您先缓缓，我帮您把这次的仓位数据整理一下，等您状态好了我们一起看，下一步怎么做我来帮您想。',
+      '专业正式': '您好，我已记录此次强平的详细数据。等您方便时，我可以为您做一次完整的仓位复盘，分析触发原因并给出下一步的仓位管理建议，我来安排时间，您定就好。',
+      '关怀体贴': '这次的事我看到了，不说「没事」，因为确实不是小事。您先照顾好自己，我已经把这次的数据留存好了，等您准备好了我陪您一起复盘，我来帮您把下一步想清楚。',
+      '积极引导': '仓位平了之后，我帮您看了一下，这次主要是止损点设得太宽了。我给您整理了一个更保守的仓位方案，等您准备好重新进场的时候，我来帮您配置，这次设得稳一点。'
+    }
+  };
+  var SCRIPT_FALLBACK = {
+    '简洁直接': '了解到您账户近期有动态，我帮您看了一下相关数据，今天内整理好发给您，有问题我来处理。',
+    '亲切随和': '刚看到您的账户有些变化，我帮您先查一下，整理好发给您，有什么需要我来帮您搞定。',
+    '专业正式': '您好，我方注意到您账户近期有相关动态。我已开始整理相关数据，今日内发给您，如需进一步跟进请随时告知。',
+    '关怀体贴': '看到您账户的情况，我想主动来问候一下。我已经开始帮您梳理相关数据，整理好了发给您，有什么需要我在。',
+    '积极引导': '账户有些新动态，我已经在帮您分析了。整理好后发给您，您选一个方向，我来帮您执行。'
+  };
+
+  var _curStyle = '简洁直接';
+  var _curIType = 'USDT';
+  var _curIAmt = '';
+  var _curMLevel = '';
+  var SCRIPT_STYLES = ['简洁直接','亲切随和','专业正式','关怀体贴','积极引导'];
+
+  window.switchTool = function(tab) {
+    ['script','incentive','meeting'].forEach(function(t) {
+      var panel = document.getElementById('tool-panel-' + t);
+      var btn = document.getElementById('tool-tab-' + t);
+      var active = t === tab;
+      panel.style.display = active ? 'block' : 'none';
+      if (active) {
+        btn.style.background = 'rgba(0,203,129,0.12)'; btn.style.color = '#0ECB81';
+        btn.style.borderColor = 'rgba(0,203,129,0.3)'; btn.style.fontWeight = '600';
+      } else {
+        btn.style.background = '#2B3139'; btn.style.color = '#848E9C';
+        btn.style.borderColor = '#2E3440'; btn.style.fontWeight = '500';
+      }
+    });
+  };
+
+  function renderScriptPills() {
+    var pills = document.getElementById('script-style-pills');
+    pills.innerHTML = SCRIPT_STYLES.map(function(s) {
+      var active = s === _curStyle;
+      return '<button onclick="selectScriptStyle(\'' + s + '\')" style="padding:4px 10px;border-radius:999px;font-size:11px;cursor:pointer;white-space:nowrap;flex-shrink:0;'
+        + (active ? 'background:#0ECB81;color:#0B0E11;font-weight:600;border:1px solid #0ECB81'
+                  : 'background:#2B3139;color:#848E9C;border:1px solid #2E3440')
+        + '">' + s + '</button>';
+    }).join('');
+  }
+
+  function updateScriptText() {
+    var map = SCRIPT_TEMPLATES[ev.type] || SCRIPT_FALLBACK;
+    document.getElementById('script-content').textContent = map[_curStyle] || '';
+  }
+
+  window.selectScriptStyle = function(style) {
+    _curStyle = style;
+    renderScriptPills();
+    updateScriptText();
+  };
+
+  window.copyScript = function() {
+    var text = document.getElementById('script-content').textContent;
+    if (!text) return;
+    var btn = document.getElementById('copy-script-btn');
+    navigator.clipboard.writeText(text).then(function() {
+      btn.innerHTML = '<i class="fa-solid fa-check" style="margin-right:6px"></i>已复制';
+      setTimeout(function() { btn.innerHTML = '<i class="fa-regular fa-copy" style="margin-right:6px"></i>复制话术'; }, 1500);
+    });
+  };
+
+  window.selectIType = function(type) {
+    _curIType = type;
+    ['USDT','现金','礼品'].forEach(function(t) {
+      var btn = document.getElementById('itype-' + t);
+      var active = t === type;
+      if (active) {
+        btn.style.background = 'rgba(240,185,11,0.12)'; btn.style.color = '#F0B90B';
+        btn.style.borderColor = 'rgba(240,185,11,0.3)'; btn.style.fontWeight = '600';
+      } else {
+        btn.style.background = '#2B3139'; btn.style.color = '#848E9C';
+        btn.style.borderColor = '#2E3440'; btn.style.fontWeight = '500';
+      }
+    });
+    document.getElementById('incentive-amount-block').style.display = type === '礼品' ? 'none' : 'block';
+    document.getElementById('incentive-gift-block').style.display = type === '礼品' ? 'block' : 'none';
+  };
+
+  window.selectIAmt = function(amt) {
+    _curIAmt = amt;
+    document.getElementById('iamt-custom').value = '';
+    ['200','500','1000'].forEach(function(a) {
+      var btn = document.getElementById('iamt-' + a);
+      var active = a === amt;
+      if (active) {
+        btn.style.background = 'rgba(240,185,11,0.12)'; btn.style.color = '#F0B90B';
+        btn.style.borderColor = 'rgba(240,185,11,0.3)'; btn.style.fontWeight = '600';
+      } else {
+        btn.style.background = '#2B3139'; btn.style.color = '#848E9C';
+        btn.style.borderColor = '#2E3440'; btn.style.fontWeight = '500';
+      }
+    });
+  };
+
+  window.onCustomAmt = function(val) {
+    _curIAmt = val;
+    ['200','500','1000'].forEach(function(a) {
+      var btn = document.getElementById('iamt-' + a);
+      btn.style.background = '#2B3139'; btn.style.color = '#848E9C';
+      btn.style.borderColor = '#2E3440'; btn.style.fontWeight = '500';
+    });
+  };
+
+  window.recordIncentive = function() {
+    var type = _curIType;
+    var desc = '';
+    if (type === '礼品') {
+      desc = (document.getElementById('gift-desc').value.trim()) || '礼品';
+    } else {
+      var amt = _curIAmt || document.getElementById('iamt-custom').value.trim();
+      if (!amt) { alert('请选择或填写金额'); return; }
+      desc = amt + 'U ' + type;
+    }
+    var note = document.getElementById('incentive-note').value.trim();
+    var text = '【发放礼金】' + desc + (note ? '  · ' + note : '');
+    var list = loadRecords();
+    list.push({ text: text, at: new Date().toISOString() });
+    saveRecords(list);
+    renderRecords();
+    document.getElementById('incentive-note').value = '';
+    document.getElementById('iamt-custom').value = '';
+    _curIAmt = '';
+    ['200','500','1000'].forEach(function(a) {
+      var btn = document.getElementById('iamt-' + a);
+      btn.style.background = '#2B3139'; btn.style.color = '#848E9C';
+      btn.style.borderColor = '#2E3440'; btn.style.fontWeight = '500';
+    });
+  };
+
+  var MEETING_COLORS = {
+    '轻微': { bg:'rgba(0,203,129,0.08)', border:'rgba(0,203,129,0.3)', color:'#0ECB81' },
+    '中等': { bg:'rgba(240,185,11,0.08)', border:'rgba(240,185,11,0.3)', color:'#F0B90B' },
+    '严重': { bg:'rgba(246,70,93,0.08)', border:'rgba(246,70,93,0.3)', color:'#F6465D' }
+  };
+
+  window.selectMLevel = function(level) {
+    _curMLevel = level;
+    ['轻微','中等','严重'].forEach(function(l) {
+      var btn = document.getElementById('mlvl-' + l);
+      var active = l === level;
+      var c = MEETING_COLORS[l];
+      btn.style.background = active ? c.bg : '#2B3139';
+      btn.style.borderColor = active ? c.border : '#2E3440';
+      btn.querySelector('span').style.color = active ? c.color : '#EAECEF';
+    });
+  };
+
+  window.recordMeeting = function() {
+    if (!_curMLevel) { alert('请选择严重等级'); return; }
+    var purpose = document.getElementById('meeting-purpose').value.trim();
+    var text = '【面谈邀约】' + _curMLevel + (purpose ? '  · ' + purpose : '');
+    var list = loadRecords();
+    list.push({ text: text, at: new Date().toISOString() });
+    saveRecords(list);
+    renderRecords();
+    document.getElementById('meeting-purpose').value = '';
+    _curMLevel = '';
+    ['轻微','中等','严重'].forEach(function(l) {
+      var btn = document.getElementById('mlvl-' + l);
+      btn.style.background = '#2B3139'; btn.style.borderColor = '#2E3440';
+      btn.querySelector('span').style.color = '#EAECEF';
+    });
+  };
+
+  // 初始化话术面板
+  renderScriptPills();
+  updateScriptText();
 
   // ── 特别关注 ──
   var shared2 = window.EventCenterShared;
