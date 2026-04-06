@@ -401,8 +401,7 @@ function timeAgo(isoStr) {
       var pnlChgPct = (pnlRaw - c.clientPnl.weeklyAvg8w.value) / Math.abs(c.clientPnl.weeklyAvg8w.value) * 100;
       var pChgColor = pnlChgPct >= 0 ? '#0ECB81' : '#F6465D';
       var pChgBg    = pnlChgPct >= 0 ? 'rgba(14,203,129,0.15)' : 'rgba(246,70,93,0.15)';
-      pnlDeltaEl.innerHTML = '<span style="font-size:9px;font-weight:600;color:'+pChgColor+';background:'+pChgBg+';padding:1px 5px;border-radius:3px">'+(pnlChgPct>=0?'+':'')+pnlChgPct.toFixed(1)+'%</span>'
-        + '<span style="font-size:9px;color:#474D57">vs 8周均</span>';
+      pnlDeltaEl.innerHTML = '<span style="font-size:9px;font-weight:600;color:'+pChgColor+';background:'+pChgBg+';padding:1px 5px;border-radius:3px">'+(pnlChgPct>=0?'+':'')+pnlChgPct.toFixed(1)+'%</span>';
     }
   } else {
     pnlEl.textContent = '--';
@@ -515,8 +514,7 @@ function timeAgo(isoStr) {
   var deltaColor = isUp ? '#0ECB81' : '#F6465D';
   var deltaBg    = isUp ? 'rgba(14,203,129,0.15)' : 'rgba(246,70,93,0.15)';
 
-  deltaEl.innerHTML = '<span style="font-size:9px;font-weight:600;color:'+deltaColor+';background:'+deltaBg+';padding:1px 5px;border-radius:3px">'+(isUp?'+':'')+deltaPct.toFixed(1)+'%</span>'
-    + '<span style="font-size:9px;color:#474D57">vs 8周均</span>';
+  deltaEl.innerHTML = '<span style="font-size:9px;font-weight:600;color:'+deltaColor+';background:'+deltaBg+';padding:1px 5px;border-radius:3px">'+(isUp?'+':'')+deltaPct.toFixed(1)+'%</span>';
 
   // Memo（DOM 元素已移除，跳过）
 
