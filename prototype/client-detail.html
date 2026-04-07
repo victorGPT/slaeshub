@@ -94,34 +94,21 @@
       <!-- Row 2: Tags -->
       <div id="tags-row" class="px-4 pb-2 flex flex-wrap gap-1"></div>
 
-      <!-- Row 3: 资沉 + 盈亏（左右平分） -->
-      <div style="display:grid;grid-template-columns:1fr 1fr;padding:10px 16px 0;gap:0">
+      <!-- Row 3: 资沉 + 7天贡献（左右平分） -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;padding:10px 16px 14px;gap:0">
         <div style="padding-right:12px">
           <div class="text-[10px] text-[#474D57] mb-1 flex items-center gap-1">资沉<i onclick="event.stopPropagation();showDetailTip('deposit',this)" class="fa-regular fa-circle-question" style="color:#474D57;font-size:9px;cursor:pointer"></i></div>
           <span id="deposit-hero" class="text-[22px] font-bold text-[#F0B90B] tracking-tight leading-none block"></span>
           <div id="deposit-delta" class="flex items-center gap-1 mt-1.5"></div>
         </div>
         <div style="padding-left:12px">
-          <div class="text-[10px] text-[#474D57] mb-1 flex items-center gap-1">盈亏<i onclick="event.stopPropagation();showDetailTip('pnl',this)" class="fa-regular fa-circle-question" style="color:#474D57;font-size:9px;cursor:pointer"></i></div>
-          <span id="pnl-hero" class="text-[22px] font-bold leading-none block">--</span>
-          <div id="pnl-delta" class="flex items-center gap-1 mt-1.5"></div>
+          <div class="text-[10px] text-[#474D57] mb-1 flex items-center gap-1">7天贡献<i onclick="event.stopPropagation();showDetailTip('contribution',this)" class="fa-regular fa-circle-question" style="color:#474D57;font-size:9px;cursor:pointer"></i></div>
+          <span id="contribution-hero" class="text-[22px] font-bold leading-none block">--</span>
+          <div id="contribution-delta" class="flex items-center gap-1 mt-1.5"></div>
         </div>
       </div>
 
-      <!-- Row 4: 充提 / 月利润贡献，更新时间绝对右下角 -->
-      <div style="position:relative;padding:10px 16px 14px">
-        <div class="flex gap-0">
-          <div class="flex-1">
-            <div class="text-[10px] text-[#474D57] mb-0.5 flex items-center gap-1">充提<i onclick="event.stopPropagation();showDetailTip('cashflow',this)" class="fa-regular fa-circle-question" style="color:#474D57;font-size:9px;cursor:pointer"></i></div>
-            <span id="cashflow-hero" class="text-[15px] font-bold leading-none">--</span>
-          </div>
-          <div class="flex-1">
-            <div class="text-[10px] text-[#474D57] mb-0.5 flex items-center gap-1">月利润贡献<i onclick="event.stopPropagation();showDetailTip('profit',this)" class="fa-regular fa-circle-question" style="color:#474D57;font-size:9px;cursor:pointer"></i></div>
-            <span id="profit-hero" class="text-[15px] font-bold leading-none">--</span>
-          </div>
-        </div>
-        <span id="data-refresh-time" style="position:absolute;right:16px;bottom:6px;font-size:9px;color:#474D57"></span>
-      </div>
+      <span id="data-refresh-time" style="display:block;text-align:right;padding:0 16px 10px;font-size:9px;color:#474D57"></span>
 
       <!-- Row 5: Last Contact -->
       <div id="last-contact-row" class="hidden px-4 pb-3 flex items-center justify-between"></div>
@@ -185,19 +172,17 @@
 <script src="mock-seed.js"></script>
 <script>
 var DETAIL_TIPS = {
-  deposit:  '客户过去 7 天持仓资产均值（USDT）；旁边变化率为当前值与过去 8 周均值的偏差，反映中长期趋势',
-  cashflow: '本周充值减提现估算合计，基于持仓周变化推算，仅供参考',
-  profit:   '客户本月为平台贡献的可统计利润，含手续费、利差、理财利息等；由周数据 × 4.3 估算',
-  pnl:      '客户本月交易持仓方向盈亏，含合约、杠杆、迷你等品种；由 7 日数据 × 4.3 估算',
+  deposit:  '客户过去滚动7日持仓资产均值（USDT）；变化% = 过去7日资沉 vs 过去8周滚动均值',
+  contribution: '7天贡献：交易所过去滚动7日从该客户获得的盈利\n变化%：过去7日贡献 vs 过去8周滚动均值',
   distCard:   '客户各业务线持仓资产占比，总量为过去 7 天均值；变化率为当前值与过去 8 周均值的对比',
   flowCard:   '过去 8 周每周充值（绿）与提现（红）对比，右侧为历史周均净流入，W8 = 本周',
-  profitCard: '本月各业务线为平台贡献的利润明细，绿色为收入来源，红色为成本项',
-  pnlCard:    '本月各品种客户持仓盈亏明细，正值对平台有利（客户亏损），负值反之',
+  contributionCard: '各业务线过去滚动7日对交易所的净贡献明细（手续费+点差-返佣-理财利息）',
+  pnlCard:    '过去滚动7日各品种客户持仓盈亏明细，正值对平台有利（客户亏损），负值反之',
 };
 window.showDetailTip = function(key, el) {
   var box = document.getElementById('tip-box');
   var overlay = document.getElementById('tip-overlay');
-  box.textContent = DETAIL_TIPS[key] || '';
+  box.innerHTML = (DETAIL_TIPS[key] || '').replace(/\n/g, '<br>');
   var rect = el.getBoundingClientRect();
   var boxW = 180;
   var left = Math.min(rect.left, window.innerWidth - boxW - 12);
@@ -366,46 +351,24 @@ function timeAgo(isoStr) {
   // 资沉
   document.getElementById('deposit-hero').textContent = fmtUSDT(c.fMean);
 
-  // 充提（本周充值减提现估算合计）
-  var cashflowEl = document.getElementById('cashflow-hero');
-  if (thisWeekFlow) {
-    var netFlow = thisWeekFlow.inflow - thisWeekFlow.outflow;
-    cashflowEl.textContent = fmtUSDT(netFlow, true);
-    cashflowEl.style.color = netFlow >= 0 ? '#0ECB81' : '#F6465D';
-  } else {
-    cashflowEl.textContent = '--';
-    cashflowEl.style.color = '#474D57';
-  }
 
-  // 月利润贡献（周数据 × 4.3）
-  var profitEl = document.getElementById('profit-hero');
-  if (c.netContribution && c.netContribution.total !== undefined) {
-    var pv = c.netContribution.total * 4.3;
-    profitEl.textContent = fmtUSDT(pv, true);
-    profitEl.style.color = pv >= 0 ? '#0ECB81' : '#F6465D';
-  } else {
-    profitEl.textContent = '--';
-    profitEl.style.color = '#848E9C';
-  }
-
-  // 盈亏（7日数据 × 4.3）+ 变化% badge
-  var pnlEl = document.getElementById('pnl-hero');
-  var pnlDeltaEl = document.getElementById('pnl-delta');
-  var pnlRaw = c.clientPnl && c.clientPnl.total7d ? c.clientPnl.total7d.value : null;
-  if (pnlRaw !== null && pnlRaw !== undefined) {
-    var pnlMonth = pnlRaw * 4.3;
-    var pnlColor = pnlMonth >= 0 ? '#0ECB81' : '#F6465D';
-    pnlEl.textContent = fmtUSDT(pnlMonth, false);
-    pnlEl.style.color = pnlColor;
-    if (c.clientPnl.weeklyAvg8w && Math.abs(c.clientPnl.weeklyAvg8w.value) > 0) {
-      var pnlChgPct = (pnlRaw - c.clientPnl.weeklyAvg8w.value) / Math.abs(c.clientPnl.weeklyAvg8w.value) * 100;
-      var pChgColor = pnlChgPct >= 0 ? '#0ECB81' : '#F6465D';
-      var pChgBg    = pnlChgPct >= 0 ? 'rgba(14,203,129,0.15)' : 'rgba(246,70,93,0.15)';
-      pnlDeltaEl.innerHTML = '<span style="font-size:9px;font-weight:600;color:'+pChgColor+';background:'+pChgBg+';padding:1px 5px;border-radius:3px">'+(pnlChgPct>=0?'+':'')+pnlChgPct.toFixed(1)+'%</span>';
+  // 7天贡献
+  var contribEl = document.getElementById('contribution-hero');
+  var contribDeltaEl = document.getElementById('contribution-delta');
+  var contribVal = c.netContribution && c.netContribution.total != null ? c.netContribution.total : null;
+  if (contribVal !== null) {
+    var contribColor = contribVal >= 0 ? '#0ECB81' : '#F6465D';
+    contribEl.textContent = fmtUSDT(contribVal, false);
+    contribEl.style.color = contribColor;
+    if (c.netContribution.wow != null) {
+      var wowPct = c.netContribution.wow * 100;
+      var wColor = wowPct >= 0 ? '#0ECB81' : '#F6465D';
+      var wBg    = wowPct >= 0 ? 'rgba(14,203,129,0.15)' : 'rgba(246,70,93,0.15)';
+      contribDeltaEl.innerHTML = '<span style="font-size:9px;font-weight:600;color:'+wColor+';background:'+wBg+';padding:1px 5px;border-radius:3px">'+(wowPct>=0?'+':'')+wowPct.toFixed(1)+'%</span>';
     }
   } else {
-    pnlEl.textContent = '--';
-    pnlEl.style.color = '#848E9C';
+    contribEl.textContent = '--';
+    contribEl.style.color = '#848E9C';
   }
 
   // 刷新时间
@@ -541,7 +504,7 @@ function timeAgo(isoStr) {
     });
   });
 
-  // === TAB 1: EVENTS ===
+  // === TAB 1: EVENTS (display-only) ===
   (function() {
     var shared2 = window.EventCenterShared;
     var allFuEvs = shared2.loadEvents(localStorage);
@@ -551,19 +514,55 @@ function timeAgo(isoStr) {
     clientEvs.sort(function(a, b) {
       return new Date(b.createdAt || b.created_at || 0) - new Date(a.createdAt || a.created_at || 0);
     });
-    var closedList = shared2.loadClosed(localStorage);
     var closedSet2 = {};
-    closedList.forEach(function(id) { closedSet2[String(id)] = true; });
+    shared2.loadClosed(localStorage).forEach(function(id) { closedSet2[String(id)] = true; });
+
+    function fmtEvTime(iso) {
+      var d = new Date(iso || 0);
+      if (isNaN(d.getTime())) return '';
+      return (d.getMonth()+1) + '月' + d.getDate() + '日 ' + String(d.getHours()).padStart(2,'0') + ':' + String(d.getMinutes()).padStart(2,'0');
+    }
+
+    function renderEvCard(ev) {
+      var isClosed = !!closedSet2[ev.id] || ev.status === '已结束';
+      var titleColor = isClosed ? '#474D57' : '#EAECEF';
+      var titleDecor = isClosed ? 'line-through' : 'none';
+      var timeStr = fmtEvTime(ev.created_at || ev.createdAt);
+      var sourceLabel = ev.source === 'system' ? '系统' : 'BD';
+
+      var TYPE_COLORS = {
+        '大额充值': { bg:'rgba(14,203,129,0.10)', border:'rgba(14,203,129,0.22)', color:'#0ECB81' },
+        '大额提现': { bg:'rgba(246,70,93,0.10)',  border:'rgba(246,70,93,0.22)',  color:'#F6465D' },
+        '大额盈利': { bg:'rgba(240,185,11,0.10)', border:'rgba(240,185,11,0.22)', color:'#F0B90B' },
+        '大额亏损': { bg:'rgba(246,70,93,0.10)',  border:'rgba(246,70,93,0.22)',  color:'#F6465D' },
+        '账户封禁': { bg:'rgba(246,70,93,0.10)',  border:'rgba(246,70,93,0.22)',  color:'#F6465D' },
+        '爆仓':     { bg:'rgba(246,70,93,0.10)',  border:'rgba(246,70,93,0.22)',  color:'#F6465D' },
+        '主动联系': { bg:'rgba(77,166,255,0.10)', border:'rgba(77,166,255,0.22)', color:'#4DA6FF' },
+        '客户反馈': { bg:'rgba(77,166,255,0.10)', border:'rgba(77,166,255,0.22)', color:'#4DA6FF' },
+      };
+      var tc = TYPE_COLORS[ev.type] || { bg:'rgba(240,185,11,0.10)', border:'rgba(240,185,11,0.22)', color:'#F0B90B' };
+      var typeBadge = ev.type
+        ? '<span style="font-size:10px;padding:2px 8px;border-radius:999px;background:' + tc.bg + ';border:1px solid ' + tc.border + ';color:' + tc.color + '">' + ev.type + '</span>'
+        : '';
+      var sourceBadge = '<span style="font-size:10px;padding:2px 8px;border-radius:999px;background:#2B3139;color:#848E9C">' + sourceLabel + '</span>';
+
+      return '<a href="follow-up-thread.html?fuId=' + encodeURIComponent(ev.id) + '" '
+        + 'style="display:block;margin:0 12px 8px;background:#1E2329;border-radius:14px;border:1px solid #2E3440;padding:14px 14px 12px;text-decoration:none">'
+        + '<div style="display:flex;align-items:center;gap:6px;margin-bottom:10px">'
+        +   typeBadge + sourceBadge
+        +   '<span style="flex:1"></span>'
+        +   '<span style="font-size:11px;color:#474D57">' + timeStr + '</span>'
+        + '</div>'
+        + '<div style="font-size:14px;font-weight:500;color:' + titleColor + ';text-decoration:' + titleDecor + ';line-height:1.4">' + shared2.escapeHtml(ev.title || '—') + '</div>'
+        + (ev.note ? '<div style="font-size:12px;color:#848E9C;margin-top:6px;line-height:1.5">' + shared2.escapeHtml(ev.note) + '</div>' : '')
+        + '</a>';
+    }
 
     var eventsHtml;
     if (!clientEvs.length) {
       eventsHtml = '<div style="padding:40px 16px;text-align:center;color:#474D57;font-size:12px">暂无事件</div>';
     } else {
-      eventsHtml = '<div class="event-list-inner">' + clientEvs.map(function(ev) {
-        var item = shared2.normalizeEvent(ev);
-        item.isClosed = !!closedSet2[ev.id] || ev.status === '已结束';
-        return shared2.renderCard(item);
-      }).join('') + '</div>';
+      eventsHtml = '<div style="padding-top:10px">' + clientEvs.map(renderEvCard).join('') + '</div>';
     }
     document.getElementById('tab-events').innerHTML = eventsHtml;
   })();
@@ -619,18 +618,17 @@ function timeAgo(isoStr) {
   });
   assetsHtml += refreshFooter + '</div>';
 
-  // Module: 月交易盈亏（周值 × 4.3）
-  var monthMult = 4.3;
+  // Module: 周交易盈亏（滚动7日）
   var pnl = c.clientPnl;
-  var pnlMonthTotal = Math.round(pnl.total7d.value * monthMult);
+  var pnlMonthTotal = Math.round(pnl.total7d.value);
   var pnlItems = [
-    { name: '双仓合约', value: Math.round(pnl.futures7d.value * monthMult), color: pnl.futures7d.color },
-    { name: '超级杠杆', value: Math.round(pnl.leverage7d.value * monthMult), color: pnl.leverage7d.color },
-    { name: 'Mini合约', value: Math.round(pnl.mini7d.value * monthMult), color: pnl.mini7d.color },
-    { name: '现货', value: Math.round(pnl.spot7d.value * monthMult), color: pnl.spot7d.color }
+    { name: '双仓合约', value: Math.round(pnl.futures7d.value), color: pnl.futures7d.color },
+    { name: '超级杠杆', value: Math.round(pnl.leverage7d.value), color: pnl.leverage7d.color },
+    { name: 'Mini合约', value: Math.round(pnl.mini7d.value), color: pnl.mini7d.color },
+    { name: '现货', value: Math.round(pnl.spot7d.value), color: pnl.spot7d.color }
   ];
   var pnlMax = Math.max.apply(null, pnlItems.map(function(i) { return Math.abs(i.value); }).concat([1]));
-  var pnlAvgVal = pnl.weeklyAvg8w.value * monthMult;
+  var pnlAvgVal = pnl.weeklyAvg8w.value;
   var pnlChgPct = Math.abs(pnlAvgVal) > 0 ? ((pnlMonthTotal - pnlAvgVal) / Math.abs(pnlAvgVal) * 100) : 0;
   var pnlChgColor = pnlChgPct >= 0 ? '#0ECB81' : '#F6465D';
   var pnlChgChar = pnlChgPct >= 0 ? '+' : '-';
@@ -639,7 +637,7 @@ function timeAgo(isoStr) {
 
   assetsHtml += '<div class="mx-4 mt-3 bg-[#1E2329] rounded-xl border border-[#2E3440] p-3">'
     + '<div class="flex items-start justify-between mb-3">'
-    + '<div class="text-[13px] font-semibold text-[#EAECEF] flex items-center gap-1">月交易盈亏<i onclick="event.stopPropagation();showDetailTip(\'pnlCard\',this)" class="fa-regular fa-circle-question" style="color:#474D57;font-size:10px;cursor:pointer"></i></div>'
+    + '<div class="text-[13px] font-semibold text-[#EAECEF] flex items-center gap-1">周交易盈亏<i onclick="event.stopPropagation();showDetailTip(\'pnlCard\',this)" class="fa-regular fa-circle-question" style="color:#474D57;font-size:10px;cursor:pointer"></i></div>'
     + '<div class="text-right">'
     + '<div class="text-[16px] font-bold tabular-nums" style="color:' + pnlMonthColor + '">' + fmtUSDT(pnlMonthTotal, true) + '</div>'
     + '<div class="text-[10px] mt-0.5"><span style="color:' + pnlChgColor + '">' + pnlChgChar + ' ' + pnlChgSign + pnlChgPct.toFixed(1) + '%</span> <span class="text-[#474D57]">| </span>均' + fmtAvg(platAvg.pnlChg) + '</div>'
@@ -717,26 +715,26 @@ function timeAgo(isoStr) {
     + refreshFooter
     + '</div>';
 
-  // Module: 月利润贡献（周值 × 4.3）
+  // Module: 7天贡献明细
   var nc = c.netContribution;
   var ncWowColor = nc.wow >= 0 ? '#0ECB81' : '#F6465D';
   var ncItems = [
-    { name: '合约', value: Math.round(nc.futures * monthMult), isRevenue: true },
-    { name: '杠杆', value: Math.round(nc.leverage * monthMult), isRevenue: true },
-    { name: 'Mini合约', value: Math.round(nc.mini * monthMult), isRevenue: true },
-    { name: '现货', value: Math.round((nc.spot || 0) * monthMult), isRevenue: true },
-    { name: '金融卡', value: Math.round(nc.card * monthMult), isRevenue: true },
-    { name: '云算力', value: Math.round(nc.cloud * monthMult), isRevenue: true },
-    { name: '理财利息', value: Math.round(nc.savingsInterest * monthMult), isRevenue: false },
-    { name: '返佣', value: Math.round(nc.rebate * monthMult), isRevenue: false }
+    { name: '合约', value: Math.round(nc.futures), isRevenue: true },
+    { name: '杠杆', value: Math.round(nc.leverage), isRevenue: true },
+    { name: 'Mini合约', value: Math.round(nc.mini), isRevenue: true },
+    { name: '现货', value: Math.round(nc.spot || 0), isRevenue: true },
+    { name: '金融卡', value: Math.round(nc.card), isRevenue: true },
+    { name: '云算力', value: Math.round(nc.cloud), isRevenue: true },
+    { name: '理财利息', value: Math.round(nc.savingsInterest), isRevenue: false },
+    { name: '返佣', value: Math.round(nc.rebate), isRevenue: false }
   ];
   var ncMax = Math.max.apply(null, ncItems.map(function(i) { return Math.abs(i.value); }));
-  var ncMonthTotal = Math.round(nc.total * monthMult);
+  var ncMonthTotal = Math.round(nc.total);
   var ncWowChar = nc.wow >= 0 ? '+' : '-';
 
   assetsHtml += '<div class="mx-4 mt-3 mb-4 bg-[#1E2329] rounded-xl border border-[#2E3440] p-3">'
     + '<div class="flex items-start justify-between mb-3">'
-    + '<div class="text-[13px] font-semibold text-[#EAECEF] flex items-center gap-1">月利润贡献<i onclick="event.stopPropagation();showDetailTip(\'profitCard\',this)" class="fa-regular fa-circle-question" style="color:#474D57;font-size:10px;cursor:pointer"></i></div>'
+    + '<div class="text-[13px] font-semibold text-[#EAECEF] flex items-center gap-1">7天贡献明细<i onclick="event.stopPropagation();showDetailTip(\'contributionCard\',this)" class="fa-regular fa-circle-question" style="color:#474D57;font-size:10px;cursor:pointer"></i></div>'
     + '<div class="text-right">'
     + '<div class="text-[16px] font-bold tabular-nums" style="color:' + (ncMonthTotal >= 0 ? '#0ECB81' : '#F6465D') + '">' + fmtUSDT(ncMonthTotal, true) + '</div>'
     + '<div class="text-[10px] mt-0.5"><span style="color:' + ncWowColor + '">' + ncWowChar + ' ' + nc.wowDisplay + '</span> <span class="text-[#474D57]">| </span>均' + fmtAvg(platAvg.profitChg) + '</div>'
@@ -819,161 +817,6 @@ function timeAgo(isoStr) {
 
 })();
 
-// === 主动沟通 JS（从 worktree-2 引入）===
-window.openCommForm = function() {
-  window._commStatus = '跟进中';
-  var sheet = document.getElementById('comm-sheet');
-  sheet.style.display = 'flex';
-  var now = new Date();
-  var pad = function(n) { return n < 10 ? '0' + n : n; };
-  var dt = now.getFullYear() + '-' + pad(now.getMonth()+1) + '-' + pad(now.getDate())
-           + 'T' + pad(now.getHours()) + ':' + pad(now.getMinutes());
-  document.getElementById('comm-occurred-at').value = dt;
-};
-
-window.closeCommForm = function() {
-  document.getElementById('comm-sheet').style.display = 'none';
-};
-
-window.selectPill = function(el, group) {
-  var cls = 'comm-pill-' + group;
-  document.querySelectorAll('.' + cls).forEach(function(p) {
-    p.style.background = '#2B3139';
-    p.style.color = '#848E9C';
-    p.style.border = '1px solid #2E3440';
-    p.style.fontWeight = '';
-    p.removeAttribute('data-active');
-  });
-  el.style.background = '#F0B90B';
-  el.style.color = '#0B0E11';
-  el.style.border = 'none';
-  el.style.fontWeight = '600';
-  el.setAttribute('data-active', '1');
-};
-
-window.submitComm = function() {
-  var params = new URLSearchParams(location.search);
-  var uid = params.get('uid');
-  var channelEl = document.querySelector('.comm-pill-channel[data-active="1"]');
-  var channel = channelEl ? channelEl.getAttribute('data-val') : 'Telegram';
-  var resultEl = document.querySelector('.comm-pill-result[data-active="1"]');
-  var result = resultEl ? resultEl.getAttribute('data-val') : '已联系上';
-  var occurredAt = document.getElementById('comm-occurred-at').value || new Date().toISOString();
-  var summaryEl = document.getElementById('comm-summary');
-  var summary = summaryEl ? summaryEl.value.trim() : '';
-  var text = channel + ' · ' + result;
-  if (summary) text += '：' + summary;
-  // 创建跟进事件（始终创建）— 先建事件拿到 ID，再写 comm_record
-  var commTitleVal = ((document.getElementById('comm-follow-up-title') || {}).value || '').trim();
-  var newEventStatus = window._commStatus || '跟进中';
-  var fuEvents = [];
-  try { fuEvents = JSON.parse(localStorage.getItem('follow_up_events') || '[]'); } catch(e) {}
-  // 关闭该客户现有活跃事件
-  fuEvents.forEach(function(e) {
-    if (e.client_uid === uid && e.status === '跟进中') {
-      e.status = '已结束'; e.done_note = '被新事件替代'; e.done_at = new Date().toISOString();
-    }
-  });
-  var clientNameEl = document.getElementById('client-uid');
-  var newEventId    = 'fu_' + uid + '_' + Date.now();
-  var newEventTitle = commTitleVal || summary || '主动沟通';
-  var initActivities = [{ type: '创建', note: text, occurred_at: new Date().toISOString() }];
-  if (newEventStatus === '已结束') {
-    initActivities.push({ type: '结束', note: '', occurred_at: new Date().toISOString() });
-  }
-  fuEvents.push({
-    id: newEventId, client_uid: uid,
-    client_name: clientNameEl ? clientNameEl.textContent : uid,
-    status: newEventStatus, created_at: new Date().toISOString(),
-    title: newEventTitle,
-    activities: initActivities
-  });
-  localStorage.setItem('follow_up_events', JSON.stringify(fuEvents));
-
-  // 写 comm_record（带 event 关联）
-  var commKey = 'comm_records_' + uid;
-  var records = [];
-  try { records = JSON.parse(sessionStorage.getItem(commKey) || '[]'); } catch(e) {}
-  var rec = { date: occurredAt, bd: 'BD', channel: channel, result: result, occurred_at: occurredAt, summary: summary, text: text };
-  if (commTitleVal) { rec.title = commTitleVal; }
-  rec.event_id = newEventId; rec.event_title = newEventTitle;
-  records.unshift(rec);
-  sessionStorage.setItem(commKey, JSON.stringify(records));
-  sessionStorage.setItem('last_contact_' + uid, new Date().toISOString());
-
-  location.reload();
-};
-
-// === 主动沟通状态选择 ===
-window._commStatus = '跟进中';
-window.selectCommStatus = function(status) {
-  window._commStatus = status;
-  var styles = {
-    '跟进中': { bg: 'rgba(77,166,255,0.15)',  color: '#4DA6FF', border: '#4DA6FF' },
-    '已结束': { bg: 'rgba(14,203,129,0.12)',  color: '#0ECB81', border: '#0ECB81' },
-  };
-  ['跟进中','已结束'].forEach(function(s) {
-    var idMap = { '跟进中': 'comm-status-following', '已结束': 'comm-status-done' };
-    var btn = document.getElementById(idMap[s]);
-    if (!btn) return;
-    if (s === status) {
-      btn.style.background = styles[s].bg; btn.style.color = styles[s].color; btn.style.borderColor = styles[s].border; btn.style.fontWeight = '600';
-    } else {
-      btn.style.background = '#1E2329'; btn.style.color = '#848E9C'; btn.style.borderColor = '#2E3440'; btn.style.fontWeight = '400';
-    }
-  });
-};
-
-var _markDoneEventId = null;
-window.markEventDone = function(eventId) {
-  _markDoneEventId = eventId;
-  var el = document.getElementById('mark-done-note');
-  if (el) el.value = '';
-  document.getElementById('mark-done-sheet').style.display = 'flex';
-};
-window.closeDoneSheet = function() {
-  document.getElementById('mark-done-sheet').style.display = 'none';
-  _markDoneEventId = null;
-};
-window.confirmEventDone = function() {
-  if (!_markDoneEventId) return;
-  var note = (document.getElementById('mark-done-note') || {}).value || '';
-  var fuEvents = [];
-  try { fuEvents = JSON.parse(localStorage.getItem('follow_up_events') || '[]'); } catch(e) {}
-  fuEvents.forEach(function(e) {
-    if (e.id === _markDoneEventId) {
-      e.status = '已结束';
-      e.done_note = note.trim();
-      e.done_at = new Date().toISOString();
-    }
-  });
-  localStorage.setItem('follow_up_events', JSON.stringify(fuEvents));
-  window.closeDoneSheet();
-  location.reload();
-};
-window.postponeEvent = function() {
-  if (!_markDoneEventId) return;
-  var fuEvents = [];
-  try { fuEvents = JSON.parse(localStorage.getItem('follow_up_events') || '[]'); } catch(e) {}
-  fuEvents.forEach(function(e) {
-    if (e.id === _markDoneEventId) {
-      var d = new Date(e.follow_up_at || new Date()); d.setDate(d.getDate() + 3);
-      var pad = function(n) { return n < 10 ? '0' + n : '' + n; };
-      e.follow_up_at = d.getFullYear() + '-' + pad(d.getMonth()+1) + '-' + pad(d.getDate());
-      e.status = '跟进中';
-    }
-  });
-  localStorage.setItem('follow_up_events', JSON.stringify(fuEvents));
-  window.closeDoneSheet();
-  location.reload();
-};
-window.setEventFollowing = function(eventId) {
-  var fuEvents = [];
-  try { fuEvents = JSON.parse(localStorage.getItem('follow_up_events') || '[]'); } catch(e) {}
-  fuEvents.forEach(function(e) { if (e.id === eventId) e.status = '跟进中'; });
-  localStorage.setItem('follow_up_events', JSON.stringify(fuEvents));
-  location.reload();
-};
 
 // === 档案 Tab JS ===
 window.editNickname = function() {
@@ -1141,65 +984,6 @@ setTimeout(function() { if (typeof renderNotesList === 'function') renderNotesLi
   })();
 </script>
 
-<!-- 主动沟通 Bottom Sheet -->
-<div id="comm-sheet" style="display:none;position:fixed;inset:0;z-index:50;align-items:flex-end;justify-content:center" onclick="if(event.target===this)window.closeCommForm()">
-  <div style="position:absolute;inset:0;background:rgba(0,0,0,0.6);pointer-events:none"></div>
-  <div style="position:relative;width:393px;background:#1E2329;border-radius:16px 16px 0 0;padding:20px;padding-bottom:calc(20px + env(safe-area-inset-bottom));max-height:88vh;overflow-y:auto;z-index:1">
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
-      <span style="font-size:15px;font-weight:600;color:#EAECEF">记录主动沟通</span>
-      <button onclick="window.closeCommForm()" style="width:28px;height:28px;display:flex;align-items:center;justify-content:center;color:#848E9C;font-size:18px;background:none;border:0;cursor:pointer">✕</button>
-    </div>
-    <div style="font-size:11px;color:#848E9C;margin-bottom:4px">任务名称</div>
-    <input type="text" id="comm-follow-up-title" style="width:100%;background:#2B3139;color:#EAECEF;font-size:12px;border-radius:8px;padding:8px 12px;border:1px solid #2E3440;outline:none;margin-bottom:12px;box-sizing:border-box;font-family:inherit" placeholder="如：客户维护、理财拜访">
-    <div style="font-size:11px;color:#848E9C;margin-bottom:4px">渠道</div>
-    <div style="display:flex;gap:8px;overflow-x:auto;padding-bottom:4px;margin-bottom:12px;scrollbar-width:none">
-      <button class="comm-pill-channel" data-val="Telegram" data-active="1" onclick="selectPill(this,'channel')" style="flex-shrink:0;border-radius:999px;padding:4px 12px;font-size:12px;background:#F0B90B;color:#0B0E11;font-weight:600;border:none;cursor:pointer">Telegram</button>
-      <button class="comm-pill-channel" data-val="WhatsApp" onclick="selectPill(this,'channel')" style="flex-shrink:0;border-radius:999px;padding:4px 12px;font-size:12px;background:#2B3139;color:#848E9C;border:1px solid #2E3440;cursor:pointer">WhatsApp</button>
-      <button class="comm-pill-channel" data-val="微信" onclick="selectPill(this,'channel')" style="flex-shrink:0;border-radius:999px;padding:4px 12px;font-size:12px;background:#2B3139;color:#848E9C;border:1px solid #2E3440;cursor:pointer">微信</button>
-      <button class="comm-pill-channel" data-val="电话" onclick="selectPill(this,'channel')" style="flex-shrink:0;border-radius:999px;padding:4px 12px;font-size:12px;background:#2B3139;color:#848E9C;border:1px solid #2E3440;cursor:pointer">电话</button>
-      <button class="comm-pill-channel" data-val="线下" onclick="selectPill(this,'channel')" style="flex-shrink:0;border-radius:999px;padding:4px 12px;font-size:12px;background:#2B3139;color:#848E9C;border:1px solid #2E3440;cursor:pointer">线下</button>
-      <button class="comm-pill-channel" data-val="邮件" onclick="selectPill(this,'channel')" style="flex-shrink:0;border-radius:999px;padding:4px 12px;font-size:12px;background:#2B3139;color:#848E9C;border:1px solid #2E3440;cursor:pointer">邮件</button>
-      <button class="comm-pill-channel" data-val="Discord" onclick="selectPill(this,'channel')" style="flex-shrink:0;border-radius:999px;padding:4px 12px;font-size:12px;background:#2B3139;color:#848E9C;border:1px solid #2E3440;cursor:pointer">Discord</button>
-      <button class="comm-pill-channel" data-val="其他" onclick="selectPill(this,'channel')" style="flex-shrink:0;border-radius:999px;padding:4px 12px;font-size:12px;background:#2B3139;color:#848E9C;border:1px solid #2E3440;cursor:pointer">其他</button>
-    </div>
-    <div style="font-size:11px;color:#848E9C;margin-bottom:4px">结果</div>
-    <div style="display:flex;gap:8px;overflow-x:auto;padding-bottom:4px;margin-bottom:12px;scrollbar-width:none">
-      <button class="comm-pill-result" data-val="已联系上" data-active="1" onclick="selectPill(this,'result')" style="flex-shrink:0;border-radius:999px;padding:4px 12px;font-size:12px;background:#F0B90B;color:#0B0E11;font-weight:600;border:none;cursor:pointer">已联系上</button>
-      <button class="comm-pill-result" data-val="有回复" onclick="selectPill(this,'result')" style="flex-shrink:0;border-radius:999px;padding:4px 12px;font-size:12px;background:#2B3139;color:#848E9C;border:1px solid #2E3440;cursor:pointer">有回复</button>
-      <button class="comm-pill-result" data-val="已见面" onclick="selectPill(this,'result')" style="flex-shrink:0;border-radius:999px;padding:4px 12px;font-size:12px;background:#2B3139;color:#848E9C;border:1px solid #2E3440;cursor:pointer">已见面</button>
-      <button class="comm-pill-result" data-val="未接通" onclick="selectPill(this,'result')" style="flex-shrink:0;border-radius:999px;padding:4px 12px;font-size:12px;background:#2B3139;color:#848E9C;border:1px solid #2E3440;cursor:pointer">未接通</button>
-      <button class="comm-pill-result" data-val="未回复" onclick="selectPill(this,'result')" style="flex-shrink:0;border-radius:999px;padding:4px 12px;font-size:12px;background:#2B3139;color:#848E9C;border:1px solid #2E3440;cursor:pointer">未回复</button>
-      <button class="comm-pill-result" data-val="仅发送消息" onclick="selectPill(this,'result')" style="flex-shrink:0;border-radius:999px;padding:4px 12px;font-size:12px;background:#2B3139;color:#848E9C;border:1px solid #2E3440;cursor:pointer">仅发送消息</button>
-    </div>
-    <div style="font-size:11px;color:#848E9C;margin-bottom:4px">联系时间</div>
-    <input type="datetime-local" id="comm-occurred-at" style="width:100%;background:#2B3139;color:#EAECEF;font-size:12px;border-radius:8px;padding:8px 12px;border:1px solid #2E3440;outline:none;margin-bottom:12px;box-sizing:border-box;color-scheme:dark">
-    <div style="font-size:11px;color:#848E9C;margin-bottom:4px">内容摘要（选填）</div>
-    <textarea id="comm-summary" rows="2" style="width:100%;background:#2B3139;color:#EAECEF;font-size:12px;border-radius:8px;padding:8px 12px;border:1px solid #2E3440;outline:none;resize:none;margin-bottom:12px;box-sizing:border-box;font-family:inherit" placeholder="简要说明聊了什么"></textarea>
-    <div style="font-size:11px;color:#848E9C;margin-bottom:4px">状态</div>
-    <div style="display:flex;gap:8px;margin-bottom:12px">
-      <button id="comm-status-following" data-val="跟进中" onclick="selectCommStatus('跟进中')" style="flex:1;border-radius:8px;padding:6px 8px;font-size:12px;font-weight:600;background:rgba(77,166,255,0.15);color:#4DA6FF;border:1px solid #4DA6FF;cursor:pointer">跟进中</button>
-      <button id="comm-status-done" data-val="已结束" onclick="selectCommStatus('已结束')" style="flex:1;border-radius:8px;padding:6px 8px;font-size:12px;background:#1E2329;color:#848E9C;border:1px solid #2E3440;cursor:pointer">已完成</button>
-    </div>
-    <button onclick="window.submitComm()" style="width:100%;padding:12px;border-radius:12px;font-size:14px;font-weight:600;background:#F0B90B;color:#0B0E11;border:0;cursor:pointer">创建</button>
-  </div>
-</div>
-
-<!-- Mark Done Bottom Sheet -->
-<div id="mark-done-sheet" style="display:none" class="fixed inset-0 z-50 flex items-end justify-center" onclick="if(event.target===this)window.closeDoneSheet()">
-  <div class="absolute inset-0 bg-black/60"></div>
-  <div class="relative w-[393px] bg-[#1E2329] rounded-t-2xl p-5" style="padding-bottom:calc(1.25rem + env(safe-area-inset-bottom))">
-    <div class="flex items-center justify-between mb-4">
-      <span class="text-[15px] font-semibold text-[#EAECEF]">标记完成</span>
-      <button onclick="window.closeDoneSheet()" class="w-7 h-7 flex items-center justify-center text-[#848E9C] text-[18px]">✕</button>
-    </div>
-    <div class="text-[11px] text-[#848E9C] mb-1">备注（选填）</div>
-    <textarea id="mark-done-note" rows="3" class="w-full bg-[#2B3139] text-[#EAECEF] text-[13px] rounded-lg px-3 py-2.5 border border-[#2E3440] outline-none placeholder-[#474D57] resize-none mb-4" placeholder="记录一下结果..."></textarea>
-    <div class="flex gap-2">
-      <button onclick="window.confirmEventDone()" class="flex-1 py-3 rounded-xl text-[14px] font-semibold bg-[#F0B90B] text-[#0B0E11] active:opacity-80">确认完成</button>
-      <button onclick="window.postponeEvent()" class="py-3 px-4 rounded-xl text-[13px] border active:opacity-80" style="color:#4DA6FF;border-color:#4DA6FF">推迟3天</button>
-    </div>
-  </div>
-</div>
 
 <!-- Tag Sheet -->
 <div id="tag-sheet" style="display:none;position:fixed;inset:0;z-index:50;align-items:flex-end;justify-content:center" onclick="if(event.target===this)closeTagSheet()">
@@ -1246,7 +1030,10 @@ setTimeout(function() { if (typeof renderNotesList === 'function') renderNotesLi
       <i class="fa-solid fa-xmark text-[12px]"></i>
     </button>
   </div>
-  <div class="px-4 pt-3 pb-3 flex-shrink-0">
+  <div class="overflow-y-auto flex-1 px-4 pt-2 pb-1">
+    <div id="notes-list"></div>
+  </div>
+  <div class="px-4 pt-2 pb-3 flex-shrink-0 border-t border-[#2E3440]">
     <textarea id="note-input" rows="3" class="w-full bg-[#2B3139] text-[#EAECEF] text-[13px] rounded-xl px-3 py-2.5 border border-[#2E3440] outline-none placeholder-[#474D57] resize-none focus:border-[#F0B90B]/40" placeholder="输入笔记..."></textarea>
     <button onclick="saveNote()" class="mt-2 w-full h-10 bg-[#F0B90B] text-[#0B0E11] text-[13px] font-bold rounded-xl active:scale-[0.98] transition-transform">保存</button>
   </div>

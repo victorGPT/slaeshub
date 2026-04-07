@@ -131,7 +131,7 @@
 
   // ---------- 排序 ----------
 
-  // 按资沉降序，取前十，同时带盈亏数据
+  // 按资沉降序，取前十，同时带7天贡献数据
   var rankList = D.clients.slice().sort(function(a, b) {
     return (b.fMean || 0) - (a.fMean || 0);
   }).slice(0, 10);
@@ -139,14 +139,14 @@
   // ---------- Render helpers ----------
 
   var TIPS = {
-    deposit: '客户过去 7 天持仓资产均值（USDT），变化% 对比 8 周均值',
-    profit:  '客户本月交易盈亏估算（7日数据 × 4.3），变化% 对比 8 周均值',
+    deposit:      '资沉：客户过去滚动7日持仓资产均值（USDT）\n变化%：过去7日资沉 vs 过去8周滚动均值',
+    contribution: '7天贡献：交易所过去滚动7日从该客户获得的盈利\n变化%：过去7日贡献 vs 过去8周滚动均值',
   };
 
   window.showTip = function(col, el) {
     var box = document.getElementById('tip-box');
     var overlay = document.getElementById('tip-overlay');
-    box.textContent = TIPS[col] || '';
+    box.innerHTML = (TIPS[col] || '').replace(/\n/g, '<br>');
     var rect = el.getBoundingClientRect();
     var boxW = 180;
     var left = Math.min(rect.left, window.innerWidth - boxW - 12);
@@ -168,7 +168,7 @@
     return '<div style="display:grid;grid-template-columns:1fr 128px 104px;padding:7px 12px 5px;border-bottom:1px solid #2E3440">'
       + '<span style="font-size:13px;font-weight:600;color:#848E9C">客户</span>'
       + '<span style="font-size:13px;font-weight:600;color:#848E9C;display:flex;align-items:center;gap:2px">资沉' + tipIcon('deposit') + '</span>'
-      + '<span style="font-size:13px;font-weight:600;color:#848E9C;display:flex;align-items:center;gap:2px">盈亏' + tipIcon('profit') + '</span>'
+      + '<span style="font-size:13px;font-weight:600;color:#848E9C;display:flex;align-items:center;gap:2px">7天贡献' + tipIcon('contribution') + '</span>'
       + '</div>';
   }
 
@@ -192,20 +192,16 @@
         + '</div>'
         : '<span style="font-size:13px;color:#474D57">—</span>';
 
-      // 盈亏
-      var pnlVal = c.clientPnl && c.clientPnl.total7d ? c.clientPnl.total7d.value * 4.3 : null;
-      var pnlChgPct = null;
-      if (c.clientPnl && c.clientPnl.total7d && c.clientPnl.weeklyAvg8w) {
-        var avg8w = c.clientPnl.weeklyAvg8w.value;
-        if (Math.abs(avg8w) > 0) pnlChgPct = (c.clientPnl.total7d.value - avg8w) / Math.abs(avg8w) * 100;
-      }
-      var pnlColor  = pnlVal != null ? (pnlVal >= 0 ? '#0ECB81' : '#F6465D') : '#474D57';
-      var pChgColor = pnlChgPct != null ? (pnlChgPct >= 0 ? '#0ECB81' : '#F6465D') : null;
-      var pChgBg    = pnlChgPct != null ? (pnlChgPct >= 0 ? 'rgba(14,203,129,0.15)' : 'rgba(246,70,93,0.15)') : null;
-      var profitHTML = pnlVal != null
+      // 7天贡献
+      var contribVal = c.netContribution && c.netContribution.total != null ? c.netContribution.total : null;
+      var contribWow = c.netContribution && c.netContribution.wow != null ? c.netContribution.wow * 100 : null;
+      var cColor    = contribVal != null ? (contribVal >= 0 ? '#0ECB81' : '#F6465D') : '#474D57';
+      var cChgColor = contribWow != null ? (contribWow >= 0 ? '#0ECB81' : '#F6465D') : null;
+      var cChgBg    = contribWow != null ? (contribWow >= 0 ? 'rgba(14,203,129,0.15)' : 'rgba(246,70,93,0.15)') : null;
+      var profitHTML = contribVal != null
         ? '<div style="display:flex;align-items:center;gap:4px;flex-wrap:nowrap">'
-        +   '<span style="font-size:13px;font-weight:600;color:' + pnlColor + ';white-space:nowrap">' + fmt(pnlVal, false) + '</span>'
-        +   (pnlChgPct != null ? '<span style="font-size:9px;font-weight:600;color:' + pChgColor + ';background:' + pChgBg + ';padding:1px 4px;border-radius:3px;white-space:nowrap">' + (pnlChgPct >= 0 ? '+' : '') + pnlChgPct.toFixed(1) + '%</span>' : '')
+        +   '<span style="font-size:13px;font-weight:600;color:' + cColor + ';white-space:nowrap">' + fmt(contribVal, false) + '</span>'
+        +   (contribWow != null ? '<span style="font-size:9px;font-weight:600;color:' + cChgColor + ';background:' + cChgBg + ';padding:1px 4px;border-radius:3px;white-space:nowrap">' + (contribWow >= 0 ? '+' : '') + contribWow.toFixed(1) + '%</span>' : '')
         + '</div>'
         : '<span style="font-size:13px;color:#474D57">—</span>';
 
@@ -241,30 +237,15 @@
     var closedSet = {};
     closed.forEach(function(id) { closedSet[String(id)] = true; });
 
-    function deadlineMeta(dl) {
-      if (!dl) return null;
-      if (dl === 'pending') return { label: '待定', color: '#474D57' };
-      var now = new Date(); now.setHours(0,0,0,0);
-      var due = new Date(dl); due.setHours(0,0,0,0);
-      var diff = Math.round((due - now) / 86400000);
-      var color = diff <= 0 ? '#F6465D' : diff <= 3 ? '#F0B90B' : '#848E9C';
-      var d = new Date(dl);
-      return { label: (d.getMonth()+1) + '月' + d.getDate() + '日', color: color };
-    }
-
     var items = flagged
       .map(function(f) {
         var ev = evMap[f.fuId];
         if (!ev || closedSet[f.fuId]) return null;
-        return { ev: ev, deadline: f.deadline, dm: deadlineMeta(f.deadline) };
+        return { ev: ev };
       })
       .filter(Boolean)
       .sort(function(a, b) {
-        var da = a.deadline || 'pending', db = b.deadline || 'pending';
-        if (da === 'pending' && db === 'pending') return 0;
-        if (da === 'pending') return 1;
-        if (db === 'pending') return -1;
-        return da < db ? -1 : da > db ? 1 : 0;
+        return new Date(b.ev.created_at) - new Date(a.ev.created_at);
       });
 
     var countBadge = items.length > 0
@@ -273,14 +254,13 @@
 
     var contentHtml;
     if (items.length === 0) {
-      contentHtml = '<div style="padding:20px 16px;text-align:center;color:#848E9C;font-size:13px">暂无待办<br><span style="font-size:11px">在事件页星标后将出现在这里</span></div>';
+      contentHtml = '<div style="padding:20px 16px;text-align:center;color:#848E9C;font-size:13px">暂无待办<br><span style="font-size:11px">在事件页加入待办后将出现在这里</span></div>';
     } else {
       contentHtml = items.map(function(item, i) {
         var ev = item.ev;
         var nick = localStorage.getItem('nickname_' + ev.client_uid) || '';
         var clientLabel = ev.client_uid + (nick ? ' · ' + nick : '');
-        var dm = item.dm;
-        var badge = dm ? '<span style="font-size:10px;padding:1px 7px;border-radius:999px;border:1px solid ' + dm.color + '33;color:' + dm.color + ';background:' + dm.color + '14;white-space:nowrap;flex-shrink:0">' + dm.label + '</span>' : '';
+        var createdDate = ev.created_at ? (function() { var d = new Date(ev.created_at); return (d.getMonth()+1) + '月' + d.getDate() + '日'; })() : '';
         var border = i < items.length - 1 ? 'border-bottom:1px solid #2E3440;' : '';
         return '<a href="follow-up-thread.html?fuId=' + ev.id + '" style="display:flex;align-items:center;gap:10px;padding:10px 14px;' + border + 'text-decoration:none">'
           + '<i class="fa-solid fa-star" style="font-size:11px;color:#F0B90B;flex-shrink:0"></i>'
@@ -288,7 +268,7 @@
           + '<div style="font-size:13px;color:#EAECEF;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + (ev.title || '—') + '</div>'
           + '<div style="margin-top:2px;font-size:10px;color:#848E9C">' + clientLabel + '</div>'
           + '</div>'
-          + badge
+          + (createdDate ? '<span style="font-size:10px;color:#474D57;white-space:nowrap;flex-shrink:0">' + createdDate + '</span>' : '')
           + '</a>';
       }).join('');
     }
@@ -404,8 +384,8 @@
   // ---------- 注入页面 ----------
 
   document.getElementById('main-content').innerHTML =
-    buildTodoSection()
-  + buildEventsTickerSection()
+    buildEventsTickerSection()
+  + buildTodoSection()
   + buildRankSection();
 
   // 事件跑马灯 hover 暂停
@@ -416,14 +396,6 @@
   }
 
   // ---------- Search ----------
-
-  function getStatusLabel(c) {
-    var rate = c.adjustedTrendRate;
-    var pct = Math.abs(rate * 100).toFixed(1);
-    if (rate <= -0.01) return { label: '流失 ' + pct + '%', bg: 'rgba(246,70,93,0.15)', color: '#F6465D' };
-    if (rate >= 0.01)  return { label: '增长 ' + pct + '%', bg: 'rgba(14,203,129,0.15)', color: '#0ECB81' };
-    return { label: '稳定', bg: 'rgba(132,142,156,0.15)', color: '#848E9C' };
-  }
 
   function renderSearchResults(query) {
     var dropdown = document.getElementById('search-dropdown');
@@ -448,17 +420,11 @@
     }
 
     dropdown.innerHTML = matches.map(function(c) {
-      var sl = getStatusLabel(c);
+      var nick = localStorage.getItem('nickname_' + c.uid) || '';
       return '<a href="client-detail.html?uid=' + c.uid + '" class="flex items-center justify-between px-4 py-3 border-b border-[#2E3440] last:border-0 active:bg-[#2B3139]">'
-        + '<div class="min-w-0">'
-        +   '<div class="flex items-center gap-2">'
-        +     '<span class="text-[13px] font-medium text-[#EAECEF] truncate">' + c.name + '</span>'
-        +     '<span class="text-[11px] text-[#474D57]">UID ' + c.uid + '</span>'
-        +   '</div>'
-        +   '<div class="flex items-center gap-2 mt-0.5">'
-        +     '<span class="text-[12px] text-[#EAECEF]">' + c.depositDisplay + '</span>'
-        +     '<span class="text-[10px] px-1.5 py-0.5 rounded-full" style="background:' + sl.bg + ';color:' + sl.color + '">' + sl.label + '</span>'
-        +   '</div>'
+        + '<div>'
+        +   '<div class="text-[13px] font-medium text-[#EAECEF]">' + c.uid + '</div>'
+        +   (nick ? '<div class="text-[11px] text-[#848E9C] mt-0.5">' + nick + '</div>' : '')
         + '</div>'
         + '<i class="fa-solid fa-chevron-right text-[10px] text-[#474D57] flex-shrink-0"></i>'
         + '</a>';

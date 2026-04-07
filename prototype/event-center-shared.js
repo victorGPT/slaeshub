@@ -9,9 +9,6 @@
   var CLOSED_KEY = 'slaesh_closed';
   var EVENTS_KEY = 'follow_up_events';
   var FILTER_OPTIONS = ['全部', '主动联系', '客户反馈', '大额充值', '大额提现', '大额盈利', '大额亏损', '账户封禁', '其他'];
-  // deadline 存实际日期字符串 'YYYY-MM-DD'
-  var DEADLINE_META = {}; // 保留向后兼容，不再使用 keyword
-
   function safeArray(value) {
     return Array.isArray(value) ? value : [];
   }
@@ -59,33 +56,6 @@
     };
   }
 
-  function todayStr() {
-    return new Date().toISOString().split('T')[0];
-  }
-
-  function getDeadlineMeta(deadline) {
-    if (!deadline) return { label: '', color: '#848E9C', isPending: false };
-    // 待定
-    if (deadline === 'pending') return { label: '待定', color: '#474D57', isPending: true };
-    // 向后兼容旧的 keyword 格式
-    if (deadline === 'today') deadline = todayStr();
-    if (deadline === 'week') {
-      var d = new Date(); d.setDate(d.getDate() + 7);
-      deadline = d.toISOString().split('T')[0];
-    }
-    if (deadline === 'month') {
-      var d2 = new Date(); d2.setDate(d2.getDate() + 30);
-      deadline = d2.toISOString().split('T')[0];
-    }
-    var now = new Date(); now.setHours(0,0,0,0);
-    var due = new Date(deadline); due.setHours(0,0,0,0);
-    var diffDays = Math.round((due - now) / 86400000);
-    var color = diffDays <= 0 ? '#F6465D' : diffDays <= 3 ? '#F0B90B' : '#848E9C';
-    var d3 = new Date(deadline);
-    var label = (d3.getMonth()+1) + '月' + d3.getDate() + '日';
-    return { label: label, color: color, isPending: false };
-  }
-
   function getFlaggedBadgeMeta(flaggedEntries) {
     var count = safeArray(flaggedEntries).length;
     return {
@@ -95,14 +65,13 @@
     };
   }
 
-  function upsertFlaggedEntry(flaggedEntries, fuId, deadline, flaggedAt) {
+  function upsertFlaggedEntry(flaggedEntries, fuId, flaggedAt) {
     var cleanId = asString(fuId);
     var next = safeArray(flaggedEntries).filter(function(entry) {
       return asString(entry && entry.fuId) !== cleanId;
     });
     next.push({
       fuId: cleanId,
-      deadline: getDeadlineMeta(deadline).key,
       flaggedAt: asString(flaggedAt)
     });
     return next;
@@ -142,7 +111,6 @@
       if (!cleanId) return;
       map.set(cleanId, {
         fuId: cleanId,
-        deadline: getDeadlineMeta(entry && entry.deadline).key,
         flaggedAt: asString(entry && entry.flaggedAt)
       });
     });
@@ -151,7 +119,6 @@
 
   function buildDerivedItem(event, flaggedMap, closedSet) {
     var entry = flaggedMap.get(event.id) || null;
-    var deadlineMeta = entry ? getDeadlineMeta(entry.deadline) : null;
     return {
       id: event.id,
       clientUid: event.clientUid,
@@ -163,9 +130,6 @@
       createdAtMs: timeMs(event.createdAt),
       isFlagged: !!entry,
       isClosed: closedSet.has(event.id) || event.status === '已结束',
-      deadline: entry ? entry.deadline : '',
-      deadlineLabel: deadlineMeta ? deadlineMeta.label : '',
-      deadlineColor: deadlineMeta ? deadlineMeta.color : '',
       flaggedAt: entry ? entry.flaggedAt : ''
     };
   }
@@ -175,13 +139,7 @@
   }
 
   function sortFlaggedItems(a, b) {
-    // 待定排最后，有日期的按日期从近到远
-    var da = a.deadline || 'pending';
-    var db = b.deadline || 'pending';
-    if (da === 'pending' && db === 'pending') return b.createdAtMs - a.createdAtMs;
-    if (da === 'pending') return 1;
-    if (db === 'pending') return -1;
-    return da < db ? -1 : da > db ? 1 : 0;
+    return b.createdAtMs - a.createdAtMs;
   }
 
   function computeFlaggedView(events, flaggedEntries, closedIds) {
@@ -298,10 +256,6 @@
     return '<span class="event-type-badge">' + escapeHtml(type) + '</span>';
   }
 
-  function renderDeadlineBadge(item) {
-    return '<span class="event-deadline-badge" style="color:' + item.deadlineColor + ';border-color:' + item.deadlineColor + '33;background:' + item.deadlineColor + '14">' + escapeHtml(item.deadlineLabel) + '</span>';
-  }
-
   function renderStarButton(item) {
     var iconClass = item.isFlagged ? 'fa-solid' : 'fa-regular';
     var color = item.isFlagged ? '#F0B90B' : '#474D57';
@@ -310,15 +264,7 @@
       + '</button>';
   }
 
-  function renderChooser(fuId) {
-    var today = todayStr();
-    return '<div class="event-chooser" style="align-items:center">'
-      + '<button type="button" class="event-chooser-btn" data-action="choose-deadline" data-fu-id="' + escapeHtml(fuId) + '" data-deadline="' + today + '">今天</button>'
-      + '<input type="date" class="event-date-input" data-fu-id="' + escapeHtml(fuId) + '" min="' + today + '" style="flex:1;background:#2B3139;color:#EAECEF;border:1px solid #2E3440;border-radius:999px;padding:5px 10px;font-size:12px;outline:none;cursor:pointer">'
-      + '</div>';
-  }
-
-  function renderCard(item, openChooserId) {
+  function renderCard(item) {
     var _uid = item.clientUid || '';
     var _name = item.clientName || '';
     var clientLabel = escapeHtml(_uid + (_name ? ' · ' + _name : '') || '未命名客户');
@@ -344,11 +290,11 @@
   }
 
   function renderFlaggedCard(item) {
-    return renderCard(item, '');
+    return renderCard(item);
   }
 
-  function renderAllCard(item, openChooserId) {
-    return renderCard(item, openChooserId);
+  function renderAllCard(item) {
+    return renderCard(item);
   }
 
   function renderEmptyState(pageMode) {
@@ -373,8 +319,7 @@
     var listEl = config && config.listId ? document.getElementById(config.listId) : null;
     var state = {
       currentTab: pageMode === 'embedded' ? 'flagged' : 'all',
-      currentFilter: '全部',
-      openChooserId: ''
+      currentFilter: '全部'
     };
 
     function getSnapshot() {
@@ -411,28 +356,25 @@
         + view.items.map(function(item) {
           return pageMode === 'star' || (pageMode === 'embedded' && state.currentTab === 'flagged')
             ? renderFlaggedCard(item)
-            : renderAllCard(item, state.openChooserId);
+            : renderAllCard(item);
         }).join('')
         + '</div>';
     }
 
-    function setFlagged(fuId, deadline) {
-      var next = upsertFlaggedEntry(loadFlagged(storage), fuId, deadline, new Date().toISOString());
+    function setFlagged(fuId) {
+      var next = upsertFlaggedEntry(loadFlagged(storage), fuId, new Date().toISOString());
       saveFlagged(storage, next);
-      state.openChooserId = '';
       render();
     }
 
     function unsetFlagged(fuId) {
       saveFlagged(storage, removeFlaggedEntry(loadFlagged(storage), fuId));
-      state.openChooserId = '';
       render();
     }
 
     function closeEvent(fuId) {
       var next = closeEventIds(loadClosed(storage), fuId);
       saveClosed(storage, next);
-      state.openChooserId = '';
       render();
     }
 
@@ -470,14 +412,8 @@
           if (flaggedMap.has(fuId)) {
             unsetFlagged(fuId);
           } else {
-            state.openChooserId = state.openChooserId === fuId ? '' : fuId;
-            render();
+            setFlagged(fuId);
           }
-          return;
-        }
-
-        if (action === 'choose-deadline') {
-          setFlagged(fuId, actionEl.getAttribute('data-deadline') || todayStr());
           return;
         }
 
@@ -489,15 +425,6 @@
         if (action === 'close-event') {
           closeEvent(fuId);
         }
-      });
-    }
-
-    // date input change → 自定义截止日
-    if (listEl) {
-      listEl.addEventListener('change', function(event) {
-        var input = event.target.closest('.event-date-input');
-        if (!input || !input.value) return;
-        setFlagged(input.getAttribute('data-fu-id'), input.value);
       });
     }
 
@@ -517,7 +444,6 @@
 
   return {
     CLOSED_KEY: CLOSED_KEY,
-    DEADLINE_META: DEADLINE_META,
     EVENTS_KEY: EVENTS_KEY,
     FILTER_OPTIONS: FILTER_OPTIONS,
     FLAGGED_KEY: FLAGGED_KEY,
@@ -525,7 +451,6 @@
     computeAllView: computeAllView,
     computeFlaggedView: computeFlaggedView,
     escapeHtml: escapeHtml,
-    getDeadlineMeta: getDeadlineMeta,
     getFlaggedBadgeMeta: getFlaggedBadgeMeta,
     loadClosed: loadClosed,
     loadEvents: loadEvents,

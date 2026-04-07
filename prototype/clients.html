@@ -117,43 +117,7 @@
   var D = window.PROTOTYPE_DATA;
   var searchInput = document.getElementById('search-input');
 
-  // 跟进事件：读取一次，供圆点指示使用
-  var _fuEvents = [];
-  try { _fuEvents = JSON.parse(localStorage.getItem('follow_up_events') || '[]'); } catch(e) {}
-  var _todayStr = new Date().toISOString().split('T')[0];
-  function getFollowUpDot(uid) {
-    var dot = null;
-    _fuEvents.forEach(function(e) {
-      if (e.client_uid === uid && e.status !== '已结束') {
-        dot = (e.follow_up_at < _todayStr) ? '#F6465D' : '#4DA6FF';
-      }
-    });
-    return dot;
-  }
-
-  // 维度配置
-  var SORT_CONFIG = {
-    deposit:  { color: '#F0B90B' },
-    profit:   { color: '#0ECB81' },
-    favs:     { color: '#F0B90B' },
-  };
-
-  // 收藏 localStorage
-  var FAV_KEY = 'slaeshub_favs';
-  function getFavs() { try { return JSON.parse(localStorage.getItem(FAV_KEY) || '[]'); } catch(e) { return []; } }
-  function setFavs(arr) { localStorage.setItem(FAV_KEY, JSON.stringify(arr)); }
-  function isFav(uid) { return getFavs().indexOf(uid) !== -1; }
-  function toggleFav(uid) {
-    var arr = getFavs();
-    var idx = arr.indexOf(uid);
-    if (idx === -1) arr.push(uid); else arr.splice(idx, 1);
-    setFavs(arr);
-  }
-
-  // 读取 URL 参数，默认 deposit
-  var urlSort = new URLSearchParams(location.search).get('sort') || 'deposit';
-  var activeSort = (SORT_CONFIG[urlSort] ? urlSort : 'deposit');
-  var sortAsc = false; // 默认倒序（大→小）
+var sortAsc = false; // 默认倒序（大→小）
   var PAGE_SIZE = 20;
   var currentPage = 1;
 
@@ -166,162 +130,88 @@
     if (abs >= 1e3) return sign + (abs / 1e3).toFixed(1) + 'K';
     return (withSign && val > 0 ? '+' : (val < 0 ? '-' : '')) + Math.round(abs).toLocaleString();
   }
-  // 兼容旧调用
-  function fmtWan(val) { return fmt(val, true); }
-
-  // 获取当前维度的指标值文本
-  function getMetricDisplay(c, sort) {
-    if (sort === 'deposit') {
-      return c.depositDisplay;
-    }
-    if (sort === 'profit') {
-      return c.netContribution ? c.netContribution.totalDisplay : null;
-    }
-    return null;
-  }
-
   // 排序函数
-  function sortClients(list, sort) {
-    var sorted = list.slice();
-    if (sort === 'deposit') {
-      sorted.sort(function(a, b) { return b.fMean - a.fMean; });
-    } else if (sort === 'profit') {
-      sorted.sort(function(a, b) {
-        var ta = a.clientPnl && a.clientPnl.total7d ? a.clientPnl.total7d.value : 0;
-        var tb = b.clientPnl && b.clientPnl.total7d ? b.clientPnl.total7d.value : 0;
-        return tb - ta;
-      });
-    }
-    return sorted;
+  function sortClients(list) {
+    return list.slice().sort(function(a, b) {
+      var ta = a.netContribution ? a.netContribution.total : 0;
+      var tb = b.netContribution ? b.netContribution.total : 0;
+      return tb - ta;
+    });
   }
 
   var TIPS = {
-    deposit: '客户过去 7 天持仓资产均值（USDT），变化% 对比 8 周均值',
-    profit:  '客户本月交易盈亏估算（7日数据 × 4.3），正值代表客户亏损，变化% 对比 8 周均值',
+    deposit:      '资沉：客户过去滚动7日持仓资产均值（USDT）\n变化%：过去7日资沉 vs 过去8周滚动均值',
+    contribution: '7天贡献：交易所过去滚动7日从该客户获得的盈利\n变化%：过去7日贡献 vs 过去8周滚动均值',
   };
 
   // 表头
   function headerHTML() {
-    var s = activeSort;
-    var hc = function(col) {
-      if (col === 'deposit') return s === 'deposit' ? '#F0B90B' : '#474D57';
-      if (col === 'profit')  return s === 'profit'  ? '#0ECB81' : '#474D57';
-    };
-    var sortIcon = function(col) {
-      var isActive = col === s;
-      var upColor   = isActive && sortAsc  ? hc(col) : '#474D57';
-      var downColor = isActive && !sortAsc ? hc(col) : '#474D57';
-      return '<span style="display:inline-flex;flex-direction:column;align-items:center;margin-left:3px;gap:0;line-height:1">'
-        + '<i class="fa-solid fa-caret-up"   style="font-size:8px;color:' + upColor   + ';display:block;margin-bottom:-1px"></i>'
-        + '<i class="fa-solid fa-caret-down" style="font-size:8px;color:' + downColor + ';display:block"></i>'
-        + '</span>';
-    };
-    var col = function(key, label, align) {
-      var a = align || 'right';
-      return '<span onclick="sortBy(\'' + key + '\')" style="font-size:13px;font-weight:600;text-align:left;color:' + hc(key) + ';cursor:pointer;display:flex;align-items:center;justify-content:flex-start;gap:1px;user-select:none">'
-        + '<span>' + label + '</span>'
-        + sortIcon(key)
-        + '<i onclick="event.stopPropagation();showTip(\'' + key + '\',this)" class="fa-regular fa-circle-question" style="color:#474D57;font-size:9px;margin-left:3px;cursor:pointer"></i>'
-        + '</span>';
-    };
+    var upColor   = !sortAsc ? '#474D57' : '#0ECB81';
+    var downColor = sortAsc  ? '#474D57' : '#0ECB81';
+    var sortIcon = '<span style="display:inline-flex;flex-direction:column;align-items:center;margin-left:3px;gap:0;line-height:1">'
+      + '<i class="fa-solid fa-caret-up"   style="font-size:8px;color:' + upColor   + ';display:block;margin-bottom:-1px"></i>'
+      + '<i class="fa-solid fa-caret-down" style="font-size:8px;color:' + downColor + ';display:block"></i>'
+      + '</span>';
     return '<div style="display:grid;grid-template-columns:1fr 128px 104px;padding:7px 12px 5px;border-bottom:1px solid #2E3440">'
       + '<span style="font-size:13px;font-weight:600;color:#848E9C">客户</span>'
-      + col('deposit', '资沉')
-      + col('profit',  '盈亏')
+      + '<span style="font-size:13px;font-weight:600;color:#848E9C;display:flex;align-items:center;gap:2px">资沉<i onclick="event.stopPropagation();showTip(\'deposit\',this)" class="fa-regular fa-circle-question" style="color:#474D57;font-size:9px;margin-left:3px;cursor:pointer"></i></span>'
+      + '<span onclick="toggleSort()" style="font-size:13px;font-weight:600;color:#0ECB81;cursor:pointer;display:flex;align-items:center;gap:1px;user-select:none">'
+      +   '<span>7天贡献</span>' + sortIcon
+      +   '<i onclick="event.stopPropagation();showTip(\'contribution\',this)" class="fa-regular fa-circle-question" style="color:#474D57;font-size:9px;margin-left:3px;cursor:pointer"></i>'
+      + '</span>'
       + '</div>';
   }
 
   // 渲染单行
-  function rowHTML(c, sort, isLast) {
+  function rowHTML(c, isLast) {
     var border = isLast ? '' : 'border-bottom:1px solid #2E3440;';
 
+    // 资沉
     var depositVal = c.fMean != null ? c.fMean : null;
     var depositChgPct = null;
     if (depositVal != null && c.weeks && c.weeks.length > 0) {
       var thisWeek = c.weeks[c.weeks.length - 1];
       depositChgPct = depositVal > 0 ? ((thisWeek - depositVal) / depositVal * 100) : 0;
     }
-    var depositChgColor = depositChgPct != null ? (depositChgPct >= 0 ? '#0ECB81' : '#F6465D') : null;
-    var depositChgBg   = depositChgPct != null ? (depositChgPct >= 0 ? 'rgba(14,203,129,0.15)' : 'rgba(246,70,93,0.15)') : null;
+    var dChgColor = depositChgPct != null ? (depositChgPct >= 0 ? '#0ECB81' : '#F6465D') : null;
+    var dChgBg    = depositChgPct != null ? (depositChgPct >= 0 ? 'rgba(14,203,129,0.15)' : 'rgba(246,70,93,0.15)') : null;
     var depositHTML = depositVal != null
-      ? '<div style="display:flex;align-items:center;justify-content:flex-start;gap:4px;flex-wrap:nowrap">'
+      ? '<div style="display:flex;align-items:center;gap:4px;flex-wrap:nowrap">'
       +   '<span style="font-size:13px;font-weight:700;color:#F0B90B;white-space:nowrap">' + fmt(depositVal, false) + '</span>'
-      +   (depositChgPct != null
-          ? '<span style="font-size:9px;font-weight:600;color:' + depositChgColor + ';background:' + depositChgBg + ';padding:1px 4px;border-radius:3px;white-space:nowrap">'
-          +   (depositChgPct >= 0 ? '+' : '') + depositChgPct.toFixed(1) + '%'
-          + '</span>'
-          : '')
+      +   (depositChgPct != null ? '<span style="font-size:9px;font-weight:600;color:' + dChgColor + ';background:' + dChgBg + ';padding:1px 4px;border-radius:3px;white-space:nowrap">' + (depositChgPct >= 0 ? '+' : '') + depositChgPct.toFixed(1) + '%</span>' : '')
       + '</div>'
       : '<span style="font-size:13px;color:#474D57">—</span>';
 
-    var pnlVal = c.clientPnl && c.clientPnl.total7d ? c.clientPnl.total7d.value * 4.3 : null;
-    var pnlChgPct = null;
-    if (c.clientPnl && c.clientPnl.total7d && c.clientPnl.weeklyAvg8w) {
-      var avg8w = c.clientPnl.weeklyAvg8w.value;
-      if (Math.abs(avg8w) > 0) {
-        pnlChgPct = (c.clientPnl.total7d.value - avg8w) / Math.abs(avg8w) * 100;
-      }
-    }
-    var pnlColor = pnlVal != null ? (pnlVal >= 0 ? '#0ECB81' : '#F6465D') : '#474D57';
-    var pnlChgColor = pnlChgPct != null ? (pnlChgPct >= 0 ? '#0ECB81' : '#F6465D') : null;
-    var pnlChgBg   = pnlChgPct != null ? (pnlChgPct >= 0 ? 'rgba(14,203,129,0.15)' : 'rgba(246,70,93,0.15)') : null;
-    var profitHTML = pnlVal != null
-      ? '<div style="display:flex;align-items:center;justify-content:flex-start;gap:4px;flex-wrap:nowrap">'
-      +   '<span style="font-size:13px;font-weight:600;color:' + pnlColor + ';white-space:nowrap">' + fmt(pnlVal, false) + '</span>'
-      +   (pnlChgPct != null
-          ? '<span style="font-size:9px;font-weight:600;color:' + pnlChgColor + ';background:' + pnlChgBg + ';padding:1px 4px;border-radius:3px;white-space:nowrap">'
-          +   (pnlChgPct >= 0 ? '+' : '') + pnlChgPct.toFixed(1) + '%'
-          + '</span>'
-          : '')
+    // 7天贡献
+    var contribVal = c.netContribution && c.netContribution.total != null ? c.netContribution.total : null;
+    var contribWow = c.netContribution && c.netContribution.wow != null ? c.netContribution.wow * 100 : null;
+    var pnlColor    = contribVal != null ? (contribVal >= 0 ? '#0ECB81' : '#F6465D') : '#474D57';
+    var pnlChgColor = contribWow != null ? (contribWow >= 0 ? '#0ECB81' : '#F6465D') : null;
+    var pnlChgBg    = contribWow != null ? (contribWow >= 0 ? 'rgba(14,203,129,0.15)' : 'rgba(246,70,93,0.15)') : null;
+    var profitHTML = contribVal != null
+      ? '<div style="display:flex;align-items:center;gap:4px;flex-wrap:nowrap">'
+      +   '<span style="font-size:13px;font-weight:600;color:' + pnlColor + ';white-space:nowrap">' + fmt(contribVal, false) + '</span>'
+      +   (contribWow != null ? '<span style="font-size:9px;font-weight:600;color:' + pnlChgColor + ';background:' + pnlChgBg + ';padding:1px 4px;border-radius:3px;white-space:nowrap">' + (contribWow >= 0 ? '+' : '') + contribWow.toFixed(1) + '%</span>' : '')
       + '</div>'
       : '<span style="font-size:13px;color:#474D57">—</span>';
-
-    var dotColor = getFollowUpDot(c.uid);
-    var dotHTML = dotColor
-      ? '<span style="width:6px;height:6px;border-radius:50%;background:' + dotColor + ';display:inline-block;margin-right:4px;flex-shrink:0;position:relative;top:-1px"></span>'
-      : '';
 
     return '<a href="client-detail.html?uid=' + c.uid + '" '
       + 'style="display:grid;grid-template-columns:1fr 128px 104px;align-items:center;padding:10px 12px;' + border + 'text-decoration:none">'
       + '<div>'
-      +   '<div style="font-size:12px;font-weight:600;color:#EAECEF;display:flex;align-items:center">' + dotHTML + c.uid + '</div>'
+      +   '<div style="font-size:12px;font-weight:600;color:#EAECEF">' + c.uid + '</div>'
       +   (c.name ? '<div style="font-size:11px;color:#848E9C;margin-top:1px">' + c.name + '</div>' : '')
       + '</div>'
       + '<div>' + depositHTML + '</div>'
-      + '<div>' + profitHTML  + '</div>'
+      + '<div>' + profitHTML + '</div>'
       + '</a>';
-  }
-
-  // 更新胶囊样式
-  function updateTabs() {
-    document.querySelectorAll('.sort-tab').forEach(function(btn) {
-      var s = btn.getAttribute('data-sort');
-      if (s === activeSort) {
-        btn.style.background = '#F0B90B';
-        btn.style.color = '#0B0E11';
-        btn.style.fontWeight = '600';
-      } else {
-        btn.style.background = '#2E3440';
-        btn.style.color = '#848E9C';
-        btn.style.fontWeight = '400';
-      }
-    });
   }
 
   function renderList() {
     var query = searchInput.value.toLowerCase();
-    var pool = D.clients;
-    if (activeSort === 'favs') {
-      var favArr = getFavs();
-      pool = favArr.map(function(uid) {
-        return D.clients.filter(function(c) { return c.uid === uid; })[0];
-      }).filter(Boolean);
-      pool.sort(function(a, b) { return b.fMean - a.fMean; });
-    }
-    var filtered = pool.filter(function(c) {
+    var filtered = D.clients.filter(function(c) {
       return !query || c.name.toLowerCase().includes(query) || c.uid.includes(query);
     });
-    var sorted = activeSort === 'favs' ? filtered : sortClients(filtered, activeSort);
+    var sorted = sortClients(filtered);
     if (sortAsc) sorted = sorted.slice().reverse();
 
     var total = sorted.length;
@@ -330,10 +220,8 @@
     var pageItems = sorted.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
 
     var innerHTML = pageItems.length
-      ? pageItems.map(function(c, i) { return rowHTML(c, activeSort, i === pageItems.length - 1); }).join('')
-      : activeSort === 'favs'
-        ? '<div style="padding:48px 16px;text-align:center;color:#848E9C;font-size:13px">还没有收藏的客户</div>'
-        : '<div style="padding:32px 16px;text-align:center;color:#848E9C;font-size:13px">未找到匹配的客户</div>';
+      ? pageItems.map(function(c, i) { return rowHTML(c, i === pageItems.length - 1); }).join('')
+      : '<div style="padding:32px 16px;text-align:center;color:#848E9C;font-size:13px">未找到匹配的客户</div>';
     var listHTML = '<div style="margin:0 12px 8px;background:#1E2329;border-radius:16px;border:1px solid #2E3440;overflow:hidden">'
       + headerHTML() + innerHTML + '</div>';
 
@@ -361,22 +249,8 @@
     document.getElementById('client-list').scrollIntoView({ behavior: 'smooth' });
   };
 
-  window.onToggleFav = function(uid, btn) {
-    toggleFav(uid);
-    var faved = isFav(uid);
-    btn.style.color = faved ? '#F0B90B' : '#474D57';
-    btn.innerHTML = '<i class="fa-' + (faved ? 'solid' : 'regular') + ' fa-star text-[14px]"></i>';
-    if (activeSort === 'favs') renderList();
-  };
-
-  // 列标题排序（点同列切换升降序，点不同列默认降序）
-  window.sortBy = function(col) {
-    if (activeSort === col) {
-      sortAsc = !sortAsc;
-    } else {
-      activeSort = col;
-      sortAsc = false;
-    }
+  window.toggleSort = function() {
+    sortAsc = !sortAsc;
     currentPage = 1;
     renderList();
   };
@@ -385,7 +259,7 @@
   window.showTip = function(col, el) {
     var box = document.getElementById('tip-box');
     var overlay = document.getElementById('tip-overlay');
-    box.textContent = TIPS[col] || '';
+    box.innerHTML = (TIPS[col] || '').replace(/\n/g, '<br>');
     var rect = el.getBoundingClientRect();
     var boxW = 180;
     var left = Math.min(rect.left, window.innerWidth - boxW - 12);
