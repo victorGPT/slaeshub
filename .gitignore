@@ -1,0 +1,5 @@
+.vercel
+.env*.local
+.gstack/
+.claude/
+.DS_Store

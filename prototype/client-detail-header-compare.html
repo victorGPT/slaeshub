@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>顶部卡片方案对比</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body { font-family: 'PingFang SC', 'Helvetica Neue', sans-serif; background: #0B0E11; }
+    ::-webkit-scrollbar { display: none; }
+    html { background: #000; }
+    html, body { width: 393px !important; margin: 0 auto !important; overflow-x: hidden; }
+  </style>
+</head>
+<body class="bg-[#0B0E11] text-[#EAECEF]">
+
+<!-- iOS Status Bar -->
+<div class="h-[44px] bg-[#0B0E11] flex items-center justify-between px-6">
+  <span class="text-[12px] font-semibold">9:41</span>
+  <div class="flex gap-1.5"><i class="fa-solid fa-signal text-[12px]"></i><i class="fa-solid fa-wifi text-[12px]"></i><i class="fa-solid fa-battery-full text-[13px]"></i></div>
+</div>
+<!-- Nav -->
+<div class="h-[44px] border-b border-[#2E3440] flex items-center justify-between px-4">
+  <button onclick="history.back()" class="w-8 h-8 flex items-center justify-center">
+    <i class="fa-solid fa-chevron-left text-[16px]"></i>
+  </button>
+  <h1 class="text-[15px] font-bold">顶部卡片方案对比</h1>
+  <div class="w-8"></div>
+</div>
+
+<div class="pb-12" id="cards-container"></div>
+
+<script src="mock-data.js"></script>
+<script src="mock-seed.js"></script>
+<script>
+(function() {
+  var D = window.PROTOTYPE_DATA;
+  var c = D.clientsById['52339391'];
+  if (!c) { document.getElementById('cards-container').innerHTML = '<div class="p-8 text-center text-[#848E9C]">No data</div>'; return; }
+
+  function fmt(val, withSign) {
+    var abs = Math.abs(val);
+    var sign = withSign ? (val >= 0 ? '+' : '-') : (val < 0 ? '-' : '');
+    if (abs >= 1e9) return sign + (abs / 1e9).toFixed(1) + 'B';
+    if (abs >= 1e6) return sign + (abs / 1e6).toFixed(1) + 'M';
+    if (abs >= 1e3) return sign + (abs / 1e3).toFixed(1) + 'K';
+    return (withSign && val > 0 ? '+' : (val < 0 ? '-' : '')) + Math.round(abs).toLocaleString();
+  }
+
+  // ── 计算指标 ──
+  var depositVal  = c.fMean;
+  var thisWeekVal = c.weeks[c.weeks.length - 1];
+  var depositChgPct = depositVal > 0 ? ((thisWeekVal - depositVal) / depositVal * 100) : 0;
+
+  var pnlVal = c.clientPnl && c.clientPnl.total7d ? c.clientPnl.total7d.value * 4.3 : 0;
+  var pnlChgPct = null;
+  if (c.clientPnl && c.clientPnl.total7d && c.clientPnl.weeklyAvg8w) {
+    var avg8w = c.clientPnl.weeklyAvg8w.value;
+    if (Math.abs(avg8w) > 0) pnlChgPct = (c.clientPnl.total7d.value - avg8w) / Math.abs(avg8w) * 100;
+  }
+
+  var profitVal = c.netContribution && c.netContribution.total !== undefined ? c.netContribution.total * 4.3 : null;
+
+  // flow
+  function seededRandom(seed) { var x = Math.sin(seed)*10000; return x - Math.floor(x); }
+  var seedBase = parseInt(c.uid, 10) || 1;
+  var flowWeeks = [];
+  for (var i = 1; i < c.weeks.length; i++) {
+    var delta = c.weeks[i] - c.weeks[i-1];
+    var r = seededRandom(seedBase + i);
+    var inf, out;
+    if (delta > 0)      { inf = delta*(1.2+r*0.6); out = inf-delta; }
+    else if (delta < 0) { out = Math.abs(delta)*(1.2+r*0.6); inf = out-Math.abs(delta); }
+    else                { inf = c.fMean*(0.01+r*0.04); out = inf*(0.95+seededRandom(seedBase+i+100)*0.1); }
+    flowWeeks.push({ inflow: Math.round(inf), outflow: Math.round(out) });
+  }
+  var thisWeekFlow = flowWeeks[flowWeeks.length - 1];
+  var cashflowNet = thisWeekFlow ? thisWeekFlow.inflow - thisWeekFlow.outflow : null;
+
+  // ── Shared sub-components ──
+  function badge(pct) {
+    if (pct == null) return '';
+    var color = pct >= 0 ? '#0ECB81' : '#F6465D';
+    var bg    = pct >= 0 ? 'rgba(14,203,129,0.15)' : 'rgba(246,70,93,0.15)';
+    return '<span style="font-size:9px;font-weight:600;color:'+color+';background:'+bg+';padding:1px 5px;border-radius:3px;white-space:nowrap">'+(pct>=0?'+':'')+pct.toFixed(1)+'%</span>';
+  }
+  function identityRow() {
+    return '<div style="display:flex;align-items:center;gap:8px;padding:12px 16px 6px">'
+      + '<span style="font-size:16px;font-weight:700;color:#EAECEF">52339391</span>'
+      + '<span style="font-size:12px;color:#848E9C">胡军</span>'
+      + '<div style="flex:1"></div>'
+      + '<span style="font-size:9px;padding:2px 7px;border-radius:999px;background:rgba(240,185,11,0.12);border:1px solid rgba(240,185,11,0.2);color:#F0B90B">资沉 #2</span>'
+      + '<div style="width:32px;height:32px;background:#2B3139;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0">'
+      +   '<i class="fa-solid fa-star" style="font-size:13px;color:#F0B90B"></i>'
+      + '</div>'
+      + '</div>'
+      + '<div style="padding:0 16px 10px;display:flex;gap:4px;flex-wrap:wrap">'
+      +   '<span style="font-size:9px;padding:1px 6px;border-radius:3px;border:1px solid rgba(240,185,11,0.3);background:rgba(240,185,11,0.1);color:#F0B90B">资沉 #2</span>'
+      +   '<span style="font-size:9px;padding:1px 6px;border-radius:3px;border:1px solid rgba(240,185,11,0.3);background:rgba(240,185,11,0.1);color:#F0B90B">盈亏 #5</span>'
+      +   '<span style="font-size:9px;padding:1px 6px;border-radius:3px;background:#2B3139;color:#EAECEF">VIP</span>'
+      +   '<span style="font-size:9px;padding:1px 6px;border-radius:3px;border:1px dashed #474D57;color:#474D57;cursor:pointer">+ 标签</span>'
+      + '</div>';
+  }
+  function divider() { return '<div style="height:1px;background:#2E3440;margin:0 16px"></div>'; }
+  function subRow(items) {
+    // items: [{label, value, color}]
+    var cols = items.map(function(it) {
+      return '<div style="flex:1">'
+        + '<div style="font-size:10px;color:#474D57;margin-bottom:3px">' + it.label + '</div>'
+        + '<span style="font-size:13px;font-weight:600;color:' + (it.color||'#EAECEF') + '">' + it.value + '</span>'
+        + '</div>';
+    }).join('');
+    return '<div style="display:flex;padding:10px 16px 14px;gap:0">' + cols + '</div>';
+  }
+  function refreshLine() {
+    return '<div style="padding:0 16px 6px;text-align:right;font-size:9px;color:#474D57">更新于 4月6日 09:41</div>';
+  }
+
+  // ── 方案 A：左右平分 ──
+  function cardA() {
+    var dColor = '#F0B90B';
+    var pColor = pnlVal >= 0 ? '#0ECB81' : '#F6465D';
+    return '<div style="background:#1E2329;border-radius:16px;border:1px solid #2E3440;overflow:hidden">'
+      + identityRow()
+      + divider()
+      + '<div style="display:grid;grid-template-columns:1fr 1fr;gap:0;padding:12px 16px 4px">'
+
+      // 资沉格
+      + '<div style="padding-right:12px;border-right:1px solid #2E3440">'
+      +   '<div style="font-size:10px;color:#474D57;margin-bottom:4px">资沉</div>'
+      +   '<div style="font-size:22px;font-weight:700;color:'+dColor+';line-height:1.1">'+fmt(depositVal, false)+'</div>'
+      +   '<div style="margin-top:4px">'+badge(depositChgPct)+'<span style="font-size:9px;color:#474D57;margin-left:4px">vs 8周均</span></div>'
+      + '</div>'
+
+      // 盈亏格
+      + '<div style="padding-left:12px">'
+      +   '<div style="font-size:10px;color:#474D57;margin-bottom:4px">盈亏</div>'
+      +   '<div style="font-size:22px;font-weight:700;color:'+pColor+';line-height:1.1">'+fmt(pnlVal, false)+'</div>'
+      +   '<div style="margin-top:4px">'+badge(pnlChgPct)+'<span style="font-size:9px;color:#474D57;margin-left:4px">vs 8周均</span></div>'
+      + '</div>'
+
+      + '</div>'
+      + refreshLine()
+      + divider()
+      + subRow([
+          { label: '充提净流入', value: cashflowNet != null ? fmt(cashflowNet, true) : '--', color: cashflowNet != null ? (cashflowNet >= 0 ? '#0ECB81' : '#F6465D') : '#848E9C' },
+          { label: '月利润贡献', value: profitVal != null ? fmt(profitVal, true) : '--', color: profitVal != null ? (profitVal >= 0 ? '#0ECB81' : '#F6465D') : '#848E9C' },
+        ])
+      + '</div>';
+  }
+
+  // ── 方案 B：主次分明（资沉大，盈亏独立升级） ──
+  function cardB() {
+    var dColor = '#F0B90B';
+    var pColor = pnlVal >= 0 ? '#0ECB81' : '#F6465D';
+    return '<div style="background:#1E2329;border-radius:16px;border:1px solid #2E3440;overflow:hidden">'
+      + identityRow()
+      + divider()
+
+      // 资沉主行
+      + '<div style="padding:12px 16px 6px">'
+      +   '<div style="font-size:10px;color:#474D57;margin-bottom:3px">资沉</div>'
+      +   '<div style="display:flex;align-items:baseline;gap:8px">'
+      +     '<span style="font-size:26px;font-weight:700;color:'+dColor+';line-height:1">'+fmt(depositVal, false)+'</span>'
+      +     badge(depositChgPct)
+      +     '<span style="font-size:9px;color:#474D57">vs 8周均</span>'
+      +   '</div>'
+      + '</div>'
+
+      // 盈亏次行（独立，升级）
+      + '<div style="padding:6px 16px 6px;margin:0 0 2px">'
+      +   '<div style="font-size:10px;color:#474D57;margin-bottom:3px">盈亏</div>'
+      +   '<div style="display:flex;align-items:baseline;gap:8px">'
+      +     '<span style="font-size:19px;font-weight:700;color:'+pColor+';line-height:1">'+fmt(pnlVal, false)+'</span>'
+      +     badge(pnlChgPct)
+      +     '<span style="font-size:9px;color:#474D57">vs 8周均</span>'
+      +   '</div>'
+      + '</div>'
+
+      + refreshLine()
+      + divider()
+      + subRow([
+          { label: '充提净流入', value: cashflowNet != null ? fmt(cashflowNet, true) : '--', color: cashflowNet != null ? (cashflowNet >= 0 ? '#0ECB81' : '#F6465D') : '#848E9C' },
+          { label: '月利润贡献', value: profitVal != null ? fmt(profitVal, true) : '--', color: profitVal != null ? (profitVal >= 0 ? '#0ECB81' : '#F6465D') : '#848E9C' },
+        ])
+      + '</div>';
+  }
+
+  // ── 方案 C：两行大字（label + 值 + badge 同行）──
+  function cardC() {
+    var dColor = '#F0B90B';
+    var pColor = pnlVal >= 0 ? '#0ECB81' : '#F6465D';
+    function metricRow(label, val, color, chgPct, isLast) {
+      return '<div style="display:flex;align-items:center;padding:11px 16px;'+(isLast?'':'border-bottom:1px solid #2E3440')+'">'
+        + '<span style="font-size:11px;color:#474D57;width:36px;flex-shrink:0">'+label+'</span>'
+        + '<span style="font-size:20px;font-weight:700;color:'+color+';flex:1;line-height:1">'+val+'</span>'
+        + (chgPct != null ? badge(chgPct) : '')
+        + (chgPct != null ? '<span style="font-size:9px;color:#474D57;margin-left:4px">vs 8周均</span>' : '')
+        + '</div>';
+    }
+    return '<div style="background:#1E2329;border-radius:16px;border:1px solid #2E3440;overflow:hidden">'
+      + identityRow()
+      + divider()
+      + metricRow('资沉', fmt(depositVal, false), dColor, depositChgPct, false)
+      + metricRow('盈亏', fmt(pnlVal, false), pColor, pnlChgPct, true)
+      + refreshLine()
+      + divider()
+      + subRow([
+          { label: '充提净流入', value: cashflowNet != null ? fmt(cashflowNet, true) : '--', color: cashflowNet != null ? (cashflowNet >= 0 ? '#0ECB81' : '#F6465D') : '#848E9C' },
+          { label: '月利润贡献', value: profitVal != null ? fmt(profitVal, true) : '--', color: profitVal != null ? (profitVal >= 0 ? '#0ECB81' : '#F6465D') : '#848E9C' },
+        ])
+      + '</div>';
+  }
+
+  function sectionLabel(letter, desc) {
+    return '<div style="display:flex;align-items:center;gap:8px;padding:20px 16px 8px">'
+      + '<span style="font-size:11px;font-weight:700;color:#0B0E11;background:#F0B90B;border-radius:4px;padding:1px 6px">'+letter+'</span>'
+      + '<span style="font-size:12px;color:#848E9C">'+desc+'</span>'
+      + '</div>';
+  }
+
+  document.getElementById('cards-container').innerHTML =
+    sectionLabel('A', '左右平分 — 资沉 / 盈亏完全等权') + '<div style="padding:0 12px">' + cardA() + '</div>'
+  + sectionLabel('B', '主次分明 — 资沉大字，盈亏独立升级') + '<div style="padding:0 12px">' + cardB() + '</div>'
+  + sectionLabel('C', '两行大字 — label + 值 + badge 同行') + '<div style="padding:0 12px">' + cardC() + '</div>';
+
+})();
+</script>
+</body>
+</html>
